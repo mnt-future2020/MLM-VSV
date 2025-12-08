@@ -167,45 +167,56 @@ export default function ManageMembersPage() {
               </tr>
             </thead>
             <tbody>
-              {members.map((member, index) => (
-                <tr
-                  key={member.id}
-                  className={cn(
-                    "border-b border-border hover:bg-muted/50 transition-colors",
-                    index === members.length - 1 && "border-0"
-                  )}
-                >
-                  <td className="px-6 py-4 text-sm font-medium text-foreground">{member.id}</td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{member.name}</p>
-                      <p className="text-xs text-muted-foreground">{member.email}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{member.contact}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                      {member.package}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{getStatusBadge(member.kycStatus, "kyc")}</td>
-                  <td className="px-6 py-4">{getStatusBadge(member.bankStatus, "bank")}</td>
-                  <td className="px-6 py-4">{getStatusBadge(member.status, "account")}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Edit Member">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete/Block">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+              {filteredMembers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                    No members found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredMembers.map((member, index) => (
+                  <tr
+                    key={member.id}
+                    className={cn(
+                      "border-b border-border hover:bg-muted/50 transition-colors",
+                      index === filteredMembers.length - 1 && "border-0"
+                    )}
+                  >
+                    <td className="px-6 py-4 text-sm font-medium text-foreground">{member.referralId}</td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{member.name}</p>
+                        <p className="text-xs text-muted-foreground">{member.email}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{member.mobile || 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                        {member.currentPlan || 'No Plan'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(member.joinedAt).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">{getStatusBadge(member.isActive)}</td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Edit Member">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Toggle Status">
+                          {member.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
