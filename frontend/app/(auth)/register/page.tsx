@@ -107,11 +107,8 @@ export default function RegisterPage() {
         const userData = response.data.user;
         const token = response.data.token;
         
-        // Import useAuth hook
-        const { login: authLogin } = useAuth();
-        
-        // Save token and user
-        authLogin(userData, token);
+        // Save token and user to context
+        login(userData, token);
         
         // Redirect to dashboard
         router.push("/dashboard");
