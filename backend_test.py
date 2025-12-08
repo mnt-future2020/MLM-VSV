@@ -145,18 +145,45 @@ class MLMAPITester:
         self.log_test("POST /api/auth/lookup-referral", success and data.get('success'), response_time=response_time)
 
     def test_get_plans(self):
-        """Test get all plans"""
-        success, data = self.make_request('GET', 'api/plans')
+        """Test get all plans - GET /api/plans"""
+        success, data, response_time = self.make_request('GET', 'api/plans')
         
         if success and data.get('success') and data.get('data'):
             plans = data['data']
             if plans:
                 self.test_plan_id = plans[0]['id']  # Store first plan ID for activation test
-            self.log_test("Get Plans", True)
+            self.log_test("GET /api/plans", True, response_time=response_time)
             return True
         else:
-            self.log_test("Get Plans", False, f"Response: {data}")
+            self.log_test("GET /api/plans", False, f"Response: {data}")
             return False
+
+    def test_reports_users_all(self):
+        """Test reports users all - GET /api/admin/reports/users/all?format=json"""
+        if not self.admin_token:
+            self.log_test("GET /api/admin/reports/users/all", False, "No admin token")
+            return False
+            
+        success, data, response_time = self.make_request('GET', 'api/admin/reports/users/all?format=json', token=self.admin_token)
+        self.log_test("GET /api/admin/reports/users/all", success, response_time=response_time)
+
+    def test_reports_financial_earnings(self):
+        """Test reports financial earnings - GET /api/admin/reports/financial/earnings?format=json"""
+        if not self.admin_token:
+            self.log_test("GET /api/admin/reports/financial/earnings", False, "No admin token")
+            return False
+            
+        success, data, response_time = self.make_request('GET', 'api/admin/reports/financial/earnings?format=json', token=self.admin_token)
+        self.log_test("GET /api/admin/reports/financial/earnings", success, response_time=response_time)
+
+    def test_reports_team_structure(self):
+        """Test reports team structure - GET /api/admin/reports/team/structure?format=json"""
+        if not self.admin_token:
+            self.log_test("GET /api/admin/reports/team/structure", False, "No admin token")
+            return False
+            
+        success, data, response_time = self.make_request('GET', 'api/admin/reports/team/structure?format=json', token=self.admin_token)
+        self.log_test("GET /api/admin/reports/team/structure", success, response_time=response_time)
 
     def test_user_profile(self):
         """Test get user profile - GET /api/user/profile"""
