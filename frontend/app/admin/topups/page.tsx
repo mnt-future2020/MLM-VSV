@@ -152,70 +152,95 @@ export default function ManageTopupsPage() {
 
       {/* Filters */}
       <div className="bg-card border border-border rounded-xl p-4 mb-6 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Input
-              placeholder="Search by member ID or name..."
-              icon={<Search className="w-4 h-4" />}
-            />
-          </div>
-          <Select>
-            <option value="All Packages">All Packages</option>
-            <option value="Starter">Starter</option>
-            <option value="Professional">Professional</option>
-            <option value="Business">Business</option>
-          </Select>
-          <Select>
-            <option value="All Payment Modes">All Payment Modes</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="UPI">UPI</option>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="APPROVED">Approved</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
+              <SelectItem value="ALL">All Status</SelectItem>
+            </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Pending Requests List */}
+        {/* Topup Requests List */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Pending Top-up Requests</h3>
-          {pendingRequests.map((req) => (
-            <div
-              key={req.id}
-              onClick={() => setSelectedRequest(req)}
-              className={cn(
-                "bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md",
-                selectedRequest?.id === req.id
-                  ? "border-primary-500 ring-1 ring-primary-500 shadow-md"
-                  : "border-border hover:border-primary-300"
-              )}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-semibold text-foreground">{req.memberName}</p>
-                  <p className="text-xs text-muted-foreground">{req.memberId}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary-600">₹{req.amount.toLocaleString()}</p>
-                  <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-                    {req.package}
-                  </span>
-                </div>
-              </div>
-              <div className="text-xs text-muted-foreground mb-3 space-y-1">
-                <p>Payment: {req.paymentMode}</p>
-                <p>TXN ID: {req.txnId}</p>
-                <p>{req.date}</p>
-              </div>
-              
-              <div className="flex gap-2 mt-2">
-                <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs">
-                  <CheckCircle className="w-3 h-3 mr-1" /> Approve
-                </Button>
-                <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50 h-8 text-xs">
-                  <XCircle className="w-3 h-3 mr-1" /> Reject
-                </Button>
-              </div>
+          <h3 className="text-lg font-semibold text-foreground">
+            {statusFilter === "PENDING" ? "Pending" : statusFilter === "APPROVED" ? "Approved" : statusFilter === "REJECTED" ? "Rejected" : "All"} Top-up Requests ({topups.length})
+          </h3>
+          {topups.length === 0 ? (
+            <div className="bg-card border border-border rounded-xl p-8 text-center">
+              <p className="text-muted-foreground">No topup requests found</p>
             </div>
-          ))}
+          ) : (
+            topups.map((req) => (
+              <div
+                key={req.id}
+                onClick={() => setSelectedRequest(req)}
+                className={cn(
+                  "bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md",
+                  selectedRequest?.id === req.id
+                    ? "border-primary-500 ring-1 ring-primary-500 shadow-md"
+                    : "border-border hover:border-primary-300"
+                )}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-semibold text-foreground">{req.userName || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{req.referralId || req.userId}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary-600">₹{req.amount.toLocaleString()}</p>
+                    <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+                      {req.planName || 'Plan'}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mb-3 space-y-1">
+                  <p>Payment: {req.paymentMode}</p>
+                  <p>TXN ID: {req.transactionId}</p>
+                  <p>Requested: {new Date(req.requestedAt).toLocaleString()}</p>
+                  <p>Status: <span className={cn(
+                    "font-medium",
+                    req.status === "PENDING" && "text-yellow-600",
+                    req.status === "APPROVED" && "text-green-600",
+                    req.status === "REJECTED" && "text-red-600"
+                  )}>{req.status}</span></p>
+                </div>
+                
+                {req.status === "PENDING" && (
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApprove(req.id);
+                      }}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" /> Approve
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReject(req.id);
+                      }}
+                      className="flex-1 border-red-200 text-red-600 hover:bg-red-50 h-8 text-xs"
+                    >
+                      <XCircle className="w-3 h-3 mr-1" /> Reject
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
 
         {/* Request Details Panel */}
