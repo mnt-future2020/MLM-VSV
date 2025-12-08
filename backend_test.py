@@ -188,22 +188,22 @@ class MLMAPITester:
         self.log_test("Plan Activation", success and data.get('success'))
 
     def test_wallet_balance(self):
-        """Test wallet balance"""
+        """Test wallet balance - GET /api/wallet/balance"""
         if not self.user_token:
-            self.log_test("Wallet Balance", False, "No user token")
+            self.log_test("GET /api/wallet/balance", False, "No user token")
             return False
             
-        success, data = self.make_request('GET', 'api/wallet/balance', token=self.user_token)
-        self.log_test("Wallet Balance", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/wallet/balance', token=self.user_token)
+        self.log_test("GET /api/wallet/balance", success and data.get('success'), response_time=response_time)
 
     def test_transactions(self):
-        """Test get transactions"""
+        """Test get transactions - GET /api/wallet/transactions"""
         if not self.user_token:
-            self.log_test("Get Transactions", False, "No user token")
+            self.log_test("GET /api/wallet/transactions", False, "No user token")
             return False
             
-        success, data = self.make_request('GET', 'api/wallet/transactions', token=self.user_token)
-        self.log_test("Get Transactions", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/wallet/transactions', token=self.user_token)
+        self.log_test("GET /api/wallet/transactions", success and data.get('success'), response_time=response_time)
 
     def test_team_tree(self):
         """Test team tree - GET /api/user/team/tree"""
