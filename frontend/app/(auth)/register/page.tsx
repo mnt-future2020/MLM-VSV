@@ -37,7 +37,7 @@ export default function RegisterPage() {
   };
 
   // Fetch plans on component mount
-  useState(() => {
+  useEffect(() => {
     const fetchPlans = async () => {
       try {
         const response = await axiosInstance.get("/api/plans");
