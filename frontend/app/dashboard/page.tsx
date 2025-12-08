@@ -137,32 +137,37 @@ export default function UserDashboard() {
           <div className="space-y-4">
             {dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0 ? (
               dashboardData.recentTransactions.slice(0, 4).map((transaction: any, index: number) => (
-              <div
-                key={index}
-                className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    transaction.status === "Credit" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                  )}>
-                    {transaction.status === "Credit" ? <TrendingUp className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{transaction.type}</p>
-                    <p className="text-xs text-muted-foreground">{transaction.date}</p>
-                  </div>
-                </div>
-                <p
-                  className={cn(
-                    "text-sm font-semibold",
-                    transaction.status === "Credit" ? "text-green-600" : "text-red-600"
-                  )}
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors"
                 >
-                  {transaction.amount}
-                </p>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center",
+                      transaction.amount > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                    )}>
+                      {transaction.amount > 0 ? <TrendingUp className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{transaction.type || transaction.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(transaction.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <p
+                    className={cn(
+                      "text-sm font-semibold",
+                      transaction.amount > 0 ? "text-green-600" : "text-red-600"
+                    )}
+                  >
+                    {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount)}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-8">No transactions yet</p>
+            )}
           </div>
         </div>
       </div>
