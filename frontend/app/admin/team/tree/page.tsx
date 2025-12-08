@@ -24,9 +24,17 @@ export default function AdminBinaryTreePage() {
   const [treeData, setTreeData] = useState<TreeNode | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before making API calls
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch tree data - for admin, we'll show their own tree for now
   useEffect(() => {
+    if (!mounted) return;
+
     const fetchTreeData = async () => {
       try {
         setLoading(true);
@@ -49,7 +57,7 @@ export default function AdminBinaryTreePage() {
     };
 
     fetchTreeData();
-  }, []);
+  }, [mounted]);
 
   // Expand/collapse node and fetch children if needed
   const handleNodeClick = async (node: TreeNode) => {
