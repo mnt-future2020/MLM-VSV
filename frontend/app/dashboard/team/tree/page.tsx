@@ -19,9 +19,9 @@ type TreeNode = {
   right?: TreeNode | null;
 };
 
-function TreeNodeComponent({ node }: { node: TreeNode }) {
-  const isRoot = node.position === "root";
-  const isLeft = node.position === "left";
+function TreeNodeComponent({ node, isRoot = false }: { node: TreeNode; isRoot?: boolean }) {
+  const isLeft = node.placement === "LEFT";
+  const isRight = node.placement === "RIGHT";
 
   return (
     <div className="flex flex-col items-center">
