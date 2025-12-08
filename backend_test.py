@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
 Comprehensive MLM Platform Backend API Testing
-Tests all 37+ endpoints for VSV Unite MLM Platform
+Tests all endpoints for VSV Unite MLM Platform as per review request
 """
 
 import requests
 import sys
 import json
+import time
 from datetime import datetime
 from typing import Dict, Any, Optional
 
@@ -21,6 +22,7 @@ class MLMAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.failed_tests = []
+        self.response_times = []
 
     def log_test(self, name: str, success: bool, details: str = ""):
         """Log test results"""
