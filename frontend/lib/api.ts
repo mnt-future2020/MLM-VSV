@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+// Use relative URL for API calls (will use same domain as frontend)
+// In production, this will automatically use the correct domain
+// Backend should be accessible via /api prefix on same domain
+const API_URL = typeof window !== 'undefined' 
+  ? window.location.origin 
+  : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
 // Create axios instance with default config
 export const axiosInstance = axios.create({
