@@ -1,156 +1,192 @@
 "use client";
 
-import { useState } from "react";
-import { Building2, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState, useEffect } from "react";
+import { User, Save, ArrowLeft, Lock } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/auth-context";
+import { axiosInstance } from "@/lib/api";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function BankDetailsPage() {
+export default function ProfileEditPage() {
+  const { user, refreshUser } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    accountHolderName: "John Doe",
-    accountType: "Savings Account",
-    accountNumber: "123456789",
-    confirmAccountNumber: "123456789",
-    bankName: "Example Bank",
-    branchName: "Main Branch",
-    ifscCode: "BANK0001234",
-    panNumber: "ABCDE1234F",
+    name: "",
+    email: "",
+    mobile: ""
+  });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        mobile: user.mobile || ""
+      });
+    }
+  }, [user]);
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Bank details updated:", formData);
+    setLoading(true);
+
+    try {
+      const response = await axiosInstance.put('/api/user/profile', formData);
+      if (response.data.success) {
+        await refreshUser();
+        alert('Profile updated successfully!');
+        router.push('/dashboard/profile');
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.detail || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      alert('New password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axiosInstance.post('/api/user/change-password', {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword
+      });
+      
+      if (response.data.success) {
+        alert('Password changed successfully!');
+        setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.detail || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="2xl">
       <PageHeader
-        icon={<Building2 className="w-6 h-6 text-white" />}
-        title="Bank Details"
-        subtitle="Update your banking information"
+        icon={<User className="w-6 h-6 text-white" />}
+        title="Edit Profile"
+        subtitle="Update your account information"
       />
 
-      {/* Info Alert */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex gap-3 shadow-sm">
-        <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">Important:</span> Please ensure all bank details are accurate. These details will be used for all withdrawal transactions.
-          </p>
-        </div>
+      <div className="space-y-6">
+        {/* Profile Information */}
+        <form onSubmit={handleProfileUpdate} className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Personal Information</h3>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="mobile">Mobile Number *</Label>
+              <Input
+                id="mobile"
+                type="tel"
+                value={formData.mobile}
+                onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          <div className="flex gap-4 mt-6">
+            <Link href="/dashboard/profile" className="flex-1">
+              <Button type="button" variant="outline" className="w-full">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            </Link>
+            <Button type="submit" disabled={loading} className="flex-1 bg-primary-600 hover:bg-primary-700">
+              <Save className="w-4 h-4 mr-2" />
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+
+        {/* Change Password */}
+        <form onSubmit={handlePasswordChange} className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            Change Password
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="oldPassword">Current Password *</Label>
+              <Input
+                id="oldPassword"
+                type="password"
+                value={passwordData.oldPassword}
+                onChange={(e) => setPasswordData({...passwordData, oldPassword: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="newPassword">New Password *</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                required
+                minLength={6}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Minimum 6 characters</p>
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          <Button type="submit" disabled={loading} className="w-full mt-6 bg-primary-600 hover:bg-primary-700">
+            {loading ? 'Changing...' : 'Change Password'}
+          </Button>
+        </form>
       </div>
-
-      {/* Bank Details Form */}
-      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm space-y-8">
-        {/* Account Information */}
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Account Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label required>Account Holder Name</Label>
-              <Input
-                value={formData.accountHolderName}
-                onChange={(e) => setFormData({...formData, accountHolderName: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label required>Account Type</Label>
-              <Select
-                value={formData.accountType}
-                onValueChange={(value) => setFormData({...formData, accountType: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Savings Account">Savings Account</SelectItem>
-                  <SelectItem value="Current Account">Current Account</SelectItem>
-                  <SelectItem value="Salary Account">Salary Account</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label required>Account Number</Label>
-              <Input
-                value={formData.accountNumber}
-                onChange={(e) => setFormData({...formData, accountNumber: e.target.value})}
-                type="number"
-              />
-            </div>
-            <div>
-              <Label required>Confirm Account Number</Label>
-              <Input
-                value={formData.confirmAccountNumber}
-                onChange={(e) => setFormData({...formData, confirmAccountNumber: e.target.value})}
-                type="number"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Bank Information */}
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Bank Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label required>Bank Name</Label>
-              <Input
-                value={formData.bankName}
-                onChange={(e) => setFormData({...formData, bankName: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label required>Branch Name</Label>
-              <Input
-                value={formData.branchName}
-                onChange={(e) => setFormData({...formData, branchName: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label required>IFSC Code</Label>
-              <Input
-                value={formData.ifscCode}
-                onChange={(e) => setFormData({...formData, ifscCode: e.target.value})}
-                placeholder="e.g., BANK0001234"
-              />
-            </div>
-            <div>
-              <Label required>PAN Number</Label>
-              <Input
-                value={formData.panNumber}
-                onChange={(e) => setFormData({...formData, panNumber: e.target.value})}
-                placeholder="e.g., ABCDE1234F"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Button
-            type="submit"
-            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 shadow-lg shadow-primary-500/20"
-          >
-            Update Bank Details
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="px-8 py-6 border-border hover:bg-muted"
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
     </PageContainer>
   );
 }
