@@ -206,22 +206,22 @@ class MLMAPITester:
         self.log_test("Get Transactions", success and data.get('success'))
 
     def test_team_tree(self):
-        """Test team tree"""
+        """Test team tree - GET /api/user/team/tree"""
         if not self.user_token:
-            self.log_test("Team Tree", False, "No user token")
+            self.log_test("GET /api/user/team/tree", False, "No user token")
             return False
             
-        success, data = self.make_request('GET', 'api/user/team/tree', token=self.user_token)
-        self.log_test("Team Tree", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/user/team/tree', token=self.user_token)
+        self.log_test("GET /api/user/team/tree", success and data.get('success'), response_time=response_time)
 
     def test_team_list(self):
-        """Test team list"""
+        """Test team list - GET /api/user/team/list"""
         if not self.user_token:
-            self.log_test("Team List", False, "No user token")
+            self.log_test("GET /api/user/team/list", False, "No user token")
             return False
             
-        success, data = self.make_request('GET', 'api/user/team/list', token=self.user_token)
-        self.log_test("Team List", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/user/team/list', token=self.user_token)
+        self.log_test("GET /api/user/team/list", success and data.get('success'), response_time=response_time)
 
     def test_withdrawal_request(self):
         """Test withdrawal request"""
