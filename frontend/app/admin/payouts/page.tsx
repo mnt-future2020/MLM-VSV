@@ -147,19 +147,18 @@ export default function PayoutManagementPage() {
 
       {/* Filters */}
       <div className="bg-card border border-border rounded-xl p-4 mb-6 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Input
-              placeholder="Search by member ID or name..."
-              icon={<Search className="w-4 h-4" />}
-            />
-          </div>
-          <Select>
-            <option value="All Payment Methods">All Payment Methods</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="UPI">UPI</option>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="APPROVED">Approved</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
+              <SelectItem value="ALL">All Status</SelectItem>
+            </SelectContent>
           </Select>
-          <Input type="date" />
         </div>
       </div>
 
