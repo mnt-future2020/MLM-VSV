@@ -147,20 +147,6 @@ export default function ManageMembersPage() {
               <SelectItem value="Inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={kycFilter}
-            onValueChange={(value) => setKycFilter(value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All KYC Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All KYC Status">All KYC Status</SelectItem>
-              <SelectItem value="Approved">Approved</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
