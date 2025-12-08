@@ -105,9 +105,24 @@ export default function ManageMembersPage() {
   }, [user, searchTerm, fetchMembers, fetchPlans]);
 
   // View member details
-  const handleView = (member: Member) => {
+  const [viewMemberDetails, setViewMemberDetails] = useState<any>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  
+  const handleView = async (member: Member) => {
     setSelectedMember(member);
     setViewDialog(true);
+    setViewLoading(true);
+    try {
+      const response = await axiosInstance.get(`/api/user/details/${member.referralId}`);
+      if (response.data.success) {
+        setViewMemberDetails(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching member details:", error);
+      toast.error("Failed to load member details");
+    } finally {
+      setViewLoading(false);
+    }
   };
 
   // Edit member
