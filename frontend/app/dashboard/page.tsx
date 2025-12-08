@@ -5,13 +5,64 @@ import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-compo
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
+import { useEffect, useState } from "react";
+import { axiosInstance } from "@/lib/api";
+
+interface DashboardData {
+  wallet: {
+    balance: number;
+    totalEarnings: number;
+    totalWithdrawals: number;
+  };
+  team: {
+    total: number;
+    left: number;
+    right: number;
+  };
+  currentPlan: any;
+  recentTransactions: any[];
+}
 
 export default function UserDashboard() {
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await axiosInstance.get('/api/user/dashboard');
+        if (response.data.success) {
+          setDashboardData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchDashboard();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="2xl">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer maxWidth="2xl">
       <PageHeader
         icon={<TrendingUp className="w-6 h-6 text-white" />}
-        title="Welcome back, User!"
+        title={`Welcome back, ${user?.name || 'User'}!`}
         subtitle="Here's what's happening with your account today."
       />
 
