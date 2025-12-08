@@ -915,3 +915,140 @@ Admin (VSV00001) - PV: L=8, R=12
 
 **Recommendation:** 
 The Binary MLM system is working correctly for tree structure, PV distribution, and referral income. The matching income calculation appears to be the only component needing attention, but the core MLM functionality is solid and production-ready.
+
+## Public Registration Page Testing - /register (Plan Selection Feature)
+
+**Test Date:** 2024-12-08  
+**Test Status:** ❌ PARTIALLY FAILED  
+**Test Environment:** Next.js Frontend on localhost:3000  
+**Tester:** Testing Agent  
+
+### Test Objectives:
+Test the public registration page with plan selection feature as requested, including:
+1. Page loading and form field visibility
+2. Referral ID verification (VSV00001)
+3. Plan selection dropdown functionality
+4. Form validation without plan selection
+5. Complete registration with plan selection
+
+### Test Results:
+
+#### ✅ PASSED - Basic Registration Functionality
+1. **Page Loading:** ✅ Registration page loads correctly at `/register`
+2. **Form Structure:** ✅ All required fields are present and functional:
+   - Referral ID field (mandatory) ✅
+   - Name, Username, Mobile, Email, Password fields ✅
+   - Terms and conditions checkbox ✅
+
+3. **Referral ID Verification:** ✅ Working perfectly
+   - Entering "VSV00001" triggers sponsor lookup
+   - "VSV Admin" auto-fills in referral name field
+   - Placement dropdown appears with LEFT/RIGHT options
+   - API endpoint `/api/user/referral/VSV00001` working correctly
+
+4. **Placement Selection:** ✅ Working correctly
+   - Dropdown appears after referral ID entry
+   - LEFT and RIGHT options available
+   - Selection works properly
+
+5. **Form Submission:** ✅ Registration process works
+   - Form accepts all required data
+   - Successfully creates user account
+   - Redirects to dashboard after registration
+   - User "Test User Plan" created successfully
+
+#### ❌ CRITICAL FAILURE - Plan Selection Feature Missing
+
+**MAJOR ISSUE IDENTIFIED:** The Plan Selection dropdown is completely missing from the registration form.
+
+**Detailed Analysis:**
+- **Component Code:** ✅ Plan selection code exists in `/app/frontend/app/(auth)/register/page.tsx` (lines 353-379)
+- **Plans API:** ✅ `/api/plans` endpoint working correctly, returns 4 plans:
+  - Basic - ₹111 (PV: 1)
+  - Standard - ₹599 (PV: 2) 
+  - Advanced - ₹1199 (PV: 4)
+  - Premium - ₹1799 (PV: 6)
+- **DOM Inspection:** ❌ Plan dropdown (`#planId`) does not exist in DOM
+- **JavaScript Errors:** ⚠️ Some 404/400 HTTP errors detected but no critical JS errors
+
+**Root Cause:** The Plan Selection section is not being rendered despite:
+- Component code being present
+- Plans API returning correct data
+- No JavaScript errors preventing rendering
+
+**Impact:** Users cannot select a plan during registration, which was the primary feature to be tested.
+
+#### Form Fields Analysis:
+```
+✅ Field 1: 'Referral ID *' -> input#referralId
+✅ Field 2: 'Referral Name' -> input#referralName  
+✅ Field 3: 'Placement *' -> select#placement
+✅ Field 4: 'Name' -> input#name
+✅ Field 5: 'Username' -> input#username
+✅ Field 6: 'Mobile No' -> input#mobile
+✅ Field 7: 'Email ID (Optional)' -> input#email
+✅ Field 8: 'Password' -> input#password
+✅ Field 9: 'Terms checkbox' -> input#terms
+❌ MISSING: 'Select Plan *' -> select#planId
+```
+
+#### Test Flow Results:
+
+**Test Flow 1: Sponsor ID Verification** ✅ PASSED
+- Enter "VSV00001" in Referral ID ✅
+- "VSV Admin" auto-fills ✅
+- Placement dropdown appears ✅
+
+**Test Flow 2: Plan Selection** ❌ FAILED
+- Plan dropdown not visible ❌
+- Cannot select any plan ❌
+- No plan validation possible ❌
+
+**Test Flow 3: Form Submission Without Plan** ⚠️ UNEXPECTED BEHAVIOR
+- Expected: Validation error "Please select a plan to join"
+- Actual: Form submitted successfully without plan selection
+- User redirected to dashboard
+- Registration completed without plan
+
+**Test Flow 4: Complete Registration** ❌ CANNOT TEST
+- Cannot test plan selection as dropdown is missing
+- Cannot verify plan-based registration flow
+
+### Technical Assessment:
+
+**API Integration:** ✅ Excellent
+- Referral lookup API working correctly
+- Plans API returning proper data
+- Registration API accepting submissions
+
+**Frontend Rendering:** ❌ Critical Issue
+- Plan selection component not rendering
+- Possible React hydration or conditional rendering issue
+- Component exists in code but not in DOM
+
+**User Experience:** ❌ Broken for Plan Selection
+- Users cannot select plans during registration
+- Core requested feature is non-functional
+- Registration works but bypasses plan selection
+
+### Screenshots Captured:
+- ✅ Initial page load: `register_page_loaded.png`
+- ✅ After referral entry: `after_referral_entry.png`
+- ✅ Final form state: `final_registration_test.png`
+- ✅ Successful dashboard redirect: Shows "Welcome back, Test User Plan!"
+
+### Final Assessment:
+
+**❌ PLAN SELECTION FEATURE IS NOT WORKING**
+
+**Summary:**
+- **Basic Registration:** ✅ Working perfectly
+- **Referral System:** ✅ Working perfectly  
+- **Plan Selection:** ❌ **CRITICAL FAILURE** - Dropdown completely missing
+- **Form Validation:** ⚠️ Not enforcing plan selection requirement
+- **User Creation:** ✅ Working (but without plan selection)
+
+**Impact:** This is a blocking issue for the requested plan selection feature testing. Users cannot select plans during registration, making the core functionality non-operational.
+
+**Recommendation:** 
+The Plan Selection dropdown component needs immediate investigation and fixing. The issue appears to be in the frontend React component rendering, not in the backend APIs which are working correctly.
