@@ -280,11 +280,11 @@ export default function AdminPlansPage() {
             </div>
 
             <div className="flex gap-2 pt-4 border-t border-border">
-              <Button size="sm" variant="outline" className="flex-1">
+              <Button onClick={() => handleEdit(plan)} size="sm" variant="outline" className="flex-1">
                 <Edit className="w-4 h-4 mr-1" />
                 Edit
               </Button>
-              <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
+              <Button onClick={() => handleDelete(plan)} size="sm" variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
