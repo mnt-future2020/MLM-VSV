@@ -7,18 +7,20 @@ import { useAuth } from "@/contexts/auth-context";
 import { axiosInstance } from "@/lib/api";
 
 interface DashboardStats {
-  users: {
-    total: number;
-    active: number;
-    inactive: number;
-  };
-  earnings: {
+  overview: {
+    totalUsers: number;
+    activeUsers: number;
+    inactiveUsers: number;
+    withPlans: number;
     totalEarnings: number;
-    totalBalance: number;
     totalWithdrawals: number;
+    pendingWithdrawals: number;
+    pendingWithdrawalsAmount: number;
+    recentRegistrations: number;
   };
-  pendingWithdrawals: number;
   planDistribution: Record<string, number>;
+  dailyReports: any[];
+  incomeBreakdown: Record<string, number>;
   recentUsers: any[];
 }
 
