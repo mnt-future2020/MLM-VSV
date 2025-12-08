@@ -130,7 +130,7 @@ export default function NewMemberPage() {
         toast.success(`Referral ID: ${response.data.user.referralId}`, { duration: 10000 });
         
         // If plan was selected, show additional message
-        if (formData.planId) {
+        if (formData.planId && formData.planId !== "no-plan") {
           toast.success("Plan assigned successfully!", { duration: 5000 });
         }
         
