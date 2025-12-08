@@ -407,6 +407,161 @@ export default function ManageMembersPage() {
           </div>
         )}
       </div>
+
+      {/* View Member Dialog */}
+      <Dialog open={viewDialog} onOpenChange={setViewDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Member Details</DialogTitle>
+            <DialogDescription>Complete information about the member</DialogDescription>
+          </DialogHeader>
+          {selectedMember && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Name</Label>
+                  <p className="font-medium">{selectedMember.name}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Referral ID</Label>
+                  <p className="font-medium">{selectedMember.referralId}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Email</Label>
+                  <p className="font-medium">{selectedMember.email}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Mobile</Label>
+                  <p className="font-medium">{selectedMember.mobile || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Current Plan</Label>
+                  <p className="font-medium">{selectedMember.currentPlan || 'No Plan'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <p className="font-medium">{selectedMember.isActive ? 'Active' : 'Inactive'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Joined Date</Label>
+                  <p className="font-medium">{new Date(selectedMember.joinedAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Member Dialog */}
+      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Member</DialogTitle>
+            <DialogDescription>Update member information</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                placeholder="Enter name"
+              />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                placeholder="Enter email"
+              />
+            </div>
+            <div>
+              <Label>Mobile</Label>
+              <Input
+                value={editForm.mobile}
+                onChange={(e) => setEditForm({...editForm, mobile: e.target.value})}
+                placeholder="Enter mobile number"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSubmit} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetPasswordDialog} onOpenChange={setResetPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for {selectedMember?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (min 6 characters)"
+              />
+            </div>
+            <div>
+              <Label>Confirm Password</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetPasswordDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleResetPasswordSubmit} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Reset Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Member Dialog */}
+      <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Member</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedMember?.name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Delete Member
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }
