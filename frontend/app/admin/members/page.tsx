@@ -42,6 +42,7 @@ type Member = {
 export default function ManageMembersPage() {
   const { user } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -59,6 +60,7 @@ export default function ManageMembersPage() {
     name: "",
     email: "",
     mobile: "",
+    currentPlan: "",
   });
   
   // Password reset state
