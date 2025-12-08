@@ -292,13 +292,238 @@ export default function AdminPlansPage() {
         ))}
       </div>
 
-      {/* Note */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <p className="text-sm text-blue-700">
-          <strong>Note:</strong> Plan creation and editing functionality will be available in the next update. 
-          Current plans are pre-configured and can be viewed here.
-        </p>
-      </div>
+
+      {/* Create Plan Dialog */}
+      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Plan</DialogTitle>
+            <DialogDescription>Add a new membership plan</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Plan Name *</Label>
+                <Input
+                  value={planForm.name}
+                  onChange={(e) => setPlanForm({...planForm, name: e.target.value})}
+                  placeholder="e.g., Premium Plan"
+                />
+              </div>
+              <div>
+                <Label>Amount (₹) *</Label>
+                <Input
+                  type="number"
+                  value={planForm.amount}
+                  onChange={(e) => setPlanForm({...planForm, amount: e.target.value})}
+                  placeholder="e.g., 1799"
+                />
+              </div>
+              <div>
+                <Label>PV (Point Value) *</Label>
+                <Input
+                  type="number"
+                  value={planForm.pv}
+                  onChange={(e) => setPlanForm({...planForm, pv: e.target.value})}
+                  placeholder="e.g., 1000"
+                />
+              </div>
+              <div>
+                <Label>Referral Income (₹)</Label>
+                <Input
+                  type="number"
+                  value={planForm.referralIncome}
+                  onChange={(e) => setPlanForm({...planForm, referralIncome: e.target.value})}
+                  placeholder="e.g., 200"
+                />
+              </div>
+              <div>
+                <Label>Daily Capping (₹)</Label>
+                <Input
+                  type="number"
+                  value={planForm.dailyCapping}
+                  onChange={(e) => setPlanForm({...planForm, dailyCapping: e.target.value})}
+                  placeholder="e.g., 500"
+                />
+              </div>
+              <div>
+                <Label>Matching Income (₹)</Label>
+                <Input
+                  type="number"
+                  value={planForm.matchingIncome}
+                  onChange={(e) => setPlanForm({...planForm, matchingIncome: e.target.value})}
+                  placeholder="e.g., 100"
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={planForm.isActive} onValueChange={(value) => setPlanForm({...planForm, isActive: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Active</SelectItem>
+                    <SelectItem value="false">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Popular Plan?</Label>
+                <Select value={planForm.popular} onValueChange={(value) => setPlanForm({...planForm, popular: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={planForm.description}
+                onChange={(e) => setPlanForm({...planForm, description: e.target.value})}
+                placeholder="Plan description..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateSubmit} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Create Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Plan Dialog */}
+      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Plan</DialogTitle>
+            <DialogDescription>Update plan details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Plan Name *</Label>
+                <Input
+                  value={planForm.name}
+                  onChange={(e) => setPlanForm({...planForm, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Amount (₹) *</Label>
+                <Input
+                  type="number"
+                  value={planForm.amount}
+                  onChange={(e) => setPlanForm({...planForm, amount: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>PV (Point Value) *</Label>
+                <Input
+                  type="number"
+                  value={planForm.pv}
+                  onChange={(e) => setPlanForm({...planForm, pv: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Referral Income (₹)</Label>
+                <Input
+                  type="number"
+                  value={planForm.referralIncome}
+                  onChange={(e) => setPlanForm({...planForm, referralIncome: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Daily Capping (₹)</Label>
+                <Input
+                  type="number"
+                  value={planForm.dailyCapping}
+                  onChange={(e) => setPlanForm({...planForm, dailyCapping: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Matching Income (₹)</Label>
+                <Input
+                  type="number"
+                  value={planForm.matchingIncome}
+                  onChange={(e) => setPlanForm({...planForm, matchingIncome: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={planForm.isActive} onValueChange={(value) => setPlanForm({...planForm, isActive: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Active</SelectItem>
+                    <SelectItem value="false">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Popular Plan?</Label>
+                <Select value={planForm.popular} onValueChange={(value) => setPlanForm({...planForm, popular: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={planForm.description}
+                onChange={(e) => setPlanForm({...planForm, description: e.target.value})}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSubmit} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Update Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Plan Dialog */}
+      <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Plan</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedPlan?.name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialog(false)} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Delete Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }
