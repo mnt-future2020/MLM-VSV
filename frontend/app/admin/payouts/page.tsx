@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DollarSign, CheckCircle, XCircle, Clock, Search, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,76 +13,95 @@ import {
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { axiosInstance } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
 
 type PayoutRequest = {
   id: string;
-  memberId: string;
-  memberName: string;
+  userId: string;
+  userName?: string;
   amount: number;
-  paymentMethod: string;
-  accountDetails: string;
-  date: string;
-  status: "Pending" | "Approved" | "Rejected";
+  requestedAt: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  approvedAt?: string;
+  approvedBy?: string;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
 };
 
-const pendingPayouts: PayoutRequest[] = [
-  {
-    id: "WD001",
-    memberId: "MLM-12346",
-    memberName: "Alice Johnson",
-    amount: 10000,
-    paymentMethod: "Bank Transfer",
-    accountDetails: "HDFC0001234 - 5678901234",
-    date: "2025-11-26 11:45 AM",
-    status: "Pending",
-  },
-  {
-    id: "WD002",
-    memberId: "MLM-12347",
-    memberName: "Bob Smith",
-    amount: 15000,
-    paymentMethod: "UPI",
-    accountDetails: "bob@upi",
-    date: "2025-11-26 09:30 AM",
-    status: "Pending",
-  },
-  {
-    id: "WD003",
-    memberId: "MLM-12349",
-    memberName: "David Brown",
-    amount: 7500,
-    paymentMethod: "Bank Transfer",
-    accountDetails: "SBIN0004567 - 1234567890",
-    date: "2025-11-25 04:20 PM",
-    status: "Pending",
-  },
-];
-
-const processedPayouts: PayoutRequest[] = [
-  {
-    id: "WD015",
-    memberId: "MLM-12351",
-    memberName: "Frank Miller",
-    amount: 12000,
-    paymentMethod: "UPI",
-    accountDetails: "frank@upi",
-    date: "2025-11-26 12:00 PM",
-    status: "Approved",
-  },
-  {
-    id: "WD016",
-    memberId: "MLM-12352",
-    memberName: "Grace Lee",
-    amount: 5000,
-    paymentMethod: "Bank Transfer",
-    accountDetails: "ICIC0007890 - 9876543210",
-    date: "2025-11-26 11:30 AM",
-    status: "Approved",
-  },
-];
-
 export default function PayoutManagementPage() {
-  const [selectedRequest, setSelectedRequest] = useState<PayoutRequest | null>(pendingPayouts[0]);
+  const { user } = useAuth();
+  const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
+  const [selectedRequest, setSelectedRequest] = useState<PayoutRequest | null>(null);
+
+  const fetchPayouts = async () => {
+    try {
+      const response = await axiosInstance.get('/api/admin/withdrawals', {
+        params: { status: statusFilter !== "ALL" ? statusFilter : undefined }
+      });
+      if (response.data.success) {
+        setPayouts(response.data.data);
+        if (response.data.data.length > 0) {
+          setSelectedRequest(response.data.data[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payouts:", error);
+      toast.error("Failed to fetch withdrawal requests");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      fetchPayouts();
+    }
+  }, [user, statusFilter]);
+
+  const handleApprove = async (requestId: string) => {
+    try {
+      const response = await axiosInstance.put(`/api/admin/withdrawals/${requestId}/approve`);
+      if (response.data.success) {
+        toast.success("Withdrawal approved successfully");
+        fetchPayouts();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to approve withdrawal");
+    }
+  };
+
+  const handleReject = async (requestId: string) => {
+    try {
+      const response = await axiosInstance.put(`/api/admin/withdrawals/${requestId}/reject`, {
+        reason: "Rejected by admin"
+      });
+      if (response.data.success) {
+        toast.success("Withdrawal rejected");
+        fetchPayouts();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to reject withdrawal");
+    }
+  };
+
+  const pendingPayouts = payouts.filter(p => p.status === "PENDING");
+  const approvedPayouts = payouts.filter(p => p.status === "APPROVED");
+  const rejectedPayouts = payouts.filter(p => p.status === "REJECTED");
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="full">
