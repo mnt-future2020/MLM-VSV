@@ -99,27 +99,27 @@ export default function ManageMembersPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Total Members"
-          value="1,245"
+          value={String(members.length)}
           icon={<Users className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
         />
         <StatsCard
-          label="Pending KYC"
-          value="23"
-          icon={<Clock className="w-6 h-6 text-orange-600" />}
-          gradient="bg-orange-500"
-        />
-        <StatsCard
-          label="Pending Bank Details"
-          value="18"
-          icon={<Clock className="w-6 h-6 text-yellow-600" />}
-          gradient="bg-yellow-500"
-        />
-        <StatsCard
           label="Active Members"
-          value="1,089"
+          value={String(members.filter(m => m.isActive).length)}
           icon={<CheckCircle className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
+        />
+        <StatsCard
+          label="Inactive Members"
+          value={String(members.filter(m => !m.isActive).length)}
+          icon={<XCircle className="w-6 h-6 text-red-600" />}
+          gradient="bg-red-500"
+        />
+        <StatsCard
+          label="With Plans"
+          value={String(members.filter(m => m.currentPlan).length)}
+          icon={<CheckCircle className="w-6 h-6 text-purple-600" />}
+          gradient="bg-purple-500"
         />
       </div>
 
