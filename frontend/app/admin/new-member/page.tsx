@@ -60,21 +60,28 @@ export default function NewMemberPage() {
     fetchPlans();
   }, []);
 
-  const handleSearchSponsor = async () => {
-    if (!formData.sponsorId) {
+  const handleSearchSponsor = async (sponsorIdToSearch?: string) => {
+    const idToSearch = sponsorIdToSearch || formData.sponsorId;
+    
+    if (!idToSearch) {
       toast.error("Please enter sponsor ID");
       return;
     }
 
     setSearchingSponsor(true);
     try {
-      const response = await axiosInstance.get(`/api/admin/users?search=${formData.sponsorId}`);
-      if (response.data.success && response.data.data.length > 0) {
-        const sponsor = response.data.data[0];
+      const response = await axiosInstance.post('/api/auth/lookup-referral', {
+        referralId: idToSearch
+      });
+      
+      if (response.data.success) {
+        const sponsor = response.data.data;
         setFormData({ ...formData, sponsorName: sponsor.name });
-        toast.success("Sponsor found!");
+        if (!sponsorIdToSearch) {
+          toast.success("Sponsor found!");
+        }
       } else {
-        toast.error("Sponsor not found");
+        toast.error(response.data.message || "Sponsor not found");
         setFormData({ ...formData, sponsorName: "" });
       }
     } catch (error) {
@@ -82,6 +89,13 @@ export default function NewMemberPage() {
       setFormData({ ...formData, sponsorName: "" });
     } finally {
       setSearchingSponsor(false);
+    }
+  };
+
+  // Auto-lookup sponsor when user leaves the sponsor ID field
+  const handleSponsorIdBlur = () => {
+    if (formData.sponsorId && formData.sponsorId.length >= 6) {
+      handleSearchSponsor(formData.sponsorId);
     }
   };
 
