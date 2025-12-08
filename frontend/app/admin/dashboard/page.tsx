@@ -30,7 +30,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axiosInstance.get('/api/admin/dashboard');
+        const response = await axiosInstance.get('/api/admin/reports/dashboard');
         if (response.data.success) {
           setStats(response.data.data);
         }
