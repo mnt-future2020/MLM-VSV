@@ -72,37 +72,22 @@ export default function LoginPage() {
         }
       }
 
-      // Better Auth returns user and session directly
-      if (response.data.user) {
-        // Fetch full user profile to get role (since Better Auth doesn't return it)
-        try {
-          const profileResponse = await axiosInstance.get('/api/user/profile');
-          const userRole = profileResponse.data.data?.role || 'user';
-          
-          // Update auth context with user data including role
-          login({
-            ...response.data.user,
-            role: userRole
-          });
-          
-          console.log("User role from profile:", userRole);
-          
-          // Check user role and redirect accordingly
-          if (userRole === "admin") {
-            console.log("Redirecting to admin dashboard");
-            router.push("/admin/dashboard");
-          } else {
-            console.log("Redirecting to user dashboard");
-            router.push("/dashboard");
-          }
-        } catch (profileError) {
-          console.error("Error fetching profile:", profileError);
-          // Fallback to user dashboard if profile fetch fails
-          login(response.data.user);
+      // Backend returns user and token
+      if (response.data.user && response.data.token) {
+        const userData = response.data.user;
+        const token = response.data.token;
+        
+        // Save token and user to auth context (which saves to localStorage)
+        login(userData, token);
+        
+        // Redirect based on role
+        if (userData.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
           router.push("/dashboard");
         }
       } else {
-        setError("Login failed");
+        setError("Login failed - Invalid response");
       }
     } catch (err: any) {
       setError(err?.response?.data?.message || "An error occurred. Please try again.");
