@@ -503,6 +503,25 @@ export default function ManageMembersPage() {
                 placeholder="Enter mobile number"
               />
             </div>
+            <div>
+              <Label>Current Plan</Label>
+              <Select
+                value={editForm.currentPlan}
+                onValueChange={(value) => setEditForm({...editForm, currentPlan: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Plan</SelectItem>
+                  {plans.map((plan) => (
+                    <SelectItem key={plan.id} value={plan.name}>
+                      {plan.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialog(false)} disabled={actionLoading}>
