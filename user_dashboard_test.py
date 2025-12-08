@@ -77,7 +77,7 @@ class UserDashboardTester:
         print("\n🔐 Testing User Authentication...")
         
         login_data = {
-            "email": "udhay@mntfuture.com",
+            "email": "dashtest205132@example.com",
             "password": "Admin@123"
         }
         
