@@ -25,20 +25,24 @@ export default function AdminBinaryTreePage() {
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-  // Fetch tree data
+  // Fetch tree data - for admin, we'll show their own tree for now
   useEffect(() => {
     const fetchTreeData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/api/team/tree');
+        // Admin can use user tree API to see their own tree
+        const response = await axiosInstance.get('/api/user/team/tree');
         if (response.data.success) {
           setTreeData(response.data.data);
         }
       } catch (error: any) {
         console.error('Failed to fetch tree data:', error);
-        toast.error('Failed to load binary tree', {
-          description: error.response?.data?.message || 'Please try again',
-        });
+        // Only show toast for non-auth errors
+        if (error.response?.status !== 401) {
+          toast.error('Failed to load binary tree', {
+            description: error.response?.data?.message || 'Please try again',
+          });
+        }
       } finally {
         setLoading(false);
       }
