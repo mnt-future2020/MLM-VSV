@@ -393,12 +393,35 @@ class MLMAPITester:
     def test_settings_endpoints(self):
         """Test settings endpoints"""
         # Public settings
-        success, data = self.make_request('GET', 'api/settings/public')
-        self.log_test("Public Settings", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/settings/public')
+        self.log_test("GET /api/settings/public", success and data.get('success'), response_time=response_time)
         
         # All settings (no auth required for this test)
-        success, data = self.make_request('GET', 'api/settings')
-        self.log_test("All Settings", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/settings')
+        self.log_test("GET /api/settings", success and data.get('success'), response_time=response_time)
+
+    def test_binary_tree_performance(self):
+        """Test binary tree API performance and N+1 query check"""
+        if not self.user_token:
+            self.log_test("Binary Tree Performance Check", False, "No user token")
+            return False
+            
+        # Test multiple calls to check for consistent performance (N+1 query detection)
+        times = []
+        for i in range(3):
+            success, data, response_time = self.make_request('GET', 'api/user/team/tree', token=self.user_token)
+            if success:
+                times.append(response_time)
+        
+        if times:
+            avg_time = sum(times) / len(times)
+            max_time = max(times)
+            # Check if response time is under 2 seconds and consistent (no N+1 queries)
+            performance_ok = avg_time < 2.0 and max_time < 2.5
+            self.log_test("Binary Tree Performance Check", performance_ok, 
+                         f"Avg: {avg_time:.3f}s, Max: {max_time:.3f}s")
+        else:
+            self.log_test("Binary Tree Performance Check", False, "No successful requests")
 
     def run_all_tests(self):
         """Run all API tests"""
