@@ -80,9 +80,7 @@ export default function Home() {
             className="z-50 flex flex-col justify-center items-center px-6 text-center max-w-5xl mx-auto"
           >
             <Badge variant="outline" className="gap-2 text-sm px-4 py-2 mb-6 bg-white/10 backdrop-blur-sm border-white/20 text-white">
-              <span>Transparent MLM Platform</span>
-              <span>•</span>
-              <span className="font-semibold">Binary + PV System</span>
+              <span>{heroBadge}</span>
             </Badge>
 
             <motion.h1 
