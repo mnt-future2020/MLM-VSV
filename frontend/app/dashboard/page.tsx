@@ -190,25 +190,35 @@ export default function UserDashboard() {
               <Users className="w-8 h-8 text-primary-600" />
             </div>
             <p className="text-sm font-medium text-muted-foreground mb-1">Total Team</p>
-            <p className="text-3xl font-bold text-primary-700">24</p>
+            <p className="text-3xl font-bold text-primary-700">{dashboardData?.team?.total || 0}</p>
           </div>
           
           <div className="md:col-span-2 grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl border border-border bg-card hover:border-blue-200 hover:bg-blue-50/30 transition-colors">
               <p className="text-sm text-muted-foreground mb-1">Left Team</p>
               <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold text-foreground">12</p>
+                <p className="text-2xl font-bold text-foreground">{dashboardData?.team?.left || 0}</p>
                 <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 w-1/2 rounded-full" />
+                  <div 
+                    className="h-full bg-blue-500 rounded-full" 
+                    style={{ 
+                      width: dashboardData?.team?.total ? `${(dashboardData.team.left / dashboardData.team.total) * 100}%` : '0%' 
+                    }}
+                  />
                 </div>
               </div>
             </div>
             <div className="p-4 rounded-xl border border-border bg-card hover:border-purple-200 hover:bg-purple-50/30 transition-colors">
               <p className="text-sm text-muted-foreground mb-1">Right Team</p>
               <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold text-foreground">12</p>
+                <p className="text-2xl font-bold text-foreground">{dashboardData?.team?.right || 0}</p>
                 <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-500 w-1/2 rounded-full" />
+                  <div 
+                    className="h-full bg-purple-500 rounded-full" 
+                    style={{ 
+                      width: dashboardData?.team?.total ? `${(dashboardData.team.right / dashboardData.team.total) * 100}%` : '0%' 
+                    }}
+                  />
                 </div>
               </div>
             </div>
