@@ -1,259 +1,391 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FileText, TrendingUp, Users, DollarSign, Calendar } from "lucide-react";
-import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
+import { useState } from "react";
+import { FileText, Download, Users, DollarSign, TrendingUp, Network, BarChart3, Calendar } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { axiosInstance } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
-
-interface ReportsData {
-  overview: {
-    totalUsers: number;
-    activeUsers: number;
-    totalEarnings: number;
-    totalWithdrawals: number;
-    pendingWithdrawals: number;
-    pendingWithdrawalsAmount: number;
-    recentRegistrations: number;
-  };
-  planDistribution: Record<string, number>;
-  dailyReports: Array<{
-    date: string;
-    newUsers: number;
-    topups: number;
-    payouts: number;
-    netBusiness: number;
-  }>;
-  incomeBreakdown: {
-    REFERRAL_INCOME: number;
-    MATCHING_INCOME: number;
-    LEVEL_INCOME: number;
-  };
-}
+import { cn } from "@/lib/utils";
 
 export default function AdminReportsPage() {
   const { user } = useAuth();
-  const [reportsData, setReportsData] = useState<ReportsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("users");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const response = await axiosInstance.get('/api/admin/reports/dashboard');
-        if (response.data.success) {
-          setReportsData(response.data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching reports:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const downloadReport = async (endpoint: string, format: "excel" | "pdf", filename: string) => {
+    try {
+      setLoading(true);
+      let url = `${endpoint}?format=${format}`;
+      
+      if (startDate) url += `&start_date=${startDate}`;
+      if (endDate) url += `&end_date=${endDate}`;
+      if (selectedPlan && selectedPlan !== "all") url += `&plan_id=${selectedPlan}`;
+      if (selectedStatus && selectedStatus !== "all") url += `&status=${selectedStatus}`;
 
-    if (user && user.role === 'admin') {
-      fetchReports();
+      const response = await axiosInstance.get(url, {
+        responseType: 'blob'
+      });
+
+      const blob = new Blob([response.data], {
+        type: format === "excel" 
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "application/pdf"
+      });
+
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `${filename}_${new Date().toISOString().split('T')[0]}.${format === "excel" ? "xlsx" : "pdf"}`;
+      link.click();
+      window.URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Failed to download report");
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  };
 
-  if (loading) {
-    return (
-      <PageContainer maxWidth="full">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+  const loadPreview = async (endpoint: string) => {
+    try {
+      setLoading(true);
+      let url = `${endpoint}?format=json`;
+      
+      if (startDate) url += `&start_date=${startDate}`;
+      if (endDate) url += `&end_date=${endDate}`;
+      if (selectedPlan && selectedPlan !== "all") url += `&plan_id=${selectedPlan}`;
+      if (selectedStatus && selectedStatus !== "all") url += `&status=${selectedStatus}`;
+
+      const response = await axiosInstance.get(url);
+      if (response.data.success) {
+        setReportData(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Preview error:", error);
+      setReportData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const ReportSection = ({ 
+    title, 
+    description, 
+    endpoint, 
+    icon: Icon,
+    showPlanFilter = false,
+    showStatusFilter = false
+  }: { 
+    title: string; 
+    description: string; 
+    endpoint: string; 
+    icon: any;
+    showPlanFilter?: boolean;
+    showStatusFilter?: boolean;
+  }) => (
+    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+      <div className="flex items-start gap-4 mb-6">
+        <div className="p-3 bg-primary-50 rounded-lg">
+          <Icon className="w-6 h-6 text-primary-600" />
         </div>
-      </PageContainer>
-    );
-  }
+        <div className="flex-1">
+          <h3 className="font-semibold text-lg text-foreground mb-1">{title}</h3>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+      </div>
 
-  if (!reportsData) {
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <Label className="text-sm mb-2 block">Start Date</Label>
+          <Input 
+            type="date" 
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border-border"
+          />
+        </div>
+        <div>
+          <Label className="text-sm mb-2 block">End Date</Label>
+          <Input 
+            type="date" 
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border-border"
+          />
+        </div>
+        
+        {showPlanFilter && (
+          <div>
+            <Label className="text-sm mb-2 block">Plan Filter</Label>
+            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+              <SelectTrigger className="border-border">
+                <SelectValue placeholder="Select plan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Plans</SelectItem>
+                <SelectItem value="basic">Basic</SelectItem>
+                <SelectItem value="standard">Standard</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {showStatusFilter && (
+          <div>
+            <Label className="text-sm mb-2 block">Status Filter</Label>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="border-border">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="APPROVED">Approved</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button
+          onClick={() => loadPreview(endpoint)}
+          disabled={loading}
+          className="gap-2"
+          variant="outline"
+        >
+          <FileText className="w-4 h-4" />
+          {loading ? "Loading..." : "Preview"}
+        </Button>
+        <Button
+          onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'))}
+          disabled={loading}
+          className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+        >
+          <Download className="w-4 h-4" />
+          Download Excel
+        </Button>
+        <Button
+          onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'))}
+          disabled={loading}
+          className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+        >
+          <Download className="w-4 h-4" />
+          Download PDF
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderPreviewTable = () => {
+    if (reportData.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          No data to preview. Click "Preview" button to load data.
+        </div>
+      );
+    }
+
+    const headers = Object.keys(reportData[0]);
+
     return (
-      <PageContainer maxWidth="full">
-        <div className="text-center text-muted-foreground">No data available</div>
-      </PageContainer>
+      <div className="overflow-x-auto mt-6 border border-border rounded-xl">
+        <table className="w-full">
+          <thead className="bg-muted/50 border-b border-border">
+            <tr>
+              {headers.map((header) => (
+                <th key={header} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {reportData.slice(0, 10).map((row, index) => (
+              <tr key={index} className="hover:bg-muted/30">
+                {headers.map((header) => (
+                  <td key={header} className="px-4 py-3 text-sm text-foreground">
+                    {row[header]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {reportData.length > 10 && (
+          <div className="px-4 py-3 bg-muted/30 border-t border-border text-sm text-muted-foreground text-center">
+            Showing 10 of {reportData.length} records. Download full report to see all data.
+          </div>
+        )}
+      </div>
     );
-  }
+  };
 
   return (
     <PageContainer maxWidth="full">
       <PageHeader
-        icon={<FileText className="w-6 h-6 text-white" />}
-        title="Reports"
-        subtitle="Comprehensive business analytics and reports"
+        icon={<BarChart3 className="w-6 h-6 text-white" />}
+        title="Advanced Reports"
+        subtitle="Generate and download comprehensive business reports"
         action={
-          <Button variant="outline" className="gap-2 border-border hover:bg-muted">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
-            Last 30 Days
-          </Button>
+            {startDate && endDate ? `${startDate} to ${endDate}` : "Select date range"}
+          </div>
         }
       />
 
-      {/* Top Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatsCard
-          label="Total Users"
-          value={String(reportsData.overview.totalUsers)}
-          icon={<Users className="w-6 h-6 text-blue-600" />}
-          gradient="bg-blue-500"
-          trend={{ value: `${reportsData.overview.activeUsers} active`, isPositive: true }}
-        />
-        <StatsCard
-          label="Total Earnings"
-          value={`₹${reportsData.overview.totalEarnings.toLocaleString()}`}
-          icon={<TrendingUp className="w-6 h-6 text-green-600" />}
-          gradient="bg-green-500"
-          trend={{ value: "All time", isPositive: true }}
-        />
-        <StatsCard
-          label="Total Withdrawals"
-          value={`₹${reportsData.overview.totalWithdrawals.toLocaleString()}`}
-          icon={<DollarSign className="w-6 h-6 text-purple-600" />}
-          gradient="bg-purple-500"
-          trend={{ value: "Paid out", isPositive: true }}
-        />
-        <StatsCard
-          label="Pending Withdrawals"
-          value={String(reportsData.overview.pendingWithdrawals)}
-          icon={<TrendingUp className="w-6 h-6 text-orange-600" />}
-          gradient="bg-orange-500"
-          trend={{ value: `₹${reportsData.overview.pendingWithdrawalsAmount.toLocaleString()}`, isPositive: false }}
-        />
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-8 bg-muted">
+          <TabsTrigger value="users">
+            <Users className="w-4 h-4 mr-2" />
+            User Reports
+          </TabsTrigger>
+          <TabsTrigger value="financial">
+            <DollarSign className="w-4 h-4 mr-2" />
+            Financial
+          </TabsTrigger>
+          <TabsTrigger value="team">
+            <Network className="w-4 h-4 mr-2" />
+            Team/Network
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Daily Business Report */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm mb-8">
-        <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
-          <h3 className="font-semibold text-foreground">Daily Business Report</h3>
-          <Button variant="ghost" size="sm" className="text-primary-600">Export</Button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Date</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">New Users</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Top-ups</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Payouts</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Net Business</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportsData.dailyReports.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                    No data available
-                  </td>
-                </tr>
-              ) : (
-                reportsData.dailyReports.map((row, index) => (
-                  <tr
-                    key={index}
-                    className={cn(
-                      "border-b border-border hover:bg-muted/50 transition-colors",
-                      index === reportsData.dailyReports.length - 1 && "border-0"
-                    )}
-                  >
-                    <td className="px-6 py-3 text-sm text-foreground">{row.date}</td>
-                    <td className="px-6 py-3 text-sm text-foreground">{row.newUsers}</td>
-                    <td className="px-6 py-3 text-sm text-green-600 font-medium">₹{row.topups.toLocaleString()}</td>
-                    <td className="px-6 py-3 text-sm text-red-600 font-medium">₹{row.payouts.toLocaleString()}</td>
-                    <td className="px-6 py-3 text-sm font-bold text-foreground">₹{row.netBusiness.toLocaleString()}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        {/* USER REPORTS TAB */}
+        <TabsContent value="users" className="space-y-6">
+          <ReportSection
+            title="All Members Report"
+            description="Complete list of all members with their details, plans, and wallet balance"
+            endpoint="/api/admin/reports/users/all"
+            icon={Users}
+          />
+          
+          <ReportSection
+            title="Active/Inactive Users"
+            description="Breakdown of active and inactive users in the system"
+            endpoint="/api/admin/reports/users/active-inactive"
+            icon={Users}
+          />
+          
+          <ReportSection
+            title="Users by Plan"
+            description="Get users filtered by their subscription plan"
+            endpoint="/api/admin/reports/users/by-plan"
+            icon={Users}
+            showPlanFilter={true}
+          />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Income Summary */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold text-foreground mb-6">Income Breakdown</h3>
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Referral Income</span>
-                <span className="font-medium text-foreground">₹{reportsData.incomeBreakdown.REFERRAL_INCOME.toLocaleString()}</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 w-[75%] rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Matching Income</span>
-                <span className="font-medium text-foreground">₹{reportsData.incomeBreakdown.MATCHING_INCOME.toLocaleString()}</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 w-[50%] rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Level Income</span>
-                <span className="font-medium text-foreground">₹{reportsData.incomeBreakdown.LEVEL_INCOME.toLocaleString()}</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 w-[30%] rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Level Income</span>
-                <span className="font-medium text-foreground">₹5,32,000</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 w-[45%] rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Direct Referral Bonus</span>
-                <span className="font-medium text-foreground">₹3,15,000</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 w-[30%] rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
+          {renderPreviewTable()}
+        </TabsContent>
 
-        {/* Package Distribution */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold text-foreground mb-6">Package Distribution</h3>
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Professional Plan</span>
-                <span className="font-medium text-foreground">450 Users</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500 w-[60%] rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Business Plan</span>
-                <span className="font-medium text-foreground">280 Users</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-pink-500 w-[40%] rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Starter Plan</span>
-                <span className="font-medium text-foreground">120 Users</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 w-[20%] rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* FINANCIAL REPORTS TAB */}
+        <TabsContent value="financial" className="space-y-6">
+          <ReportSection
+            title="Earnings Summary"
+            description="Complete earnings breakdown with transaction details"
+            endpoint="/api/admin/reports/financial/earnings"
+            icon={DollarSign}
+          />
+          
+          <ReportSection
+            title="Income Breakdown by Type"
+            description="Analysis of different income types (Referral, Matching, Level)"
+            endpoint="/api/admin/reports/financial/income-breakdown"
+            icon={TrendingUp}
+          />
+          
+          <ReportSection
+            title="Withdrawals Report"
+            description="Complete withdrawal/payout history with status tracking"
+            endpoint="/api/admin/reports/financial/withdrawals"
+            icon={DollarSign}
+            showStatusFilter={true}
+          />
+
+          <ReportSection
+            title="Topups Report"
+            description="History of all wallet topups and recharges"
+            endpoint="/api/admin/reports/financial/topups"
+            icon={DollarSign}
+          />
+
+          <ReportSection
+            title="Daily Business Report"
+            description="Daily breakdown of registrations, topups, payouts and net business"
+            endpoint="/api/admin/reports/financial/business"
+            icon={BarChart3}
+          />
+
+          {renderPreviewTable()}
+        </TabsContent>
+
+        {/* TEAM/NETWORK REPORTS TAB */}
+        <TabsContent value="team" className="space-y-6">
+          <ReportSection
+            title="Team Structure"
+            description="Complete team hierarchy with sponsor relationships"
+            endpoint="/api/admin/reports/team/structure"
+            icon={Network}
+          />
+          
+          <ReportSection
+            title="Downline Summary"
+            description="Direct and total downline count for all users"
+            endpoint="/api/admin/reports/team/downline"
+            icon={Network}
+          />
+          
+          <ReportSection
+            title="Binary Tree Export"
+            description="Export complete binary tree data with positions and counts"
+            endpoint="/api/admin/reports/team/binary-tree"
+            icon={Network}
+          />
+
+          {renderPreviewTable()}
+        </TabsContent>
+
+        {/* ANALYTICS REPORTS TAB */}
+        <TabsContent value="analytics" className="space-y-6">
+          <ReportSection
+            title="Daily Registrations Trend"
+            description="Track daily new user registrations over time"
+            endpoint="/api/admin/reports/analytics/registrations"
+            icon={TrendingUp}
+          />
+          
+          <ReportSection
+            title="Plan Distribution Analysis"
+            description="Analyze user distribution across different plans with revenue"
+            endpoint="/api/admin/reports/analytics/plan-distribution"
+            icon={BarChart3}
+          />
+          
+          <ReportSection
+            title="Growth Statistics"
+            description="Monthly growth trends for users and revenue"
+            endpoint="/api/admin/reports/analytics/growth"
+            icon={TrendingUp}
+          />
+
+          {renderPreviewTable()}
+        </TabsContent>
+      </Tabs>
     </PageContainer>
   );
 }
