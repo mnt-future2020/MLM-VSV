@@ -289,41 +289,41 @@ class MLMAPITester:
                                         token=self.user_token)
         self.log_test("Password Change", success and data.get('success'))
 
-    def test_admin_dashboard(self):
-        """Test admin dashboard"""
+    def test_admin_reports_dashboard(self):
+        """Test admin reports dashboard - GET /api/admin/reports/dashboard"""
         if not self.admin_token:
-            self.log_test("Admin Dashboard", False, "No admin token")
+            self.log_test("GET /api/admin/reports/dashboard", False, "No admin token")
             return False
             
-        success, data = self.make_request('GET', 'api/admin/dashboard', token=self.admin_token)
-        self.log_test("Admin Dashboard", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/admin/reports/dashboard', token=self.admin_token)
+        self.log_test("GET /api/admin/reports/dashboard", success and data.get('success'), response_time=response_time)
 
     def test_admin_users(self):
-        """Test admin get all users"""
+        """Test admin get all users - GET /api/admin/users"""
         if not self.admin_token:
-            self.log_test("Admin Users List", False, "No admin token")
+            self.log_test("GET /api/admin/users", False, "No admin token")
             return False
             
-        success, data = self.make_request('GET', 'api/admin/users', token=self.admin_token)
-        self.log_test("Admin Users List", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/admin/users', token=self.admin_token)
+        self.log_test("GET /api/admin/users", success and data.get('success'), response_time=response_time)
 
     def test_admin_withdrawals(self):
-        """Test admin get all withdrawals"""
+        """Test admin get all withdrawals - GET /api/admin/withdrawals"""
         if not self.admin_token:
-            self.log_test("Admin Withdrawals List", False, "No admin token")
+            self.log_test("GET /api/admin/withdrawals", False, "No admin token")
             return False
             
-        success, data = self.make_request('GET', 'api/admin/withdrawals', token=self.admin_token)
-        self.log_test("Admin Withdrawals List", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/admin/withdrawals', token=self.admin_token)
+        self.log_test("GET /api/admin/withdrawals", success and data.get('success'), response_time=response_time)
 
-    def test_admin_plans(self):
-        """Test admin get all plans"""
+    def test_admin_topups(self):
+        """Test admin get topups - GET /api/admin/topups"""
         if not self.admin_token:
-            self.log_test("Admin Plans List", False, "No admin token")
+            self.log_test("GET /api/admin/topups", False, "No admin token")
             return False
             
-        success, data = self.make_request('GET', 'api/admin/plans', token=self.admin_token)
-        self.log_test("Admin Plans List", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/admin/topups', token=self.admin_token)
+        self.log_test("GET /api/admin/topups", success and data.get('success'), response_time=response_time)
 
     def test_user_status_update(self):
         """Test admin update user status"""
