@@ -184,29 +184,23 @@ export default function NewMemberPage() {
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Personal Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-1">
+            <div>
               <Label required>Full Name</Label>
               <Input
                 placeholder="Enter full name"
                 value={formData.fullName}
                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                required
               />
             </div>
             <div>
-              <Label required>Gender</Label>
-              <Select
-                value={formData.gender}
-                onValueChange={(value) => setFormData({...formData, gender: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label required>Username</Label>
+              <Input
+                placeholder="Enter username (unique)"
+                value={formData.username}
+                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                required
+              />
             </div>
             <div>
               <Label required>Mobile Number</Label>
@@ -215,6 +209,7 @@ export default function NewMemberPage() {
                 placeholder="Enter mobile number"
                 value={formData.mobile}
                 onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                required
               />
             </div>
             <div>
@@ -224,40 +219,33 @@ export default function NewMemberPage() {
                 placeholder="Enter email address"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
+                required
               />
             </div>
-            <div className="md:col-span-2">
+            <div>
               <Label required>Password</Label>
               <Input
                 type="password"
-                placeholder="Create a password"
+                placeholder="Create a password (min 6 characters)"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label required>Confirm Password</Label>
+              <Input
+                type="password"
+                placeholder="Confirm password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                required
               />
             </div>
           </div>
         </div>
 
-        {/* Bank Information */}
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Bank Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label required>Account Number</Label>
-              <Input
-                placeholder="Enter account number"
-                value={formData.accountNumber}
-                onChange={(e) => setFormData({...formData, accountNumber: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label required>IFSC Code</Label>
-              <Input
-                placeholder="Enter IFSC code"
-                value={formData.ifscCode}
-                onChange={(e) => setFormData({...formData, ifscCode: e.target.value})}
-              />
-            </div>
+        {/* Remove Bank Information section as it's not required for registration */}
             <div>
               <Label required>Bank Name</Label>
               <Input
