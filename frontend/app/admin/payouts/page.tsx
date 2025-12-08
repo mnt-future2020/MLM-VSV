@@ -244,12 +244,12 @@ export default function PayoutManagementPage() {
               {/* Member Info */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground mb-1">Member Name:</p>
-                  <p className="font-medium text-foreground">{selectedRequest.memberName}</p>
+                  <p className="text-muted-foreground mb-1">User Name:</p>
+                  <p className="font-medium text-foreground">{selectedRequest.userName || 'N/A'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-muted-foreground mb-1">Member ID:</p>
-                  <p className="font-medium text-foreground">{selectedRequest.memberId}</p>
+                  <p className="text-muted-foreground mb-1">User ID:</p>
+                  <p className="font-medium text-foreground">{selectedRequest.userId}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground mb-1">Request ID:</p>
@@ -257,7 +257,7 @@ export default function PayoutManagementPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground mb-1">Request Date:</p>
-                  <p className="font-medium text-foreground">{selectedRequest.date}</p>
+                  <p className="font-medium text-foreground">{new Date(selectedRequest.requestedAt).toLocaleDateString()}</p>
                 </div>
               </div>
 
@@ -265,19 +265,31 @@ export default function PayoutManagementPage() {
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center shadow-lg">
                 <p className="text-white/80 text-sm mb-1">Requested Amount</p>
                 <p className="text-4xl font-extrabold">₹{selectedRequest.amount.toLocaleString()}</p>
-                <p className="text-white/80 text-xs mt-2">Available Balance: ₹1,500</p>
               </div>
 
-              {/* Payment Details */}
+              {/* Status Info */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Payment Method:</span>
-                  <span className="font-medium text-foreground">{selectedRequest.paymentMethod}</span>
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className={cn(
+                    "font-medium px-2 py-1 rounded text-xs",
+                    selectedRequest.status === "PENDING" && "bg-yellow-100 text-yellow-700",
+                    selectedRequest.status === "APPROVED" && "bg-green-100 text-green-700",
+                    selectedRequest.status === "REJECTED" && "bg-red-100 text-red-700"
+                  )}>{selectedRequest.status}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Account Details:</span>
-                  <span className="font-mono text-foreground text-right">{selectedRequest.accountDetails}</span>
-                </div>
+                {selectedRequest.approvedAt && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Approved At:</span>
+                    <span className="font-medium text-foreground">{new Date(selectedRequest.approvedAt).toLocaleString()}</span>
+                  </div>
+                )}
+                {selectedRequest.rejectedAt && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Rejected At:</span>
+                    <span className="font-medium text-foreground">{new Date(selectedRequest.rejectedAt).toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Bank Name:</span>
                   <span className="font-medium text-foreground">Example Bank</span>
