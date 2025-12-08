@@ -438,50 +438,189 @@ export default function ManageMembersPage() {
         )}
       </div>
 
-      {/* View Member Dialog */}
+      {/* View Member Dialog - Enhanced */}
       <Dialog open={viewDialog} onOpenChange={setViewDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Member Details</DialogTitle>
-            <DialogDescription>Complete information about the member</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Member Complete Details
+            </DialogTitle>
+            <DialogDescription>Comprehensive member information</DialogDescription>
           </DialogHeader>
-          {selectedMember && (
+          
+          {viewLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+            </div>
+          ) : viewMemberDetails ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Name</Label>
-                  <p className="font-medium">{selectedMember.name}</p>
+              {/* Basic Info */}
+              <div className="bg-muted/30 rounded-xl p-4">
+                <h3 className="font-semibold text-foreground mb-3">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Name</Label>
+                    <p className="text-sm font-medium">{viewMemberDetails.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Username</Label>
+                    <p className="text-sm font-medium">{viewMemberDetails.username}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Referral ID</Label>
+                    <p className="text-sm font-medium text-primary-600">{viewMemberDetails.referralId}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Status</Label>
+                    <span className={cn(
+                      "inline-block px-2 py-1 rounded-full text-xs font-medium",
+                      viewMemberDetails.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    )}>
+                      {viewMemberDetails.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Referral ID</Label>
-                  <p className="font-medium">{selectedMember.referralId}</p>
+              </div>
+
+              {/* Contact Info */}
+              <div className="bg-muted/30 rounded-xl p-4">
+                <h3 className="font-semibold text-foreground mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Email</Label>
+                    <p className="text-sm font-medium">{viewMemberDetails.email}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Mobile</Label>
+                    <p className="text-sm font-medium">{viewMemberDetails.mobile}</p>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Email</Label>
-                  <p className="font-medium">{selectedMember.email}</p>
+              </div>
+
+              {/* Sponsor Info */}
+              {viewMemberDetails.sponsor && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-blue-900 mb-3">Sponsor Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-blue-700">Sponsor Name</Label>
+                      <p className="text-sm font-medium text-blue-900">{viewMemberDetails.sponsor.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-blue-700">Sponsor ID</Label>
+                      <p className="text-sm font-medium text-blue-900">{viewMemberDetails.sponsor.referralId}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Mobile</Label>
-                  <p className="font-medium">{selectedMember.mobile || 'N/A'}</p>
+              )}
+
+              {/* Plan Info */}
+              {viewMemberDetails.currentPlan && (
+                <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-primary-900 mb-3">Current Plan</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-primary-700">Plan Name</Label>
+                      <p className="text-sm font-medium text-primary-900">{viewMemberDetails.currentPlan.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-primary-700">Amount</Label>
+                      <p className="text-sm font-medium text-primary-900">₹{viewMemberDetails.currentPlan.amount}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-primary-700">PV Value</Label>
+                      <p className="text-sm font-medium text-primary-900">{viewMemberDetails.currentPlan.pv} PV</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-primary-700">Daily Capping</Label>
+                      <p className="text-sm font-medium text-primary-900">₹{viewMemberDetails.currentPlan.dailyCapping}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Current Plan</Label>
-                  <p className="font-medium">{selectedMember.currentPlan || 'No Plan'}</p>
+              )}
+
+              {/* Wallet Info */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <h3 className="font-semibold text-green-900 mb-3">Wallet Details</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs text-green-700">Balance</Label>
+                    <p className="text-lg font-bold text-green-900">₹{viewMemberDetails.wallet.balance}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-green-700">Total Earnings</Label>
+                    <p className="text-lg font-bold text-green-900">₹{viewMemberDetails.wallet.totalEarnings}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-green-700">Withdrawals</Label>
+                    <p className="text-lg font-bold text-green-900">₹{viewMemberDetails.wallet.totalWithdrawals}</p>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Status</Label>
-                  <p className="font-medium">{selectedMember.isActive ? 'Active' : 'Inactive'}</p>
+              </div>
+
+              {/* PV Stats */}
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                <h3 className="font-semibold text-purple-900 mb-3">PV Statistics</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-purple-700">Left PV</Label>
+                    <p className="text-lg font-bold text-purple-900">{viewMemberDetails.pv.leftPV}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-purple-700">Right PV</Label>
+                    <p className="text-lg font-bold text-purple-900">{viewMemberDetails.pv.rightPV}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-purple-700">Total PV (Lifetime)</Label>
+                    <p className="text-lg font-bold text-purple-900">{viewMemberDetails.pv.totalPV}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-purple-700">Daily PV Used</Label>
+                    <p className="text-lg font-bold text-purple-900">{viewMemberDetails.pv.dailyPVUsed}</p>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Joined Date</Label>
-                  <p className="font-medium">{new Date(selectedMember.joinedAt).toLocaleDateString()}</p>
+              </div>
+
+              {/* Team Stats */}
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                <h3 className="font-semibold text-orange-900 mb-3">Team Statistics</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs text-orange-700">Total Team</Label>
+                    <p className="text-lg font-bold text-orange-900">{viewMemberDetails.team.total}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-orange-700">Left Team</Label>
+                    <p className="text-lg font-bold text-orange-900">{viewMemberDetails.team.left}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-orange-700">Right Team</Label>
+                    <p className="text-lg font-bold text-orange-900">{viewMemberDetails.team.right}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activity Dates */}
+              <div className="bg-muted/30 rounded-xl p-4">
+                <h3 className="font-semibold text-foreground mb-3">Activity Timeline</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Joined</Label>
+                    <p className="text-sm font-medium">{new Date(viewMemberDetails.joinedAt).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Last Active</Label>
+                    <p className="text-sm font-medium">{new Date(viewMemberDetails.lastActive).toLocaleString('en-IN')}</p>
+                  </div>
                 </div>
               </div>
             </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              Failed to load member details
+            </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDialog(false)}>Close</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
