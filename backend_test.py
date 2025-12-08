@@ -287,34 +287,34 @@ class MLMAPITester:
         self.log_test("GET /api/withdrawal/history", success and data.get('success'), response_time=response_time)
 
     def test_profile_update(self):
-        """Test profile update"""
+        """Test profile update - PUT /api/user/profile"""
         if not self.user_token:
-            self.log_test("Profile Update", False, "No user token")
+            self.log_test("PUT /api/user/profile", False, "No user token")
             return False
             
         update_data = {
-            "name": "Updated Test User",
+            "name": "Updated API Test User",
             "mobile": "9876543210"
         }
         
-        success, data = self.make_request('PUT', 'api/user/profile', update_data, 
+        success, data, response_time = self.make_request('PUT', 'api/user/profile', update_data, 
                                         token=self.user_token)
-        self.log_test("Profile Update", success and data.get('success'))
+        self.log_test("PUT /api/user/profile", success and data.get('success'), response_time=response_time)
 
     def test_password_change(self):
-        """Test password change"""
+        """Test password change - POST /api/user/change-password"""
         if not self.user_token:
-            self.log_test("Password Change", False, "No user token")
+            self.log_test("POST /api/user/change-password", False, "No user token")
             return False
             
         password_data = {
-            "oldPassword": "Test@123",
+            "oldPassword": "123456",  # Use the actual user password
             "newPassword": "NewTest@123"
         }
         
-        success, data = self.make_request('POST', 'api/user/change-password', password_data, 
+        success, data, response_time = self.make_request('POST', 'api/user/change-password', password_data, 
                                         token=self.user_token)
-        self.log_test("Password Change", success and data.get('success'))
+        self.log_test("POST /api/user/change-password", success and data.get('success'), response_time=response_time)
 
     def test_admin_reports_dashboard(self):
         """Test admin reports dashboard - GET /api/admin/reports/dashboard"""
