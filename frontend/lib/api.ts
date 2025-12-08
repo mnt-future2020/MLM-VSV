@@ -1,10 +1,7 @@
 import axios from 'axios';
 
-// In preview environment, backend is on different port
-// Check if we're in browser and use window location, otherwise use env
-const API_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-  ? `${window.location.protocol}//${window.location.hostname}` 
-  : 'http://localhost:8001';
+// Use environment variable if available, otherwise localhost
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
 // Create axios instance with default config
 export const axiosInstance = axios.create({
