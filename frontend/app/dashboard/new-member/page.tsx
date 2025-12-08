@@ -145,9 +145,11 @@ export default function NewMemberPage() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary-600 transition-colors"
+                  onClick={handleSearchSponsor}
+                  disabled={searchingSponsor}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary-600 transition-colors disabled:opacity-50"
                 >
-                  <Search className="w-4 h-4" />
+                  {searchingSponsor ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 </button>
               </div>
             </div>
