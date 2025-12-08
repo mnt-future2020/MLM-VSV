@@ -102,7 +102,7 @@ export default function Home() {
             </motion.p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-8">
-              {slides[currentSlide].highlights.map((highlight, index) => (
+              {slides[currentSlide]?.highlights?.map((highlight: string, index: number) => (
                 <div key={index} className="flex items-center gap-2 text-white/90 bg-white/5 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
                   <Check className="w-4 h-4 text-primary-400" />
                   <span className="text-sm">{highlight}</span>
