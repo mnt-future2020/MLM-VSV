@@ -159,22 +159,22 @@ class MLMAPITester:
             return False
 
     def test_user_profile(self):
-        """Test get user profile"""
+        """Test get user profile - GET /api/user/profile"""
         if not self.user_token:
-            self.log_test("User Profile", False, "No user token")
+            self.log_test("GET /api/user/profile", False, "No user token")
             return False
             
-        success, data = self.make_request('GET', 'api/user/profile', token=self.user_token)
-        self.log_test("User Profile", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/user/profile', token=self.user_token)
+        self.log_test("GET /api/user/profile", success and data.get('success'), response_time=response_time)
 
     def test_user_dashboard(self):
-        """Test user dashboard"""
+        """Test user dashboard - GET /api/user/dashboard"""
         if not self.user_token:
-            self.log_test("User Dashboard", False, "No user token")
+            self.log_test("GET /api/user/dashboard", False, "No user token")
             return False
             
-        success, data = self.make_request('GET', 'api/user/dashboard', token=self.user_token)
-        self.log_test("User Dashboard", success and data.get('success'))
+        success, data, response_time = self.make_request('GET', 'api/user/dashboard', token=self.user_token)
+        self.log_test("GET /api/user/dashboard", success and data.get('success'), response_time=response_time)
 
     def test_plan_activation(self):
         """Test plan activation"""
