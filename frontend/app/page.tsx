@@ -7,19 +7,40 @@ import { ImagesSlider } from "@/components/ui/images-slider";
 import { motion } from "framer-motion";
 import { ArrowRight, Users, TrendingUp, Shield, Wallet, Network, BarChart3, Check } from "lucide-react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
+import { axiosInstance } from "@/lib/api";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [settings, setSettings] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const heroImages = [
+  // Fetch public settings from backend
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axiosInstance.get("/api/settings/public");
+        if (response.data.success) {
+          setSettings(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // Default fallback data
+  const heroImages = settings?.heroSlides?.map((slide: any) => slide.image) || [
     "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2074&auto=format&fit=crop",
   ];
 
-  const slides = [
+  const slides = settings?.heroSlides || [
     {
       headline: "Build Your Network. Unlock Unlimited Income.",
       subHeadline: "Join VSV Unite Marketing and start earning through our transparent PV-based binary model. Grow your left & right teams and watch your income multiply.",
@@ -42,6 +63,8 @@ export default function Home() {
       ctaSecondary: "Learn More"
     }
   ];
+
+  const heroBadge = settings?.heroBadge || "Transparent MLM Platform • Binary + PV System";
 
   return (
     <div className="min-h-screen bg-background">
