@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, TrendingUp, DollarSign, LayoutDashboard, AlertCircle } from "lucide-react";
+import { Users, TrendingUp, DollarSign, LayoutDashboard, AlertCircle, Package } from "lucide-react";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { useAuth } from "@/contexts/auth-context";
 import { axiosInstance } from "@/lib/api";
