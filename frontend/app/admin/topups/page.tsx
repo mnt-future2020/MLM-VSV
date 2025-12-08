@@ -343,27 +343,35 @@ export default function ManageTopupsPage() {
               </tr>
             </thead>
             <tbody>
-              {approvedTopups.map((topup, index) => (
-                <tr
-                  key={topup.id}
-                  className={cn(
-                    "border-b border-border hover:bg-muted/50 transition-colors",
-                    index === approvedTopups.length - 1 && "border-0"
-                  )}
-                >
-                  <td className="px-6 py-3 text-sm font-medium text-foreground">{topup.id}</td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{topup.memberId}</td>
-                  <td className="px-6 py-3 text-sm text-foreground">{topup.memberName}</td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{topup.package}</td>
-                  <td className="px-6 py-3 text-sm font-semibold text-foreground">₹{topup.amount.toLocaleString()}</td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{topup.date}</td>
-                  <td className="px-6 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                      Approved
-                    </span>
+              {approvedTopups.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
+                    No approved topups yet
                   </td>
                 </tr>
-              ))}
+              ) : (
+                approvedTopups.map((topup, index) => (
+                  <tr
+                    key={topup.id}
+                    className={cn(
+                      "border-b border-border hover:bg-muted/50 transition-colors",
+                      index === approvedTopups.length - 1 && "border-0"
+                    )}
+                  >
+                    <td className="px-6 py-3 text-sm font-medium text-foreground">{topup.id}</td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">{topup.userId}</td>
+                    <td className="px-6 py-3 text-sm text-foreground">{topup.userName || 'N/A'}</td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">{topup.planName || 'N/A'}</td>
+                    <td className="px-6 py-3 text-sm font-semibold text-foreground">₹{topup.amount.toLocaleString()}</td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">{topup.approvedAt ? new Date(topup.approvedAt).toLocaleDateString() : 'N/A'}</td>
+                    <td className="px-6 py-3">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                        Approved
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
