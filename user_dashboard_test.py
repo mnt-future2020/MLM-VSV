@@ -89,7 +89,7 @@ class UserDashboardTester:
             self.log_test("User Login (Test User)", True, f"User ID: {self.user_data.get('id', 'N/A')}")
             return True
         else:
-            self.log_test("User Login (udhay@mntfuture.com)", False, f"Response: {data}")
+            self.log_test("User Login (Test User)", False, f"Response: {data}")
             return False
 
     def test_main_dashboard(self):
