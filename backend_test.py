@@ -514,7 +514,8 @@ class MLMAPITester:
         # Success criteria from review request
         print(f"\n📋 Success Criteria Check:")
         print(f"   - All APIs return 200/201 status: {'✅' if success_rate > 85 else '❌'}")
-        print(f"   - Response times < 2 seconds: {'✅' if max(self.response_times) < 2.0 if self.response_times else False else '❌'}")
+        response_time_ok = max(self.response_times) < 2.0 if self.response_times else False
+        print(f"   - Response times < 2 seconds: {'✅' if response_time_ok else '❌'}")
         print(f"   - No N+1 query patterns: {'✅' if 'Binary Tree Performance Check' not in [f.split(':')[0] for f in self.failed_tests] else '❌'}")
         
         return success_rate >= 80  # Consider 80%+ success rate as passing
