@@ -149,12 +149,36 @@ Frontend will run on: http://localhost:3000
 - `GET /api/auth/get-session` - Get current session
 - `POST /api/auth/sign-out` - Logout
 
-### User
-- `GET /api/user/profile` - Get user profile
-- `GET /api/user/referral/{referral_id}` - Get referral info
+### User (Requires JWT Token)
+- `GET /api/user/profile` - Get user profile with wallet & team info
+- `PUT /api/user/profile` - Update user profile
+- `GET /api/user/dashboard` - Get dashboard statistics
+- `GET /api/user/team/tree` - Get binary team tree
+- `GET /api/user/team/list` - Get team members list
+- `GET /api/user/referral/{referral_id}` - Get referral info (public)
 
 ### Plans
-- `GET /api/plans` - Get all active plans
+- `GET /api/plans` - Get all active plans (public)
+- `POST /api/plans/activate` - Activate plan (requires auth)
+
+### Wallet & Transactions (Requires JWT Token)
+- `GET /api/wallet/balance` - Get wallet balance
+- `GET /api/wallet/transactions` - Get transaction history
+
+### Withdrawal (Requires JWT Token)
+- `POST /api/withdrawal/request` - Create withdrawal request
+- `GET /api/withdrawal/history` - Get withdrawal history
+
+### Admin (Requires Admin JWT Token)
+- `GET /api/admin/dashboard` - Get admin dashboard stats
+- `GET /api/admin/users` - Get all users with search
+- `PUT /api/admin/users/{user_id}/status` - Activate/deactivate user
+- `GET /api/admin/withdrawals` - Get all withdrawal requests
+- `PUT /api/admin/withdrawals/{id}/approve` - Approve withdrawal
+- `PUT /api/admin/withdrawals/{id}/reject` - Reject withdrawal
+- `GET /api/admin/plans` - Get all plans
+- `POST /api/admin/plans` - Create new plan
+- `PUT /api/admin/plans/{plan_id}` - Update plan
 
 ### Settings
 - `GET /api/settings/public` - Get public settings
