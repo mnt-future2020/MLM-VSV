@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// Backend URL - uses empty string to make relative API calls
-// This will work with Kubernetes ingress that routes /api/* to backend
-const API_URL = '';
+// In preview environment, backend is on different port
+// Check if we're in browser and use window location, otherwise use env
+const API_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  ? `${window.location.protocol}//${window.location.hostname}` 
+  : 'http://localhost:8001';
 
 // Create axios instance with default config
 export const axiosInstance = axios.create({
