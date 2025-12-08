@@ -245,47 +245,29 @@ export default function NewMemberPage() {
           </div>
         </div>
 
-        {/* Remove Bank Information section as it's not required for registration */}
-            <div>
-              <Label required>Bank Name</Label>
-              <Input
-                placeholder="Enter bank name"
-                value={formData.bankName}
-                onChange={(e) => setFormData({...formData, bankName: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label required>Branch Name</Label>
-              <Input
-                placeholder="Enter branch name"
-                value={formData.branchName}
-                onChange={(e) => setFormData({...formData, branchName: e.target.value})}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Label required>PAN Number</Label>
-              <Input
-                placeholder="Enter PAN number"
-                value={formData.panNumber}
-                onChange={(e) => setFormData({...formData, panNumber: e.target.value})}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <Button
             type="submit"
-            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 text-lg shadow-lg shadow-primary-500/20"
+            disabled={loading}
+            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 text-lg shadow-lg shadow-primary-500/20 disabled:opacity-50"
           >
-            Register Member
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Registering...
+              </>
+            ) : (
+              "Register Member"
+            )}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={handleReset}
-            className="px-8 py-6 text-lg border-border hover:bg-muted"
+            disabled={loading}
+            className="px-8 py-6 text-lg border-border hover:bg-muted disabled:opacity-50"
           >
             Reset
           </Button>
