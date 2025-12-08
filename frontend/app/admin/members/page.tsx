@@ -349,14 +349,45 @@ export default function ManageMembersPage() {
                     <td className="px-6 py-4">{getStatusBadge(member.isActive)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+                        <button 
+                          onClick={() => handleView(member)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                          title="View Details"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Edit Member">
+                        <button 
+                          onClick={() => handleEdit(member)}
+                          className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" 
+                          title="Edit Member"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Toggle Status">
+                        <button 
+                          onClick={() => handleResetPassword(member)}
+                          className="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" 
+                          title="Reset Password"
+                        >
+                          <Key className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleToggleStatus(member)}
+                          className={cn(
+                            "p-1.5 rounded-lg transition-colors",
+                            member.isActive 
+                              ? "text-red-600 hover:bg-red-50" 
+                              : "text-green-600 hover:bg-green-50"
+                          )}
+                          title={member.isActive ? "Deactivate" : "Activate"}
+                        >
                           {member.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(member)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                          title="Delete Member"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
