@@ -113,8 +113,16 @@ export default function BinaryTreePage() {
   const { user } = useAuth();
   const [treeData, setTreeData] = useState<TreeNode | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before making API calls
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+
     const fetchTree = async () => {
       try {
         const response = await axiosInstance.get('/api/user/team/tree');
@@ -135,8 +143,10 @@ export default function BinaryTreePage() {
 
     if (user) {
       fetchTree();
+    } else {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, mounted]);
 
   if (loading) {
     return (
