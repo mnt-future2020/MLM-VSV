@@ -660,14 +660,14 @@ export default function ManageMembersPage() {
             <div>
               <Label>Current Plan</Label>
               <Select
-                value={editForm.currentPlan}
-                onValueChange={(value) => setEditForm({...editForm, currentPlan: value})}
+                value={editForm.currentPlan || "none"}
+                onValueChange={(value) => setEditForm({...editForm, currentPlan: value === "none" ? "" : value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Plan</SelectItem>
+                  <SelectItem value="none">No Plan</SelectItem>
                   {plans.map((plan) => (
                     <SelectItem key={plan.id} value={plan.name}>
                       {plan.name}
