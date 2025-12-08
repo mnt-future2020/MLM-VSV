@@ -295,31 +295,26 @@ export default function ManageTopupsPage() {
                     selectedRequest.status === "REJECTED" && "bg-red-100 text-red-700"
                   )}>{selectedRequest.status}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Transaction ID:</span>
-                  <span className="font-mono text-foreground">{selectedRequest.txnId}</span>
-                </div>
-                <div className="flex justify-between text-sm items-center">
-                  <span className="text-muted-foreground">Proof Attached:</span>
-                  {selectedRequest.proofUrl ? (
-                    <button className="text-primary-600 hover:underline flex items-center gap-1 text-xs">
-                      <FileText className="w-3 h-3" /> View Receipt
-                    </button>
-                  ) : (
-                    <span className="text-muted-foreground italic text-xs">No proof attached</span>
-                  )}
-                </div>
               </div>
 
               {/* Actions */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <Button className="bg-green-600 hover:bg-green-700 text-white shadow-md">
-                  <CheckCircle className="w-4 h-4 mr-2" /> Approve Topup
-                </Button>
-                <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white shadow-md">
-                  <XCircle className="w-4 h-4 mr-2" /> Reject Request
-                </Button>
-              </div>
+              {selectedRequest.status === "PENDING" && (
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <Button 
+                    onClick={() => handleApprove(selectedRequest.id)}
+                    className="bg-green-600 hover:bg-green-700 text-white shadow-md"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" /> Approve Topup
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => handleReject(selectedRequest.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white shadow-md"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" /> Reject Request
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
