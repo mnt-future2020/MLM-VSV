@@ -68,6 +68,7 @@ export default function AdminPlansPage() {
 
   const fetchPlans = async () => {
     try {
+      setLoading(true);
       const response = await axiosInstance.get('/api/admin/plans');
       if (response.data.success) {
         setPlans(response.data.data);
@@ -84,6 +85,127 @@ export default function AdminPlansPage() {
       fetchPlans();
     }
   }, [user]);
+
+  const resetForm = () => {
+    setPlanForm({
+      name: "",
+      amount: "",
+      pv: "",
+      referralIncome: "",
+      dailyCapping: "",
+      matchingIncome: "",
+      description: "",
+      isActive: "true",
+      popular: "false"
+    });
+  };
+
+  const handleCreate = () => {
+    resetForm();
+    setCreateDialog(true);
+  };
+
+  const handleCreateSubmit = async () => {
+    // Validation
+    if (!planForm.name || !planForm.amount || !planForm.pv) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.post('/api/admin/plans', {
+        name: planForm.name,
+        amount: Number(planForm.amount),
+        pv: Number(planForm.pv),
+        referralIncome: Number(planForm.referralIncome),
+        dailyCapping: Number(planForm.dailyCapping),
+        matchingIncome: Number(planForm.matchingIncome),
+        description: planForm.description,
+        isActive: planForm.isActive === "true",
+        popular: planForm.popular === "true"
+      });
+
+      if (response.data.success) {
+        toast.success("Plan created successfully");
+        setCreateDialog(false);
+        fetchPlans();
+        resetForm();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to create plan");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEdit = (plan: Plan) => {
+    setSelectedPlan(plan);
+    setPlanForm({
+      name: plan.name,
+      amount: String(plan.amount),
+      pv: String(plan.pv),
+      referralIncome: String(plan.referralIncome),
+      dailyCapping: String(plan.dailyCapping),
+      matchingIncome: String(plan.matchingIncome),
+      description: plan.description,
+      isActive: String(plan.isActive),
+      popular: String(plan.popular || false)
+    });
+    setEditDialog(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedPlan) return;
+
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.put(`/api/admin/plans/${selectedPlan.id}`, {
+        name: planForm.name,
+        amount: Number(planForm.amount),
+        pv: Number(planForm.pv),
+        referralIncome: Number(planForm.referralIncome),
+        dailyCapping: Number(planForm.dailyCapping),
+        matchingIncome: Number(planForm.matchingIncome),
+        description: planForm.description,
+        isActive: planForm.isActive === "true",
+        popular: planForm.popular === "true"
+      });
+
+      if (response.data.success) {
+        toast.success("Plan updated successfully");
+        setEditDialog(false);
+        fetchPlans();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update plan");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = (plan: Plan) => {
+    setSelectedPlan(plan);
+    setDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedPlan) return;
+
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.delete(`/api/admin/plans/${selectedPlan.id}`);
+      if (response.data.success) {
+        toast.success("Plan deleted successfully");
+        setDeleteDialog(false);
+        fetchPlans();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete plan");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   if (loading) {
     return (
