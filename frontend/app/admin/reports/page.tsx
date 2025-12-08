@@ -1,11 +1,80 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { FileText, TrendingUp, Users, DollarSign, Calendar } from "lucide-react";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { axiosInstance } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+
+interface ReportsData {
+  overview: {
+    totalUsers: number;
+    activeUsers: number;
+    totalEarnings: number;
+    totalWithdrawals: number;
+    pendingWithdrawals: number;
+    pendingWithdrawalsAmount: number;
+    recentRegistrations: number;
+  };
+  planDistribution: Record<string, number>;
+  dailyReports: Array<{
+    date: string;
+    newUsers: number;
+    topups: number;
+    payouts: number;
+    netBusiness: number;
+  }>;
+  incomeBreakdown: {
+    REFERRAL_INCOME: number;
+    MATCHING_INCOME: number;
+    LEVEL_INCOME: number;
+  };
+}
 
 export default function AdminReportsPage() {
+  const { user } = useAuth();
+  const [reportsData, setReportsData] = useState<ReportsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await axiosInstance.get('/api/admin/reports/dashboard');
+        if (response.data.success) {
+          setReportsData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && user.role === 'admin') {
+      fetchReports();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (!reportsData) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="text-center text-muted-foreground">No data available</div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer maxWidth="full">
       <PageHeader
