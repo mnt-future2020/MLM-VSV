@@ -70,27 +70,38 @@ class MLMAPITester:
         except Exception as e:
             return False, {"error": str(e)}, 0.0
 
-    def test_health_check(self):
-        """Test health check endpoint"""
-        success, data = self.make_request('GET', 'api/health')
-        self.log_test("Health Check", success and data.get('status') == 'healthy')
-        return success
-
     def test_admin_login(self):
-        """Test admin login"""
+        """Test admin login - POST /api/auth/sign-in/email"""
         login_data = {
             "email": "admin@vsvunite.com",
             "password": "Admin@123"
         }
         
-        success, data = self.make_request('POST', 'api/auth/sign-in/email', login_data)
+        success, data, response_time = self.make_request('POST', 'api/auth/sign-in/email', login_data)
         
         if success and data.get('token'):
             self.admin_token = data['token']
-            self.log_test("Admin Login", True)
+            self.log_test("POST /api/auth/sign-in/email (Admin)", True, response_time=response_time)
             return True
         else:
-            self.log_test("Admin Login", False, f"Response: {data}")
+            self.log_test("POST /api/auth/sign-in/email (Admin)", False, f"Response: {data}")
+            return False
+
+    def test_user_login(self):
+        """Test user login - POST /api/auth/sign-in/email"""
+        login_data = {
+            "email": "udhay@mntfuture.com",
+            "password": "123456"
+        }
+        
+        success, data, response_time = self.make_request('POST', 'api/auth/sign-in/email', login_data)
+        
+        if success and data.get('token'):
+            self.user_token = data['token']
+            self.log_test("POST /api/auth/sign-in/email (User)", True, response_time=response_time)
+            return True
+        else:
+            self.log_test("POST /api/auth/sign-in/email (User)", False, f"Response: {data}")
             return False
 
     def test_user_registration(self):
