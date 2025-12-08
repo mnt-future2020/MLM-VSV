@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, Search, Filter, MoreVertical, Edit, Trash2, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,75 +13,51 @@ import {
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { axiosInstance } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
 
 type Member = {
   id: string;
   name: string;
   email: string;
-  contact: string;
-  package: string;
-  kycStatus: "Approved" | "Pending" | "Rejected";
-  bankStatus: "Approved" | "Pending" | "Rejected";
-  status: "Active" | "Inactive";
+  mobile: string;
+  referralId: string;
+  currentPlan: string | null;
+  isActive: boolean;
+  joinedAt: string;
+  sponsorId?: string;
 };
 
-const members: Member[] = [
-  {
-    id: "MLM-12345",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    contact: "+1 234 567 8900",
-    package: "Professional",
-    kycStatus: "Approved",
-    bankStatus: "Approved",
-    status: "Active",
-  },
-  {
-    id: "MLM-12346",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    contact: "+1 234 567 8901",
-    package: "Professional",
-    kycStatus: "Pending",
-    bankStatus: "Pending",
-    status: "Active",
-  },
-  {
-    id: "MLM-12347",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    contact: "+1 234 567 8902",
-    package: "Business",
-    kycStatus: "Approved",
-    bankStatus: "Pending",
-    status: "Active",
-  },
-  {
-    id: "MLM-12348",
-    name: "Carol White",
-    email: "carol@example.com",
-    contact: "+1 234 567 8903",
-    package: "Starter",
-    kycStatus: "Rejected",
-    bankStatus: "Approved",
-    status: "Inactive",
-  },
-  {
-    id: "MLM-12349",
-    name: "David Brown",
-    email: "david@example.com",
-    contact: "+1 234 567 8904",
-    package: "Professional",
-    kycStatus: "Pending",
-    bankStatus: "Approved",
-    status: "Active",
-  },
-];
-
 export default function ManageMembersPage() {
+  const { user } = useAuth();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
-  const [kycFilter, setKycFilter] = useState("All KYC Status");
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await axiosInstance.get('/api/admin/users', {
+          params: {
+            search: searchTerm || undefined,
+            limit: 100
+          }
+        });
+        if (response.data.success) {
+          setMembers(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && user.role === 'admin') {
+      fetchMembers();
+    }
+  }, [user, searchTerm]);
 
   const getStatusBadge = (status: string, type: "kyc" | "bank" | "account") => {
     let colorClass = "";
