@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CreditCard, CheckCircle, XCircle, Clock, DollarSign, Search, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,84 +13,100 @@ import {
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { axiosInstance } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
 
 type TopupRequest = {
   id: string;
-  memberId: string;
-  memberName: string;
-  package: string;
+  userId: string;
+  userName?: string;
+  userEmail?: string;
+  referralId?: string;
+  planId: string;
+  planName?: string;
   amount: number;
   paymentMode: string;
-  txnId: string;
-  date: string;
-  status: "Pending" | "Approved" | "Rejected";
-  proofUrl?: string;
+  transactionId: string;
+  paymentProof?: string;
+  requestedAt: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  approvedAt?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
 };
 
-const pendingRequests: TopupRequest[] = [
-  {
-    id: "TOP001",
-    memberId: "MLM-12346",
-    memberName: "Alice Johnson",
-    package: "Professional Plan",
-    amount: 1000,
-    paymentMode: "Bank Transfer",
-    txnId: "TXN123456789",
-    date: "2025-11-26 10:30 AM",
-    status: "Pending",
-    proofUrl: "receipt_001.pdf",
-  },
-  {
-    id: "TOP002",
-    memberId: "MLM-12347",
-    memberName: "Bob Smith",
-    package: "Business Plan",
-    amount: 2500,
-    paymentMode: "UPI",
-    txnId: "UPI987654321",
-    date: "2025-11-26 09:15 AM",
-    status: "Pending",
-  },
-  {
-    id: "TOP003",
-    memberId: "MLM-12348",
-    memberName: "Carol White",
-    package: "Starter Plan",
-    amount: 5000,
-    paymentMode: "Debit Card",
-    txnId: "CARD456123789",
-    date: "2025-11-26 08:45 AM",
-    status: "Pending",
-  },
-];
-
-const approvedTopups: TopupRequest[] = [
-  {
-    id: "TOP005",
-    memberId: "MLM-12351",
-    memberName: "Frank Miller",
-    package: "Business Plan",
-    amount: 2500,
-    paymentMode: "Bank Transfer",
-    txnId: "TXN555666777",
-    date: "2025-11-26 11:00 AM",
-    status: "Approved",
-  },
-  {
-    id: "TOP007",
-    memberId: "MLM-12352",
-    memberName: "Grace Lee",
-    package: "Professional Plan",
-    amount: 1000,
-    paymentMode: "UPI",
-    txnId: "UPI111222333",
-    date: "2025-11-26 10:15 AM",
-    status: "Approved",
-  },
-];
-
 export default function ManageTopupsPage() {
-  const [selectedRequest, setSelectedRequest] = useState<TopupRequest | null>(pendingRequests[0]);
+  const { user } = useAuth();
+  const [topups, setTopups] = useState<TopupRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
+  const [selectedRequest, setSelectedRequest] = useState<TopupRequest | null>(null);
+
+  const fetchTopups = async () => {
+    try {
+      const response = await axiosInstance.get('/api/admin/topups', {
+        params: { status: statusFilter !== "ALL" ? statusFilter : undefined }
+      });
+      if (response.data.success) {
+        setTopups(response.data.data);
+        if (response.data.data.length > 0) {
+          setSelectedRequest(response.data.data[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching topups:", error);
+      toast.error("Failed to fetch topup requests");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      fetchTopups();
+    }
+  }, [user, statusFilter]);
+
+  const handleApprove = async (topupId: string) => {
+    try {
+      const response = await axiosInstance.post(`/api/admin/topups/${topupId}/approve`);
+      if (response.data.success) {
+        toast.success("Topup approved successfully");
+        fetchTopups();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to approve topup");
+    }
+  };
+
+  const handleReject = async (topupId: string) => {
+    try {
+      const response = await axiosInstance.post(`/api/admin/topups/${topupId}/reject`, {
+        reason: "Rejected by admin"
+      });
+      if (response.data.success) {
+        toast.success("Topup rejected");
+        fetchTopups();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to reject topup");
+    }
+  };
+
+  const pendingTopups = topups.filter(t => t.status === "PENDING");
+  const approvedTopups = topups.filter(t => t.status === "APPROVED");
+  const rejectedTopups = topups.filter(t => t.status === "REJECTED");
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="full">
