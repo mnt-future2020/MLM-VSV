@@ -221,18 +221,13 @@ export default function ManageMembersPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
-          <p className="text-sm text-muted-foreground">
-            Showing 1 to 5 of 1,245 members
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled>Previous</Button>
-            <Button variant="default" size="sm" className="bg-primary-500 hover:bg-primary-600 text-white">1</Button>
-            <Button variant="outline" size="sm">2</Button>
-            <Button variant="outline" size="sm">3</Button>
-            <Button variant="outline" size="sm">Next</Button>
+        {filteredMembers.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredMembers.length} of {members.length} members
+            </p>
           </div>
-        </div>
+        )}
       </div>
     </PageContainer>
   );
