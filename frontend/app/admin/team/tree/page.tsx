@@ -177,7 +177,7 @@ function TreeNodeComponent({
             <Users className="w-6 h-6" />
           </div>
           <p className="text-sm font-bold text-foreground">{node.name}</p>
-          <p className="text-xs text-muted-foreground font-medium">{node.id}</p>
+          <p className="text-xs text-muted-foreground font-medium">{node.referralId || node.id}</p>
           {node.package && (
             <span className="text-[10px] uppercase tracking-wider font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full mt-1 border border-primary-100">
               {node.package}
