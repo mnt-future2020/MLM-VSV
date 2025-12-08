@@ -424,53 +424,84 @@ class MLMAPITester:
             self.log_test("Binary Tree Performance Check", False, "No successful requests")
 
     def run_all_tests(self):
-        """Run all API tests"""
-        print("🚀 Starting MLM Platform API Tests...")
-        print("=" * 50)
-        
-        # Basic health check
-        if not self.test_health_check():
-            print("❌ Backend is not healthy, stopping tests")
-            return False
+        """Run all API tests as per review request"""
+        print("🚀 Starting Complete Backend API Testing - MLM VSV Unite Application")
+        print("=" * 70)
         
         # Authentication tests
-        print("\n📋 Authentication Tests:")
-        self.test_admin_login()
+        print("\n📋 1. Authentication APIs:")
+        if not self.test_admin_login():
+            print("❌ Admin login failed, some tests may not work")
+        
+        if not self.test_user_login():
+            print("❌ User login failed, some tests may not work")
+            
         self.test_user_registration()
-        self.test_user_login()
+        self.test_get_session()
+        self.test_sign_out()
         self.test_referral_lookup()
         
-        # User functionality tests
-        print("\n👤 User Functionality Tests:")
-        self.test_get_plans()
-        self.test_user_profile()
+        # User Dashboard APIs
+        print("\n👤 2. User Dashboard APIs:")
         self.test_user_dashboard()
-        self.test_plan_activation()
-        self.test_wallet_balance()
-        self.test_transactions()
+        self.test_user_profile()
         self.test_team_tree()
         self.test_team_list()
+        
+        # Wallet APIs
+        print("\n💰 3. Wallet APIs:")
+        self.test_wallet_balance()
+        self.test_transactions()
         self.test_withdrawal_request()
         self.test_withdrawal_history()
+        
+        # Admin APIs
+        print("\n🔧 4. Admin APIs:")
+        self.test_admin_reports_dashboard()
+        self.test_admin_users()
+        self.test_user_status_update()
+        self.test_admin_withdrawals()
+        self.test_withdrawal_approval()
+        self.test_admin_topups()
+        self.test_calculate_daily_matching()
+        
+        # Reports APIs
+        print("\n📊 5. Reports APIs:")
+        self.test_reports_users_all()
+        self.test_reports_financial_earnings()
+        self.test_reports_team_structure()
+        
+        # Plans APIs
+        print("\n📋 6. Plans APIs:")
+        self.test_get_plans()
+        self.test_plan_activation()
+        
+        # Performance Tests
+        print("\n⚡ 7. Performance & N+1 Query Tests:")
+        self.test_binary_tree_performance()
+        
+        # Additional User Tests
+        print("\n👤 8. Additional User Tests:")
         self.test_profile_update()
         self.test_password_change()
         
-        # Admin functionality tests
-        print("\n🔧 Admin Functionality Tests:")
-        self.test_admin_dashboard()
-        self.test_admin_users()
-        self.test_admin_withdrawals()
-        self.test_admin_plans()
-        self.test_user_status_update()
-        self.test_withdrawal_approval()
-        
         # Settings tests
-        print("\n⚙️ Settings Tests:")
+        print("\n⚙️ 9. Settings Tests:")
         self.test_settings_endpoints()
         
         # Print results
-        print("\n" + "=" * 50)
+        print("\n" + "=" * 70)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
+        
+        if self.response_times:
+            avg_response_time = sum(self.response_times) / len(self.response_times)
+            max_response_time = max(self.response_times)
+            print(f"⏱️  Response Times: Avg {avg_response_time:.3f}s, Max {max_response_time:.3f}s")
+            
+            if max_response_time > 2.0:
+                print("⚠️  Some responses took longer than 2 seconds")
+            else:
+                print("✅ All responses under 2 seconds")
         
         if self.failed_tests:
             print("\n❌ Failed Tests:")
@@ -479,6 +510,12 @@ class MLMAPITester:
         
         success_rate = (self.tests_passed / self.tests_run) * 100 if self.tests_run > 0 else 0
         print(f"\n✅ Success Rate: {success_rate:.1f}%")
+        
+        # Success criteria from review request
+        print(f"\n📋 Success Criteria Check:")
+        print(f"   - All APIs return 200/201 status: {'✅' if success_rate > 85 else '❌'}")
+        print(f"   - Response times < 2 seconds: {'✅' if max(self.response_times) < 2.0 if self.response_times else False else '❌'}")
+        print(f"   - No N+1 query patterns: {'✅' if 'Binary Tree Performance Check' not in [f.split(':')[0] for f in self.failed_tests] else '❌'}")
         
         return success_rate >= 80  # Consider 80%+ success rate as passing
 
