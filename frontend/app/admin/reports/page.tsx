@@ -92,32 +92,32 @@ export default function AdminReportsPage() {
       {/* Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
-          label="Total Revenue"
-          value="₹1.25 Cr"
-          icon={<DollarSign className="w-6 h-6 text-blue-600" />}
+          label="Total Users"
+          value={String(reportsData.overview.totalUsers)}
+          icon={<Users className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
-          className="bg-blue-500 text-white"
+          trend={{ value: `${reportsData.overview.activeUsers} active`, isPositive: true }}
         />
         <StatsCard
-          label="Net Profit"
-          value="₹45.7 L"
+          label="Total Earnings"
+          value={`₹${reportsData.overview.totalEarnings.toLocaleString()}`}
           icon={<TrendingUp className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
-          className="bg-green-500 text-white"
+          trend={{ value: "All time", isPositive: true }}
         />
         <StatsCard
-          label="Total Payouts"
-          value="₹75.2 L"
+          label="Total Withdrawals"
+          value={`₹${reportsData.overview.totalWithdrawals.toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
-          className="bg-purple-500 text-white"
+          trend={{ value: "Paid out", isPositive: true }}
         />
         <StatsCard
-          label="Growth Rate"
-          value="+77%"
+          label="Pending Withdrawals"
+          value={String(reportsData.overview.pendingWithdrawals)}
           icon={<TrendingUp className="w-6 h-6 text-orange-600" />}
           gradient="bg-orange-500"
-          className="bg-orange-500 text-white"
+          trend={{ value: `₹${reportsData.overview.pendingWithdrawalsAmount.toLocaleString()}`, isPositive: false }}
         />
       </div>
 
