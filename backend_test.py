@@ -24,12 +24,13 @@ class MLMAPITester:
         self.failed_tests = []
         self.response_times = []
 
-    def log_test(self, name: str, success: bool, details: str = ""):
-        """Log test results"""
+    def log_test(self, name: str, success: bool, details: str = "", response_time: float = 0.0):
+        """Log test results with response time"""
         self.tests_run += 1
         if success:
             self.tests_passed += 1
-            print(f"✅ {name}")
+            time_str = f" ({response_time:.3f}s)" if response_time > 0 else ""
+            print(f"✅ {name}{time_str}")
         else:
             print(f"❌ {name} - {details}")
             self.failed_tests.append(f"{name}: {details}")
