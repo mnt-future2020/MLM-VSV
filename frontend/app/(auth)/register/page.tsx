@@ -42,14 +42,14 @@ export default function RegisterPage() {
       try {
         const response = await axiosInstance.get("/api/plans");
         if (response.data.success) {
-          setPlans(response.data.data);
+          setPlans(response.data.data.filter((p: any) => p.isActive));
         }
       } catch (error) {
         console.error("Error fetching plans:", error);
       }
     };
     fetchPlans();
-  });
+  }, []);
 
   // Verify referral ID and fetch referrer details
   const verifyReferralId = async (referralId: string) => {
