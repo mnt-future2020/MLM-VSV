@@ -117,6 +117,7 @@ export default function ManageMembersPage() {
       name: member.name,
       email: member.email,
       mobile: member.mobile || "",
+      currentPlan: member.currentPlan || "",
     });
     setEditDialog(true);
   };
