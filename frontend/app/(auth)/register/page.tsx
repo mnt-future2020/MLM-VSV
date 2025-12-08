@@ -350,6 +350,34 @@ export default function RegisterPage() {
               </div>
             )}
 
+            {/* Plan Selection - Always visible */}
+            <div className="space-y-1">
+              <Label htmlFor="planId" className="text-gray-700 text-sm font-medium">
+                Select Plan <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <select 
+                  id="planId" 
+                  value={formData.planId} 
+                  onChange={handleChange} 
+                  className="h-10 lg:h-11 w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 pr-10 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:outline-none appearance-none text-sm" 
+                  disabled={loading} 
+                  required
+                >
+                  <option value="">Choose your plan</option>
+                  {plans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name} - ₹{plan.amount} (PV: {plan.pv})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Select a plan to activate your account and start earning
+              </p>
+            </div>
+
             {/* Name */}
             <div className="space-y-1">
               <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
