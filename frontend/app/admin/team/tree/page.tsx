@@ -12,6 +12,7 @@ type TreeNode = {
   id: string;
   _id?: string;
   name: string;
+  referralId?: string;
   package?: string;
   position: "left" | "right" | "root";
   children?: TreeNode[];
