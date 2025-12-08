@@ -21,7 +21,7 @@ import { axiosInstance } from "@/lib/api";
 interface Plan {
   id: string;
   name: string;
-  price: number;
+  amount: number;
   pv: number;
   description?: string;
 }
