@@ -112,9 +112,16 @@ export default function RegisterPage() {
         return;
       }
       
+      // Plan selection is required
+      if (!formData.planId) {
+        setError("Please select a plan to join");
+        return;
+      }
+      
       payload.referralId = formData.referralId;
       payload.referralName = formData.referralName || '';
       payload.placement = formData.placement;
+      payload.planId = formData.planId;
 
       // Use custom register endpoint (best method - handles all MLM logic)
       const response = await axiosInstance.post('/api/auth/register', payload);
