@@ -59,23 +59,33 @@ export default function ManageMembersPage() {
     }
   }, [user, searchTerm]);
 
-  const getStatusBadge = (status: string, type: "kyc" | "bank" | "account") => {
-    let colorClass = "";
+  const getStatusBadge = (status: boolean) => {
+    const colorClass = status 
+      ? "bg-green-50 text-green-700 border-green-200"
+      : "bg-red-50 text-red-700 border-red-200";
     
-    if (status === "Approved" || status === "Active") {
-      colorClass = "bg-green-50 text-green-700 border-green-200";
-    } else if (status === "Pending") {
-      colorClass = "bg-yellow-50 text-yellow-700 border-yellow-200";
-    } else if (status === "Rejected" || status === "Inactive") {
-      colorClass = "bg-red-50 text-red-700 border-red-200";
-    }
-
     return (
       <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium border", colorClass)}>
-        {status}
+        {status ? "Active" : "Inactive"}
       </span>
     );
   };
+
+  const filteredMembers = members.filter((member) => {
+    if (statusFilter === "Active") return member.isActive;
+    if (statusFilter === "Inactive") return !member.isActive;
+    return true;
+  });
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="full">
