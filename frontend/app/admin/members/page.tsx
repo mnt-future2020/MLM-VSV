@@ -156,12 +156,11 @@ export default function ManageMembersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Member ID</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Referral ID</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Member Details</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Contact</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Package</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">KYC Status</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Bank Status</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Mobile</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Current Plan</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Joined Date</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Status</th>
                 <th className="text-right px-6 py-4 text-sm font-semibold text-muted-foreground">Actions</th>
               </tr>
