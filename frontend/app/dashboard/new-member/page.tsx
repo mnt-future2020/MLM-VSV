@@ -155,7 +155,7 @@ export default function NewMemberPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      planId: "",
+      planId: "no-plan",
     });
   };
 
