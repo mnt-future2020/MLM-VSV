@@ -101,7 +101,17 @@ export default function RegisterPage() {
       const response = await axiosInstance.post('/api/auth/register', payload);
 
       // Check success response
-      if (response.data.success) {
+      if (response.data.success && response.data.user && response.data.token) {
+        const userData = response.data.user;
+        const token = response.data.token;
+        
+        // Import useAuth hook
+        const { login: authLogin } = useAuth();
+        
+        // Save token and user
+        authLogin(userData, token);
+        
+        // Redirect to dashboard
         router.push("/dashboard");
       } else {
         setError(response.data.message || "Registration failed");
