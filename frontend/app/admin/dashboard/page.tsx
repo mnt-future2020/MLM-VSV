@@ -1,10 +1,61 @@
 "use client";
 
-import { Users, TrendingUp, FileText, LayoutDashboard, ArrowUpRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, TrendingUp, DollarSign, LayoutDashboard, AlertCircle } from "lucide-react";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
+import { axiosInstance } from "@/lib/api";
+
+interface DashboardStats {
+  users: {
+    total: number;
+    active: number;
+    inactive: number;
+  };
+  earnings: {
+    totalEarnings: number;
+    totalBalance: number;
+    totalWithdrawals: number;
+  };
+  pendingWithdrawals: number;
+  planDistribution: Record<string, number>;
+  recentUsers: any[];
+}
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axiosInstance.get('/api/admin/dashboard');
+        if (response.data.success) {
+          setStats(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching admin dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && user.role === 'admin') {
+      fetchStats();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer maxWidth="full">
       <PageHeader
@@ -17,69 +68,95 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Total Users"
-          value="1,234"
+          value={String(stats?.users?.total || 0)}
           icon={<Users className="w-6 h-6 text-primary-600" />}
           gradient="bg-primary-500"
-          trend={{ value: "+12% this month", isPositive: true }}
+          trend={{ value: `${stats?.users?.active || 0} active`, isPositive: true }}
         />
         <StatsCard
           label="Active Users"
-          value="856"
+          value={String(stats?.users?.active || 0)}
           icon={<TrendingUp className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
-          trend={{ value: "69% active rate", isPositive: true }}
+          trend={{ value: `${stats?.users?.inactive || 0} inactive`, isPositive: false }}
         />
         <StatsCard
-          label="Total Revenue"
-          value="₹45.2L"
-          icon={<FileText className="w-6 h-6 text-blue-600" />}
+          label="Total Earnings"
+          value={`₹${stats?.earnings?.totalEarnings || 0}`}
+          icon={<DollarSign className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
-          trend={{ value: "+8.5% this week", isPositive: true }}
+          trend={{ value: `Balance: ₹${stats?.earnings?.totalBalance || 0}`, isPositive: true }}
         />
         <StatsCard
-          label="New Signups"
-          value="+127"
-          icon={<LayoutDashboard className="w-6 h-6 text-purple-600" />}
-          gradient="bg-purple-500"
-          trend={{ value: "Last 24 hours", isPositive: true }}
+          label="Pending Withdrawals"
+          value={String(stats?.pendingWithdrawals || 0)}
+          icon={<AlertCircle className="w-6 h-6 text-orange-600" />}
+          gradient="bg-orange-500"
+          trend={{ value: "Requires action", isPositive: false }}
         />
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-card border border-border rounded-xl shadow-sm">
-        <div className="p-6 border-b border-border bg-muted/30">
-          <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
+      {/* Plan Distribution */}
+      <div className="bg-card border border-border rounded-xl shadow-sm mb-6">
+        <div className="p-6 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Plan Distribution</h3>
         </div>
         <div className="p-6">
-          <div className="space-y-4">
-            {[
-              { action: "New user registered", user: "John Doe", time: "2 minutes ago" },
-              { action: "Top-up approved", user: "Alice Smith", time: "15 minutes ago" },
-              { action: "Withdrawal requested", user: "Bob Johnson", time: "1 hour ago" },
-              { action: "New user registered", user: "Carol White", time: "2 hours ago" },
-              { action: "KYC verified", user: "David Brown", time: "3 hours ago" },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center border border-primary-100">
-                    <Users className="w-5 h-5 text-primary-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {item.action} <span className="text-muted-foreground">by {item.user}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">{item.time}</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" className="text-primary-600 hover:text-primary-700 hover:bg-primary-50">
-                  View <ArrowUpRight className="w-3 h-3 ml-1" />
-                </Button>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {stats?.planDistribution && Object.entries(stats.planDistribution).map(([plan, count]) => (
+              <div key={plan} className="p-4 bg-muted/30 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground mb-1">{plan}</p>
+                <p className="text-2xl font-bold text-foreground">{count}</p>
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Recent Users */}
+      <div className="bg-card border border-border rounded-xl shadow-sm">
+        <div className="p-6 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Recent Users</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50 border-b border-border">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Referral ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Joined</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {stats?.recentUsers && stats.recentUsers.length > 0 ? (
+                stats.recentUsers.map((user: any) => (
+                  <tr key={user.id} className="hover:bg-muted/30">
+                    <td className="px-6 py-4 text-sm text-foreground">{user.name}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">{user.email || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">{user.referralId}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                        user.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                      }`}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                    No recent users
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </PageContainer>
