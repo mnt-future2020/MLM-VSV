@@ -267,13 +267,16 @@ class MLMAPITester:
         }
         
         success, data, response_time = self.make_request('POST', 'api/withdrawal/request', withdrawal_data, 
-                                        token=self.user_token, expected_status=400)  # Expect 400 for insufficient balance
+                                        token=self.user_token)
         
-        # Consider both success (if user has balance) and 400 (insufficient balance) as valid responses
-        if success or (data.get('detail') and 'balance' in data.get('detail', '').lower()):
+        # Consider both success (200) and insufficient balance (400) as valid API responses
+        if success and data.get('success'):
             if data.get('withdrawalId'):
                 self.test_withdrawal_id = data.get('withdrawalId')
             self.log_test("POST /api/withdrawal/request", True, response_time=response_time)
+        elif data.get('detail') and 'balance' in data.get('detail', '').lower():
+            # Insufficient balance is a valid business logic response
+            self.log_test("POST /api/withdrawal/request", True, f"Valid response: {data.get('detail')}", response_time)
         else:
             self.log_test("POST /api/withdrawal/request", False, f"Response: {data}")
 
