@@ -139,27 +139,29 @@ export default function AdminReportsPage() {
               </tr>
             </thead>
             <tbody>
-              {[
-                { date: "2025-11-26", users: 15, topups: "₹1,25,000", payouts: "₹45,000", net: "₹80,000" },
-                { date: "2025-11-25", users: 12, topups: "₹95,000", payouts: "₹32,000", net: "₹63,000" },
-                { date: "2025-11-24", users: 18, topups: "₹1,50,000", payouts: "₹55,000", net: "₹95,000" },
-                { date: "2025-11-23", users: 10, topups: "₹80,000", payouts: "₹25,000", net: "₹55,000" },
-                { date: "2025-11-22", users: 14, topups: "₹1,10,000", payouts: "₹40,000", net: "₹70,000" },
-              ].map((row, index) => (
-                <tr
-                  key={index}
-                  className={cn(
-                    "border-b border-border hover:bg-muted/50 transition-colors",
-                    index === 4 && "border-0"
-                  )}
-                >
-                  <td className="px-6 py-3 text-sm text-foreground">{row.date}</td>
-                  <td className="px-6 py-3 text-sm text-foreground">{row.users}</td>
-                  <td className="px-6 py-3 text-sm text-green-600 font-medium">{row.topups}</td>
-                  <td className="px-6 py-3 text-sm text-red-600 font-medium">{row.payouts}</td>
-                  <td className="px-6 py-3 text-sm font-bold text-foreground">{row.net}</td>
+              {reportsData.dailyReports.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                    No data available
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                reportsData.dailyReports.map((row, index) => (
+                  <tr
+                    key={index}
+                    className={cn(
+                      "border-b border-border hover:bg-muted/50 transition-colors",
+                      index === reportsData.dailyReports.length - 1 && "border-0"
+                    )}
+                  >
+                    <td className="px-6 py-3 text-sm text-foreground">{row.date}</td>
+                    <td className="px-6 py-3 text-sm text-foreground">{row.newUsers}</td>
+                    <td className="px-6 py-3 text-sm text-green-600 font-medium">₹{row.topups.toLocaleString()}</td>
+                    <td className="px-6 py-3 text-sm text-red-600 font-medium">₹{row.payouts.toLocaleString()}</td>
+                    <td className="px-6 py-3 text-sm font-bold text-foreground">₹{row.netBusiness.toLocaleString()}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
