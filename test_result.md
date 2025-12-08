@@ -91,6 +91,128 @@ The API is properly connected to MongoDB and retrieving actual data:
 
 **Final Assessment:** The Reports API is functioning correctly and returning authentic database data. The system is ready for production use.
 
+## New Member Registration Page Testing - /dashboard/new-member
+
+**Test Date:** 2024-12-08  
+**Test Status:** ✅ PASSED (After Fix)  
+**Test Environment:** Next.js Frontend on localhost:3000
+
+#### Initial Issue Identified and Fixed:
+- **Problem:** Select component error - `<SelectItem value="">` with empty string value
+- **Error Message:** "A <Select.Item /> must have a value prop that is not an empty string"
+- **Root Cause:** Plan selection dropdown had `<SelectItem value="">No Plan</SelectItem>`
+- **Fix Applied:** Changed to `<SelectItem value="no-plan">No Plan</SelectItem>` and updated form logic
+
+#### Test Steps Executed:
+
+1. ✅ **Authentication Flow**
+   - URL: http://localhost:3000/login
+   - Credentials: admin@vsvunite.com / Admin@123
+   - Result: Successfully authenticated and redirected to dashboard
+
+2. ✅ **Page Navigation**
+   - Target URL: http://localhost:3000/dashboard/new-member
+   - Result: Page loads correctly with proper routing protection
+
+3. ✅ **Form Structure Verification**
+   - Page header: "Register New Member" ✅ Found
+   - Sponsor Information section ✅ Found
+   - Plan Selection section ✅ Found  
+   - Personal Information section ✅ Found
+   - Form elements: 1 form, 8 input fields, 2 select dropdowns, 19 buttons
+
+#### UI Components Verified:
+
+**Sponsor Information Section:**
+- ✅ Sponsor ID field (pre-filled with admin ID: VSV00001)
+- ✅ Sponsor Name field (auto-filled: VSV Admin)
+- ✅ Placement dropdown (LEFT/RIGHT options)
+- ✅ Sponsor search functionality working
+
+**Plan Selection Section:**
+- ✅ Plan dropdown with "No Plan" default option
+- ✅ Optional plan selection working correctly
+- ✅ Informational text about plan assignment
+
+**Personal Information Section:**
+- ✅ Full Name field (required)
+- ✅ Username field (required, unique)
+- ✅ Mobile Number field (required)
+- ✅ Email ID field (required)
+- ✅ Password field (required, min 6 characters)
+- ✅ Confirm Password field (required, must match)
+
+#### Form Interaction Testing:
+
+**Field Validation:**
+- ✅ All required fields properly marked with asterisks
+- ✅ Form accepts valid input data
+- ✅ Password fields properly masked
+- ✅ Dropdown selections working correctly
+
+**Form Submission:**
+- ✅ Register button functional
+- ✅ Form validation working (prevents submission with invalid data)
+- ✅ Successful submission with valid data
+- ✅ Success notification: "Referral ID: VSVLBKEKBX"
+- ✅ Form automatically resets after successful submission
+- ✅ Reset button working correctly
+
+#### API Integration Testing:
+
+**Backend Endpoints Verified:**
+- ✅ `/api/plans` - Fetches available plans for dropdown
+- ✅ `/api/admin/users?search=` - Sponsor search functionality
+- ✅ `/api/auth/register` - New member registration
+- ✅ All API calls successful with proper authentication
+
+#### Technical Assessment:
+
+**Performance:**
+- ✅ Page load time: Fast (< 3 seconds)
+- ✅ Form interactions: Responsive and smooth
+- ✅ API responses: Quick and reliable
+- ✅ No loading spinners stuck
+
+**Error Handling:**
+- ✅ Fixed critical Select component error
+- ✅ Proper form validation messages
+- ✅ Success/error toast notifications working
+- ✅ No console errors affecting functionality
+
+**Data Flow:**
+- ✅ Real data integration with backend
+- ✅ Proper authentication context
+- ✅ Form state management working correctly
+- ✅ Successful member creation with generated referral ID
+
+#### Minor Issues (Non-Critical):
+- ⚠️ Logo image loading warning (doesn't affect functionality)
+- ⚠️ Some navigation request failures (doesn't impact core features)
+
+#### Screenshots Captured:
+- ✅ Login page: login_page.png
+- ✅ New member form: final_new_member_test.png
+- ✅ Filled form: form_ready_for_submission.png
+- ✅ After submission: after_submission.png
+
+#### Final Assessment:
+
+**✅ NEW MEMBER REGISTRATION PAGE IS FULLY FUNCTIONAL**
+
+The New Member Registration page is working perfectly after fixing the Select component issue:
+
+- **Authentication**: Seamless login and protected route access
+- **Form Rendering**: Clean, professional form with all sections properly displayed
+- **User Experience**: Intuitive design with clear field labels and validation
+- **Functionality**: All form fields interactive and working correctly
+- **API Integration**: Successful backend communication for all operations
+- **Data Validation**: Proper client-side and server-side validation
+- **Success Flow**: Complete registration process with success feedback
+- **Error Handling**: Appropriate error messages and form validation
+
+The page successfully allows admins to register new members with sponsor assignment, optional plan selection, and complete personal information capture. The generated referral ID (VSVLBKEKBX) confirms successful backend integration and member creation.
+
 ## Frontend Testing Results
 
 ### Binary Tree Page Testing - /dashboard/team/tree
