@@ -162,7 +162,7 @@ export default function TopUpPage() {
               <h3 className="text-base font-semibold text-foreground group-hover:text-primary-600 transition-colors">{plan.name}</h3>
               {selectedPlan === plan.id && <Check className="w-5 h-5 text-primary-600" />}
             </div>
-            <p className="text-3xl font-bold text-primary-600 mb-1">₹{plan.price.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-primary-600 mb-1">₹{plan.amount?.toLocaleString() || 0}</p>
             <p className="text-sm text-muted-foreground">{plan.pv} PV Points</p>
           </button>
         ))}
