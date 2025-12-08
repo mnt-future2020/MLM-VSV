@@ -86,9 +86,21 @@ export default function ManageMembersPage() {
     }
   };
 
+  const fetchPlans = async () => {
+    try {
+      const response = await axiosInstance.get("/api/plans");
+      if (response.data.success) {
+        setPlans(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+    }
+  };
+
   useEffect(() => {
     if (user && user.role === 'admin') {
       fetchMembers();
+      fetchPlans();
     }
   }, [user, searchTerm]);
 
