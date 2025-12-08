@@ -67,24 +67,29 @@ export default function ManageMembersPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const fetchMembers = useCallback(async () => {
+  const fetchMembers = useCallback(async (search?: string) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/api/admin/users', {
-        params: {
-          search: searchTerm || undefined,
-          limit: 100
-        }
-      });
+      const params: any = {
+        limit: 50,
+        skip: 0,
+      };
+      
+      if (search) {
+        params.search = search;
+      }
+      
+      const response = await axiosInstance.get("/api/admin/users", { params });
       if (response.data.success) {
         setMembers(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching members:", error);
+      toast.error("Failed to fetch members");
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, []);
 
   const fetchPlans = useCallback(async () => {
     try {
