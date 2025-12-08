@@ -70,31 +70,31 @@ export default function UserDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Total Earnings"
-          value="₹12,450"
+          value={`₹${dashboardData?.wallet?.totalEarnings || 0}`}
           icon={<TrendingUp className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
-          trend={{ value: "+12.5% this month", isPositive: true }}
+          trend={{ value: "Lifetime earnings", isPositive: true }}
         />
         <StatsCard
           label="Available Balance"
-          value="₹8,320"
+          value={`₹${dashboardData?.wallet?.balance || 0}`}
           icon={<Wallet className="w-6 h-6 text-primary-600" />}
           gradient="bg-primary-500"
           trend={{ value: "Ready to withdraw", isPositive: true }}
         />
         <StatsCard
           label="Team Members"
-          value="24"
+          value={String(dashboardData?.team?.total || 0)}
           icon={<Users className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
-          trend={{ value: "+3 this week", isPositive: true }}
+          trend={{ value: `Left: ${dashboardData?.team?.left || 0}, Right: ${dashboardData?.team?.right || 0}`, isPositive: true }}
         />
         <StatsCard
           label="Current Plan"
-          value="Basic"
+          value={dashboardData?.currentPlan?.name || "No Plan"}
           icon={<Gift className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
-          trend={{ value: "100 PV", isPositive: true }}
+          trend={{ value: dashboardData?.currentPlan ? `${dashboardData.currentPlan.pv} PV` : "Activate a plan", isPositive: true }}
         />
       </div>
 
