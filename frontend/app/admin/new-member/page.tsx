@@ -218,6 +218,35 @@ export default function NewMemberPage() {
           </div>
         </div>
 
+        {/* Plan Selection */}
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Plan Selection (Optional)</h2>
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <Label>Select Plan</Label>
+              <Select
+                value={formData.planId}
+                onValueChange={(value) => setFormData({...formData, planId: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="No plan (can be assigned later)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no-plan">No Plan</SelectItem>
+                  {plans.map((plan) => (
+                    <SelectItem key={plan.id} value={plan.id}>
+                      {plan.name} - ₹{plan.amount}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                You can assign a plan during registration or activate it later through topup.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Personal Information */}
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Personal Information</h2>
