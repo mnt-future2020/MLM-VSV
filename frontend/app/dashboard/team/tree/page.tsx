@@ -4,58 +4,19 @@ import { Users, ZoomIn, ZoomOut, Maximize, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
+import { useEffect, useState } from "react";
+import { axiosInstance } from "@/lib/api";
 
 type TreeNode = {
   id: string;
   name: string;
-  package?: string;
-  position: "left" | "right" | "root";
-  children?: TreeNode[];
-};
-
-const treeData: TreeNode = {
-  id: "MLM-12345",
-  name: "You",
-  package: "Pro Plan",
-  position: "root",
-  children: [
-    {
-      id: "MLM-12346",
-      name: "Alice Johnson",
-      package: "Pro Plan",
-      position: "left",
-      children: [
-        {
-          id: "MLM-12348",
-          name: "Carol White",
-          position: "left",
-        },
-        {
-          id: "MLM-12349",
-          name: "David Brown",
-          position: "right",
-        },
-      ],
-    },
-    {
-      id: "MLM-12347",
-      name: "Bob Smith",
-      package: "Pro Plan",
-      position: "right",
-      children: [
-        {
-          id: "MLM-12350",
-          name: "Emma Davis",
-          position: "left",
-        },
-        {
-          id: "MLM-12351",
-          name: "Frank Miller",
-          position: "right",
-        },
-      ],
-    },
-  ],
+  referralId: string;
+  placement?: string | null;
+  currentPlan?: string | null;
+  isActive: boolean;
+  left?: TreeNode | null;
+  right?: TreeNode | null;
 };
 
 function TreeNodeComponent({ node }: { node: TreeNode }) {
