@@ -18,10 +18,12 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [verifyingReferral, setVerifyingReferral] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     referralId: "",
     referralName: "",
     placement: "",  // No default - user must select
+    planId: "",  // Plan selection - mandatory
     name: "",
     mobile: "",
     email: "",
