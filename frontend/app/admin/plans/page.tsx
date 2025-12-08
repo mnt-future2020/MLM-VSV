@@ -1,12 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Gift, Plus, Edit, Trash2 } from "lucide-react";
+import { Gift, Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/contexts/auth-context";
 import { axiosInstance } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Plan {
   id: string;
@@ -26,6 +45,26 @@ export default function AdminPlansPage() {
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  // Dialog states
+  const [createDialog, setCreateDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  
+  // Form state
+  const [planForm, setPlanForm] = useState({
+    name: "",
+    amount: "",
+    pv: "",
+    referralIncome: "",
+    dailyCapping: "",
+    matchingIncome: "",
+    description: "",
+    isActive: "true",
+    popular: "false"
+  });
 
   const fetchPlans = async () => {
     try {
