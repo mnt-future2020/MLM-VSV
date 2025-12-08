@@ -102,7 +102,7 @@ export default function ManageMembersPage() {
       fetchMembers();
       fetchPlans();
     }
-  }, [user, searchTerm]);
+  }, [user, searchTerm, fetchMembers, fetchPlans]);
 
   // View member details
   const handleView = (member: Member) => {
