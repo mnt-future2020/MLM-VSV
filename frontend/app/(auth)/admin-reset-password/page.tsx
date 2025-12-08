@@ -428,3 +428,15 @@ function AdminResetPasswordContent() {
     </div>
   );
 }
+
+export default function AdminResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-400" />
+      </div>
+    }>
+      <AdminResetPasswordContent />
+    </Suspense>
+  );
+}
