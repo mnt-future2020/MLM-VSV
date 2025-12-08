@@ -65,29 +65,146 @@ export default function ManageMembersPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const response = await axiosInstance.get('/api/admin/users', {
-          params: {
-            search: searchTerm || undefined,
-            limit: 100
-          }
-        });
-        if (response.data.success) {
-          setMembers(response.data.data);
+  const fetchMembers = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get('/api/admin/users', {
+        params: {
+          search: searchTerm || undefined,
+          limit: 100
         }
-      } catch (error) {
-        console.error("Error fetching members:", error);
-      } finally {
-        setLoading(false);
+      });
+      if (response.data.success) {
+        setMembers(response.data.data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching members:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     if (user && user.role === 'admin') {
       fetchMembers();
     }
   }, [user, searchTerm]);
+
+  // View member details
+  const handleView = (member: Member) => {
+    setSelectedMember(member);
+    setViewDialog(true);
+  };
+
+  // Edit member
+  const handleEdit = (member: Member) => {
+    setSelectedMember(member);
+    setEditForm({
+      name: member.name,
+      email: member.email,
+      mobile: member.mobile || "",
+    });
+    setEditDialog(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedMember) return;
+    
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.put(`/api/admin/users/${selectedMember.id}`, editForm);
+      if (response.data.success) {
+        toast.success("Member updated successfully");
+        setEditDialog(false);
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update member");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Toggle active/inactive status
+  const handleToggleStatus = async (member: Member) => {
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.put(`/api/admin/users/${member.id}/status`, {
+        isActive: !member.isActive
+      });
+      if (response.data.success) {
+        toast.success(`Member ${!member.isActive ? 'activated' : 'deactivated'} successfully`);
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update status");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Reset password
+  const handleResetPassword = (member: Member) => {
+    setSelectedMember(member);
+    setNewPassword("");
+    setConfirmPassword("");
+    setResetPasswordDialog(true);
+  };
+
+  const handleResetPasswordSubmit = async () => {
+    if (!selectedMember) return;
+    
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.put(`/api/admin/users/${selectedMember.id}/reset-password`, {
+        newPassword: newPassword
+      });
+      if (response.data.success) {
+        toast.success("Password reset successfully");
+        setResetPasswordDialog(false);
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to reset password");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Delete member
+  const handleDelete = (member: Member) => {
+    setSelectedMember(member);
+    setDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedMember) return;
+    
+    setActionLoading(true);
+    try {
+      const response = await axiosInstance.delete(`/api/admin/users/${selectedMember.id}`);
+      if (response.data.success) {
+        toast.success("Member deleted successfully");
+        setDeleteDialog(false);
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete member");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: boolean) => {
     const colorClass = status 
