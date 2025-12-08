@@ -194,10 +194,11 @@ export default function NewMemberPage() {
                   placeholder="Enter sponsor ID"
                   value={formData.sponsorId}
                   onChange={(e) => setFormData({...formData, sponsorId: e.target.value})}
+                  onBlur={handleSponsorIdBlur}
                 />
                 <button
                   type="button"
-                  onClick={handleSearchSponsor}
+                  onClick={() => handleSearchSponsor()}
                   disabled={searchingSponsor}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary-600 transition-colors disabled:opacity-50"
                 >
