@@ -86,7 +86,7 @@ class UserDashboardTester:
         if success and data.get('token'):
             self.user_token = data['token']
             self.user_data = data.get('user', {})
-            self.log_test("User Login (udhay@mntfuture.com)", True, f"User ID: {self.user_data.get('id', 'N/A')}")
+            self.log_test("User Login (Test User)", True, f"User ID: {self.user_data.get('id', 'N/A')}")
             return True
         else:
             self.log_test("User Login (udhay@mntfuture.com)", False, f"Response: {data}")
