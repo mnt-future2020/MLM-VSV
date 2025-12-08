@@ -214,7 +214,7 @@ export default function TopUpPage() {
               <SelectContent>
                 {plans.map((plan) => (
                   <SelectItem key={plan.id} value={plan.id}>
-                    {plan.name} - ₹{plan.price}
+                    {plan.name} - ₹{plan.amount}
                   </SelectItem>
                 ))}
               </SelectContent>
