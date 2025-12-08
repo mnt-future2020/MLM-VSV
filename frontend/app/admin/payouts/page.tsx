@@ -217,12 +217,22 @@ export default function PayoutManagementPage() {
                     >
                       <CheckCircle className="w-3 h-3 mr-1" /> Approve
                     </Button>
-                <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50 h-8 text-xs">
-                  <XCircle className="w-3 h-3 mr-1" /> Reject
-                </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReject(req.id);
+                      }}
+                      className="flex-1 border-red-200 text-red-600 hover:bg-red-50 h-8 text-xs"
+                    >
+                      <XCircle className="w-3 h-3 mr-1" /> Reject
+                    </Button>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Request Details Panel */}
