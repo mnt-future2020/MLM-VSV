@@ -333,27 +333,35 @@ export default function PayoutManagementPage() {
               </tr>
             </thead>
             <tbody>
-              {processedPayouts.map((payout, index) => (
-                <tr
-                  key={payout.id}
-                  className={cn(
-                    "border-b border-border hover:bg-muted/50 transition-colors",
-                    index === processedPayouts.length - 1 && "border-0"
-                  )}
-                >
-                  <td className="px-6 py-3 text-sm font-medium text-foreground">{payout.id}</td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{payout.memberId}</td>
-                  <td className="px-6 py-3 text-sm text-foreground">{payout.memberName}</td>
-                  <td className="px-6 py-3 text-sm font-semibold text-foreground">₹{payout.amount.toLocaleString()}</td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{payout.paymentMethod}</td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{payout.date}</td>
-                  <td className="px-6 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                      Approved
-                    </span>
+              {approvedPayouts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
+                    No processed payouts
                   </td>
                 </tr>
-              ))}
+              ) : (
+                approvedPayouts.map((payout, index) => (
+                  <tr
+                    key={payout.id}
+                    className={cn(
+                      "border-b border-border hover:bg-muted/50 transition-colors",
+                      index === approvedPayouts.length - 1 && "border-0"
+                    )}
+                  >
+                    <td className="px-6 py-3 text-sm font-medium text-foreground">{payout.id}</td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">{payout.userId}</td>
+                    <td className="px-6 py-3 text-sm text-foreground">{payout.userName || 'N/A'}</td>
+                    <td className="px-6 py-3 text-sm font-semibold text-foreground">₹{payout.amount.toLocaleString()}</td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">N/A</td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">{payout.approvedAt ? new Date(payout.approvedAt).toLocaleString() : 'N/A'}</td>
+                    <td className="px-6 py-3">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                        Approved
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
