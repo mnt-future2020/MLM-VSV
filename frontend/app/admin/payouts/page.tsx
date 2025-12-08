@@ -163,40 +163,60 @@ export default function PayoutManagementPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Pending Requests List */}
+        {/* Withdrawal Requests List */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Pending Payout Requests</h3>
-          {pendingPayouts.map((req) => (
-            <div
-              key={req.id}
-              onClick={() => setSelectedRequest(req)}
-              className={cn(
-                "bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md",
-                selectedRequest?.id === req.id
-                  ? "border-primary-500 ring-1 ring-primary-500 shadow-md"
-                  : "border-border hover:border-primary-300"
-              )}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-semibold text-foreground">{req.memberName}</p>
-                  <p className="text-xs text-muted-foreground">{req.memberId}</p>
+          <h3 className="text-lg font-semibold text-foreground">
+            {statusFilter === "PENDING" ? "Pending" : statusFilter === "APPROVED" ? "Approved" : statusFilter === "REJECTED" ? "Rejected" : "All"} Withdrawal Requests ({payouts.length})
+          </h3>
+          {payouts.length === 0 ? (
+            <div className="bg-card border border-border rounded-xl p-8 text-center">
+              <p className="text-muted-foreground">No withdrawal requests found</p>
+            </div>
+          ) : (
+            payouts.map((req) => (
+              <div
+                key={req.id}
+                onClick={() => setSelectedRequest(req)}
+                className={cn(
+                  "bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md",
+                  selectedRequest?.id === req.id
+                    ? "border-primary-500 ring-1 ring-primary-500 shadow-md"
+                    : "border-border hover:border-primary-300"
+                )}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-semibold text-foreground">{req.userName || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">ID: {req.userId}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary-600">₹{req.amount.toLocaleString()}</p>
+                    <span className={cn(
+                      "text-[10px] px-2 py-0.5 rounded-full border",
+                      req.status === "PENDING" && "bg-yellow-50 text-yellow-700 border-yellow-200",
+                      req.status === "APPROVED" && "bg-green-50 text-green-700 border-green-200",
+                      req.status === "REJECTED" && "bg-red-50 text-red-700 border-red-200"
+                    )}>
+                      {req.status}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary-600">₹{req.amount.toLocaleString()}</p>
-                  <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-                    {req.paymentMethod}
-                  </span>
+                <div className="text-xs text-muted-foreground mb-3 space-y-1">
+                  <p>Requested: {new Date(req.requestedAt).toLocaleString()}</p>
                 </div>
-              </div>
-              <div className="text-xs text-muted-foreground mb-3 space-y-1">
-                <p>Date: {req.date}</p>
-              </div>
-              
-              <div className="flex gap-2 mt-2">
-                <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs">
-                  <CheckCircle className="w-3 h-3 mr-1" /> Approve
-                </Button>
+                
+                {req.status === "PENDING" && (
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApprove(req.id);
+                      }}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" /> Approve
+                    </Button>
                 <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50 h-8 text-xs">
                   <XCircle className="w-3 h-3 mr-1" /> Reject
                 </Button>
