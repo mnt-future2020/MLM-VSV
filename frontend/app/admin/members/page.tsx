@@ -107,7 +107,18 @@ export default function ManageMembersPage() {
       fetchMembers();
       fetchPlans();
     }
-  }, [user, searchTerm, fetchMembers, fetchPlans]);
+  }, [user, fetchMembers, fetchPlans]);
+
+  // Debounced search
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        fetchMembers(searchTerm);
+      }
+    }, 500); // 500ms delay after user stops typing
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm, fetchMembers]);
 
   // View member details
   const [viewMemberDetails, setViewMemberDetails] = useState<any>(null);
