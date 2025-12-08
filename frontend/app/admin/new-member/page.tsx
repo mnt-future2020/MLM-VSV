@@ -108,7 +108,7 @@ export default function NewMemberPage() {
 
     setLoading(true);
     try {
-      const response = await axiosInstance.post('/api/auth/register', {
+      const registerData: any = {
         name: formData.fullName,
         username: formData.username,
         email: formData.email,
@@ -116,11 +116,24 @@ export default function NewMemberPage() {
         mobile: formData.mobile,
         referralId: formData.sponsorId,
         placement: formData.placement
-      });
+      };
+
+      // Add plan if selected
+      if (formData.planId && formData.planId !== "no-plan") {
+        registerData.planId = formData.planId;
+      }
+
+      const response = await axiosInstance.post('/api/auth/register', registerData);
 
       if (response.data.success) {
         toast.success("Member registered successfully!");
         toast.success(`Referral ID: ${response.data.user.referralId}`, { duration: 10000 });
+        
+        // If plan was selected, show additional message
+        if (formData.planId && formData.planId !== "no-plan") {
+          toast.success("Plan assigned successfully!", { duration: 5000 });
+        }
+        
         handleReset();
       }
     } catch (error: any) {
