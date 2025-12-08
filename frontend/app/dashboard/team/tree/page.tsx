@@ -39,57 +39,68 @@ function TreeNodeComponent({ node, isRoot = false }: { node: TreeNode; isRoot?: 
         <div className="flex flex-col items-center gap-1">
           <div
             className={cn(
-              "w-12 h-12 rounded-full flex items-center justify-center mb-2 shadow-sm",
+              "w-12 h-12 rounded-full flex items-center justify-center mb-2",
               isRoot
-                ? "bg-primary-100 text-primary-600"
+                ? "bg-primary-500"
                 : isLeft
-                ? "bg-blue-100 text-blue-600"
-                : "bg-purple-100 text-purple-600"
+                ? "bg-blue-400"
+                : "bg-purple-400"
             )}
           >
-            <Users className="w-6 h-6" />
+            <Users className="w-6 h-6 text-white" />
           </div>
-          <p className="text-sm font-bold text-foreground">{node.name}</p>
-          <p className="text-xs text-muted-foreground font-medium">{node.id}</p>
-          {node.package && (
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full mt-1 border border-primary-100">
-              {node.package}
-            </span>
+          <p className="text-sm font-bold text-foreground text-center">{node.name}</p>
+          <p className="text-xs text-muted-foreground">{node.referralId}</p>
+          {node.currentPlan && (
+            <div className="mt-2 px-3 py-1 rounded-full bg-primary-50 border border-primary-200">
+              <p className="text-xs font-medium text-primary-700">{node.currentPlan}</p>
+            </div>
+          )}
+          {!node.isActive && (
+            <div className="mt-1 px-2 py-0.5 rounded-full bg-red-50 border border-red-200">
+              <p className="text-xs font-medium text-red-600">Inactive</p>
+            </div>
           )}
         </div>
-        
-        {/* Position Badge */}
-        {!isRoot && (
-          <div className={cn(
-            "absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-white",
-            isLeft 
-              ? "text-blue-600 border-blue-200" 
-              : "text-purple-600 border-purple-200"
-          )}>
-            {node.position.toUpperCase()}
-          </div>
-        )}
       </div>
 
       {/* Children */}
-      {node.children && node.children.length > 0 && (
+      {(node.left || node.right) && (
         <>
-          {/* Connector Line */}
+          {/* Vertical Line Down */}
           <div className="w-0.5 h-8 bg-border my-2"></div>
 
           {/* Horizontal Line */}
           <div className="relative w-full">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-0.5 bg-border"></div>
             <div className="flex justify-around gap-8 pt-2">
-              {node.children.map((child) => (
-                <div key={child.id} className="relative">
-                  {/* Vertical connector */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-border"></div>
-                  <div className="pt-8">
-                    <TreeNodeComponent node={child} />
-                  </div>
+              {/* Left Child */}
+              <div className="relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-border"></div>
+                <div className="pt-8">
+                  {node.left ? (
+                    <TreeNodeComponent node={node.left} />
+                  ) : (
+                    <div className="px-6 py-4 rounded-xl border-2 border-dashed border-border bg-muted/30 min-w-[160px] flex items-center justify-center">
+                      <p className="text-xs text-muted-foreground">Empty</p>
+                    </div>
+                  )}
                 </div>
-              ))}
+              </div>
+
+              {/* Right Child */}
+              <div className="relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-border"></div>
+                <div className="pt-8">
+                  {node.right ? (
+                    <TreeNodeComponent node={node.right} />
+                  ) : (
+                    <div className="px-6 py-4 rounded-xl border-2 border-dashed border-border bg-muted/30 min-w-[160px] flex items-center justify-center">
+                      <p className="text-xs text-muted-foreground">Empty</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </>
@@ -99,6 +110,55 @@ function TreeNodeComponent({ node, isRoot = false }: { node: TreeNode; isRoot?: 
 }
 
 export default function BinaryTreePage() {
+  const { user } = useAuth();
+  const [treeData, setTreeData] = useState<TreeNode | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTree = async () => {
+      try {
+        const response = await axiosInstance.get('/api/user/team/tree');
+        if (response.data.success) {
+          setTreeData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching tree:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchTree();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="full">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (!treeData) {
+    return (
+      <PageContainer maxWidth="full">
+        <PageHeader
+          icon={<Network className="w-6 h-6 text-white" />}
+          title="Binary Tree View"
+          subtitle="Visualize your network structure"
+        />
+        <div className="bg-card border border-border rounded-xl p-12 text-center">
+          <Network className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-lg text-muted-foreground">No team data available</p>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer maxWidth="full">
       <PageHeader
@@ -128,7 +188,7 @@ export default function BinaryTreePage() {
         </div>
         
         <div className="flex justify-center min-w-max z-10">
-          <TreeNodeComponent node={treeData} />
+          <TreeNodeComponent node={treeData} isRoot={true} />
         </div>
       </div>
 
@@ -140,11 +200,11 @@ export default function BinaryTreePage() {
           <span className="text-sm text-muted-foreground">You (Root)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+          <div className="w-3 h-3 rounded-full bg-blue-400"></div>
           <span className="text-sm text-muted-foreground">Left Team</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+          <div className="w-3 h-3 rounded-full bg-purple-400"></div>
           <span className="text-sm text-muted-foreground">Right Team</span>
         </div>
       </div>
