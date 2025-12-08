@@ -35,8 +35,8 @@ class MLMAPITester:
             self.failed_tests.append(f"{name}: {details}")
 
     def make_request(self, method: str, endpoint: str, data: Optional[Dict] = None, 
-                    token: Optional[str] = None, expected_status: int = 200) -> tuple[bool, Dict]:
-        """Make HTTP request and return success status and response data"""
+                    token: Optional[str] = None, expected_status: int = 200) -> tuple[bool, Dict, float]:
+        """Make HTTP request and return success status, response data, and response time"""
         url = f"{self.base_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
         
@@ -44,25 +44,30 @@ class MLMAPITester:
             headers['Authorization'] = f'Bearer {token}'
 
         try:
+            start_time = time.time()
+            
             if method == 'GET':
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, timeout=10)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers)
+                response = requests.post(url, json=data, headers=headers, timeout=10)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers)
+                response = requests.put(url, json=data, headers=headers, timeout=10)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=headers)
+                response = requests.delete(url, headers=headers, timeout=10)
 
+            response_time = time.time() - start_time
+            self.response_times.append(response_time)
+            
             success = response.status_code == expected_status
             try:
                 response_data = response.json()
             except:
-                response_data = {"raw_response": response.text}
+                response_data = {"raw_response": response.text, "status_code": response.status_code}
 
-            return success, response_data
+            return success, response_data, response_time
 
         except Exception as e:
-            return False, {"error": str(e)}
+            return False, {"error": str(e)}, 0.0
 
     def test_health_check(self):
         """Test health check endpoint"""
