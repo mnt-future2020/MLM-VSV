@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
