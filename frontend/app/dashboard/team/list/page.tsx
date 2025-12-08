@@ -43,8 +43,13 @@ export default function TeamListPage() {
         if (response.data.success) {
           setTeamMembers(response.data.data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching team list:", error);
+        // Show error in UI instead of toast to avoid confusion
+        if (error.response?.status === 401) {
+          // Token expired, user will be redirected by axios interceptor
+          return;
+        }
       } finally {
         setLoading(false);
       }
