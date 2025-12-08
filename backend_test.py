@@ -204,15 +204,15 @@ class MLMAPITester:
         self.log_test("GET /api/user/dashboard", success and data.get('success'), response_time=response_time)
 
     def test_plan_activation(self):
-        """Test plan activation"""
+        """Test plan activation - POST /api/plans/activate"""
         if not self.user_token or not self.test_plan_id:
-            self.log_test("Plan Activation", False, "Missing user token or plan ID")
+            self.log_test("POST /api/plans/activate", False, "Missing user token or plan ID")
             return False
             
         activation_data = {"planId": self.test_plan_id}
-        success, data = self.make_request('POST', 'api/plans/activate', activation_data, 
+        success, data, response_time = self.make_request('POST', 'api/plans/activate', activation_data, 
                                         token=self.user_token)
-        self.log_test("Plan Activation", success and data.get('success'))
+        self.log_test("POST /api/plans/activate", success and data.get('success'), response_time=response_time)
 
     def test_wallet_balance(self):
         """Test wallet balance - GET /api/wallet/balance"""
