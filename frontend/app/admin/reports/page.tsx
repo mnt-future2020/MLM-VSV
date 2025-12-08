@@ -170,15 +170,33 @@ export default function AdminReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Income Summary */}
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold text-foreground mb-6">Income Summary</h3>
+          <h3 className="font-semibold text-foreground mb-6">Income Breakdown</h3>
           <div className="space-y-6">
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Binary Matching Bonus</span>
-                <span className="font-medium text-foreground">₹12,45,000</span>
+                <span className="text-muted-foreground">Referral Income</span>
+                <span className="font-medium text-foreground">₹{reportsData.incomeBreakdown.REFERRAL_INCOME.toLocaleString()}</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 w-[75%] rounded-full" />
+                <div className="h-full bg-blue-500 w-[75%] rounded-full" />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Matching Income</span>
+                <span className="font-medium text-foreground">₹{reportsData.incomeBreakdown.MATCHING_INCOME.toLocaleString()}</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-purple-500 w-[50%] rounded-full" />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Level Income</span>
+                <span className="font-medium text-foreground">₹{reportsData.incomeBreakdown.LEVEL_INCOME.toLocaleString()}</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-green-500 w-[30%] rounded-full" />
               </div>
             </div>
             <div>
