@@ -18,11 +18,19 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 
+interface Plan {
+  id: string;
+  name: string;
+  amount: number;
+  isActive: boolean;
+}
+
 export default function NewMemberPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [searchingSponsor, setSearchingSponsor] = useState(false);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [formData, setFormData] = useState({
     sponsorId: user?.referralId || "",
     sponsorName: user?.name || "",
@@ -34,7 +42,23 @@ export default function NewMemberPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    planId: "",
   });
+
+  // Fetch available plans
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await axiosInstance.get('/api/plans');
+        if (response.data.success) {
+          setPlans(response.data.data.filter((p: Plan) => p.isActive));
+        }
+      } catch (error) {
+        console.error("Error fetching plans:", error);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   const handleSearchSponsor = async () => {
     if (!formData.sponsorId) {
