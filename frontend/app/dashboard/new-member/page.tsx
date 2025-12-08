@@ -119,7 +119,7 @@ export default function NewMemberPage() {
       };
 
       // Add plan if selected
-      if (formData.planId) {
+      if (formData.planId && formData.planId !== "no-plan") {
         registerData.planId = formData.planId;
       }
 
