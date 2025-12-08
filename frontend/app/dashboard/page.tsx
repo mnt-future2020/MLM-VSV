@@ -135,12 +135,8 @@ export default function UserDashboard() {
             </Link>
           </div>
           <div className="space-y-4">
-            {[
-              { type: "Matching Income", amount: "+₹450", date: "Today", status: "Credit" },
-              { type: "Referral Bonus", amount: "+₹200", date: "Yesterday", status: "Credit" },
-              { type: "Withdrawal", amount: "-₹5,000", date: "2 days ago", status: "Debit" },
-              { type: "Top Up", amount: "-₹1,000", date: "3 days ago", status: "Debit" },
-            ].map((transaction, index) => (
+            {dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0 ? (
+              dashboardData.recentTransactions.slice(0, 4).map((transaction: any, index: number) => (
               <div
                 key={index}
                 className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors"
