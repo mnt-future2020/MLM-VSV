@@ -45,16 +45,19 @@ export default function AdminTeamListPage() {
     const fetchTeamData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/api/team/all');
+        const response = await axiosInstance.get('/api/admin/team/all');
         if (response.data.success) {
           setTeamMembers(response.data.data.members);
           setStats(response.data.data.stats);
         }
       } catch (error: any) {
         console.error('Failed to fetch team data:', error);
-        toast.error('Failed to load team data', {
-          description: error.response?.data?.message || 'Please try again',
-        });
+        // Only show toast for non-auth errors
+        if (error.response?.status !== 401) {
+          toast.error('Failed to load team data', {
+            description: error.response?.data?.message || 'Please try again',
+          });
+        }
       } finally {
         setLoading(false);
       }
