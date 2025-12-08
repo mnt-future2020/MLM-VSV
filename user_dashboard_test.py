@@ -339,7 +339,7 @@ class UserDashboardTester:
         """Run all user dashboard tests"""
         print("🚀 Starting User Dashboard Testing...")
         print("=" * 60)
-        print("Testing User: udhay@mntfuture.com")
+        print("Testing User: dashtest205132@example.com (Test User)")
         print("Focus: Verify REAL data from APIs, not dummy data")
         print("=" * 60)
         
