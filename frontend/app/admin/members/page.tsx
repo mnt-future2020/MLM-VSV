@@ -67,7 +67,7 @@ export default function ManageMembersPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/api/admin/users', {
@@ -84,9 +84,9 @@ export default function ManageMembersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm]);
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/api/plans");
       if (response.data.success) {
@@ -95,7 +95,7 @@ export default function ManageMembersPage() {
     } catch (error) {
       console.error("Error fetching plans:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (user && user.role === 'admin') {
