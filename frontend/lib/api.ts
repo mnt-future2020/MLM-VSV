@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Use environment variable if available, otherwise localhost
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+// Use empty string for relative URLs (Next.js will proxy to backend)
+// This allows /api calls to be proxied to backend via next.config.ts
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // Create axios instance with default config
 export const axiosInstance = axios.create({
