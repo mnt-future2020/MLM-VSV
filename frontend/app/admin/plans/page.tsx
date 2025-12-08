@@ -224,7 +224,7 @@ export default function AdminPlansPage() {
         title="Plans Management"
         subtitle="Manage membership plans and pricing"
         action={
-          <Button className="bg-primary-600 hover:bg-primary-700">
+          <Button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700">
             <Plus className="w-4 h-4 mr-2" />
             Create New Plan
           </Button>
