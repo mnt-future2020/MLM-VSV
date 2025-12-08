@@ -105,55 +105,44 @@ class MLMAPITester:
             return False
 
     def test_user_registration(self):
-        """Test user registration with referral"""
+        """Test user registration - POST /api/auth/register"""
         timestamp = datetime.now().strftime("%H%M%S")
         user_data = {
-            "name": f"Test User {timestamp}",
-            "username": f"testuser{timestamp}",
-            "email": f"test{timestamp}@example.com",
+            "name": f"API Test User {timestamp}",
+            "username": f"apitest{timestamp}",
+            "email": f"apitest{timestamp}@example.com",
             "password": "Test@123",
             "mobile": f"98765{timestamp}",
             "referralId": "VSV00001",  # Admin's referral ID
             "placement": "LEFT"
         }
         
-        success, data = self.make_request('POST', 'api/auth/register', user_data, expected_status=200)
+        success, data, response_time = self.make_request('POST', 'api/auth/register', user_data, expected_status=200)
         
         if success and data.get('token'):
-            self.user_token = data['token']
             self.test_user_id = data['user']['id']
-            self.log_test("User Registration", True)
+            self.log_test("POST /api/auth/register", True, response_time=response_time)
             return True
         else:
-            self.log_test("User Registration", False, f"Response: {data}")
+            self.log_test("POST /api/auth/register", False, f"Response: {data}")
             return False
 
-    def test_user_login(self):
-        """Test user login with email"""
-        login_data = {
-            "email": f"test{datetime.now().strftime('%H%M%S')}@example.com",
-            "password": "Test@123"
-        }
-        
-        success, data = self.make_request('POST', 'api/auth/sign-in/email', login_data)
-        
-        if success and data.get('token'):
-            self.log_test("User Login", True)
-            return True
-        else:
-            # Try with existing test user
-            if self.user_token:
-                self.log_test("User Login", True, "Using existing token")
-                return True
-            self.log_test("User Login", False, f"Response: {data}")
-            return False
+    def test_get_session(self):
+        """Test get session - GET /api/auth/get-session"""
+        success, data, response_time = self.make_request('GET', 'api/auth/get-session')
+        self.log_test("GET /api/auth/get-session", success, response_time=response_time)
+
+    def test_sign_out(self):
+        """Test sign out - POST /api/auth/sign-out"""
+        success, data, response_time = self.make_request('POST', 'api/auth/sign-out')
+        self.log_test("POST /api/auth/sign-out", success and data.get('success'), response_time=response_time)
 
     def test_referral_lookup(self):
-        """Test referral ID lookup"""
+        """Test referral ID lookup - POST /api/auth/lookup-referral"""
         lookup_data = {"referralId": "VSV00001"}
         
-        success, data = self.make_request('POST', 'api/auth/lookup-referral', lookup_data)
-        self.log_test("Referral Lookup", success and data.get('success'))
+        success, data, response_time = self.make_request('POST', 'api/auth/lookup-referral', lookup_data)
+        self.log_test("POST /api/auth/lookup-referral", success and data.get('success'), response_time=response_time)
 
     def test_get_plans(self):
         """Test get all plans"""
