@@ -113,6 +113,12 @@ export default function DashboardLayout({
       icon: <FileText className="w-5 h-5" />,
       isActive: pathname === "/dashboard/payout-reports",
     },
+    {
+      label: "Logout",
+      href: "/logout",
+      icon: <Lock className="w-5 h-5" />,
+      isActive: false,
+    },
   ];
 
   // Handle link clicks
