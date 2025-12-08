@@ -232,7 +232,7 @@ export default function NewMemberPage() {
                   <SelectValue placeholder="No plan (can be assigned later)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Plan</SelectItem>
+                  <SelectItem value="no-plan">No Plan</SelectItem>
                   {plans.map((plan) => (
                     <SelectItem key={plan.id} value={plan.id}>
                       {plan.name} - ₹{plan.amount}
