@@ -121,25 +121,25 @@ export default function PayoutManagementPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Pending Requests"
-          value="4"
+          value={String(pendingPayouts.length)}
           icon={<Clock className="w-6 h-6 text-orange-600" />}
           gradient="bg-orange-500"
         />
         <StatsCard
           label="Pending Amount"
-          value="₹32,500"
+          value={`₹${pendingPayouts.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
         />
         <StatsCard
-          label="Approved Today"
-          value="8"
+          label="Approved"
+          value={String(approvedPayouts.length)}
           icon={<CheckCircle className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
         />
         <StatsCard
-          label="Total Paid Today"
-          value="₹1,24,000"
+          label="Total Approved"
+          value={`₹${approvedPayouts.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
         />
