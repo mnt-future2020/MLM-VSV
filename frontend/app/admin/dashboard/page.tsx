@@ -68,31 +68,31 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Total Users"
-          value={String(stats?.users?.total || 0)}
+          value={String(stats?.overview?.totalUsers || 0)}
           icon={<Users className="w-6 h-6 text-primary-600" />}
           gradient="bg-primary-500"
-          trend={{ value: `${stats?.users?.active || 0} active`, isPositive: true }}
+          trend={{ value: `${stats?.overview?.activeUsers || 0} active`, isPositive: true }}
         />
         <StatsCard
           label="Active Users"
-          value={String(stats?.users?.active || 0)}
+          value={String(stats?.overview?.activeUsers || 0)}
           icon={<TrendingUp className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
-          trend={{ value: `${stats?.users?.inactive || 0} inactive`, isPositive: false }}
+          trend={{ value: `${stats?.overview?.inactiveUsers || 0} inactive`, isPositive: false }}
+        />
+        <StatsCard
+          label="With Plans"
+          value={String(stats?.overview?.withPlans || 0)}
+          icon={<Package className="w-6 h-6 text-purple-600" />}
+          gradient="bg-purple-500"
+          trend={{ value: "Active memberships", isPositive: true }}
         />
         <StatsCard
           label="Total Earnings"
-          value={`₹${stats?.earnings?.totalEarnings || 0}`}
+          value={`₹${stats?.overview?.totalEarnings || 0}`}
           icon={<DollarSign className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
-          trend={{ value: `Balance: ₹${stats?.earnings?.totalBalance || 0}`, isPositive: true }}
-        />
-        <StatsCard
-          label="Pending Withdrawals"
-          value={String(stats?.pendingWithdrawals || 0)}
-          icon={<AlertCircle className="w-6 h-6 text-orange-600" />}
-          gradient="bg-orange-500"
-          trend={{ value: "Requires action", isPositive: false }}
+          trend={{ value: `Withdrawals: ₹${stats?.overview?.totalWithdrawals || 0}`, isPositive: true }}
         />
       </div>
 
