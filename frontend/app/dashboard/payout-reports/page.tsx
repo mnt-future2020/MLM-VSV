@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText, DollarSign, AlertCircle, Clock, Receipt } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,50 +15,121 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { axiosInstance } from "@/lib/api";
 
 type WithdrawalRequest = {
   id: string;
-  date: string;
+  createdAt: string;
   amount: number;
-  method: string;
-  status: "Completed" | "Processing" | "Pending";
-  processedDate?: string;
+  paymentMethod?: string;
+  status: string;
+  approvedAt?: string;
 };
 
-const withdrawalHistory: WithdrawalRequest[] = [
-  { id: "WD001", date: "2025-11-20", amount: 10000, method: "Bank Transfer", status: "Completed", processedDate: "2025-11-22" },
-  { id: "WD002", date: "2025-11-15", amount: 5000, method: "UPI", status: "Completed", processedDate: "2025-11-16" },
-  { id: "WD003", date: "2025-11-10", amount: 7500, method: "Bank Transfer", status: "Processing" },
-  { id: "WD004", date: "2025-11-05", amount: 12000, method: "Bank Transfer", status: "Completed", processedDate: "2025-11-07" },
-];
-
 export default function PayoutReportsPage() {
+  const { user } = useAuth();
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
   const [remarks, setRemarks] = useState("");
+  const [withdrawalHistory, setWithdrawalHistory] = useState<WithdrawalRequest[]>([]);
+  const [walletData, setWalletData] = useState({ balance: 0, totalWithdrawals: 0 });
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const availableBalance = 42500;
-  const pendingWithdrawals = 7500;
-  const totalWithdrawn = 82000;
-  const maxWithdrawal = 42500;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch wallet balance
+        const walletRes = await axiosInstance.get('/api/wallet/balance');
+        if (walletRes.data.success) {
+          setWalletData(walletRes.data.data);
+        }
 
-  const handleSubmit = (e: React.FormEvent) => {
+        // Fetch withdrawal history
+        const historyRes = await axiosInstance.get('/api/withdrawal/history');
+        if (historyRes.data.success) {
+          setWithdrawalHistory(historyRes.data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const pendingWithdrawals = withdrawalHistory
+    .filter(w => w.status === "PENDING")
+    .reduce((sum, w) => sum + w.amount, 0);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Withdrawal request:", { withdrawalAmount, paymentMethod, remarks });
+    if (!withdrawalAmount || parseFloat(withdrawalAmount) < 1000) {
+      alert("Minimum withdrawal amount is ₹1,000");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const response = await axiosInstance.post('/api/withdrawal/request', {
+        amount: parseFloat(withdrawalAmount),
+        paymentMethod,
+        remarks
+      });
+
+      if (response.data.success) {
+        alert("Withdrawal request submitted successfully!");
+        setWithdrawalAmount("");
+        setRemarks("");
+        
+        // Refresh data
+        const historyRes = await axiosInstance.get('/api/withdrawal/history');
+        if (historyRes.data.success) {
+          setWithdrawalHistory(historyRes.data.data || []);
+        }
+
+        const walletRes = await axiosInstance.get('/api/wallet/balance');
+        if (walletRes.data.success) {
+          setWalletData(walletRes.data.data);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error submitting withdrawal:", error);
+      alert(error.response?.data?.detail || "Failed to submit withdrawal request");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Completed":
+    switch (status.toUpperCase()) {
+      case "APPROVED":
         return "text-green-700 bg-green-50 border-green-200";
-      case "Processing":
+      case "PROCESSING":
         return "text-yellow-700 bg-yellow-50 border-yellow-200";
-      case "Pending":
+      case "PENDING":
         return "text-orange-700 bg-orange-50 border-orange-200";
+      case "REJECTED":
+        return "text-red-700 bg-red-50 border-red-200";
       default:
         return "text-muted-foreground bg-muted border-border";
     }
   };
+
+  if (loading) {
+    return (
+      <PageContainer maxWidth="xl">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="xl">
@@ -72,7 +143,7 @@ export default function PayoutReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <StatsCard
           label="Available Balance"
-          value={`₹${availableBalance.toLocaleString()}`}
+          value={`₹${walletData.balance.toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-white" />}
           gradient="bg-gradient-to-br from-green-500 to-emerald-600 text-white"
           className="bg-green-600 border-green-500 text-white"
@@ -85,7 +156,7 @@ export default function PayoutReportsPage() {
         />
         <StatsCard
           label="Total Withdrawn"
-          value={`₹${totalWithdrawn.toLocaleString()}`}
+          value={`₹${walletData.totalWithdrawals.toLocaleString()}`}
           icon={<Receipt className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
         />
@@ -121,10 +192,11 @@ export default function PayoutReportsPage() {
                     value={withdrawalAmount}
                     onChange={(e) => setWithdrawalAmount(e.target.value)}
                     className="pl-8"
+                    min="1000"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Available: ₹{maxWithdrawal.toLocaleString()}
+                  Available: ₹{walletData.balance.toLocaleString()}
                 </p>
               </div>
 
@@ -159,9 +231,10 @@ export default function PayoutReportsPage() {
               <div className="pt-4 space-y-3">
                 <Button
                   type="submit"
+                  disabled={submitting}
                   className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 shadow-lg shadow-primary-500/20"
                 >
-                  Submit Request
+                  {submitting ? "Submitting..." : "Submit Request"}
                 </Button>
                 <Button
                   type="button"
@@ -190,7 +263,6 @@ export default function PayoutReportsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">ID</th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Date</th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Amount</th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Method</th>
@@ -199,30 +271,41 @@ export default function PayoutReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {withdrawalHistory.map((request, index) => (
-                    <tr
-                      key={request.id}
-                      className={cn(
-                        "border-b border-border hover:bg-muted/50 transition-colors",
-                        index === withdrawalHistory.length - 1 && "border-0"
-                      )}
-                    >
-                      <td className="px-6 py-4 text-sm font-medium text-foreground">{request.id}</td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">{request.date}</td>
-                      <td className="px-6 py-4 text-sm font-semibold text-foreground">
-                        ₹{request.amount.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">{request.method}</td>
-                      <td className="px-6 py-4">
-                        <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium border", getStatusColor(request.status))}>
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">
-                        {request.processedDate || "-"}
+                  {withdrawalHistory.length > 0 ? (
+                    withdrawalHistory.map((request, index) => (
+                      <tr
+                        key={request.id}
+                        className={cn(
+                          "border-b border-border hover:bg-muted/50 transition-colors",
+                          index === withdrawalHistory.length - 1 && "border-0"
+                        )}
+                      >
+                        <td className="px-6 py-4 text-sm text-muted-foreground">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold text-foreground">
+                          ₹{request.amount.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">
+                          {request.paymentMethod || "N/A"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium border", getStatusColor(request.status))}>
+                            {request.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">
+                          {request.approvedAt ? new Date(request.approvedAt).toLocaleDateString() : "-"}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                        No withdrawal history
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
