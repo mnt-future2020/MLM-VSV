@@ -199,7 +199,7 @@ function TreeNodeComponent({
         </div>
         
         {/* Position Badge */}
-        {!isRoot && (
+        {!isRoot && node.position && (
           <div className={cn(
             "absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-white",
             isLeft 
