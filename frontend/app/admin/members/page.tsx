@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Search, Filter, MoreVertical, Edit, Trash2, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Users, Search, Filter, MoreVertical, Edit, Trash2, Eye, CheckCircle, XCircle, Clock, Key, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,11 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
 
 type Member = {
   id: string;
@@ -26,6 +36,7 @@ type Member = {
   isActive: boolean;
   joinedAt: string;
   sponsorId?: string;
+  username?: string;
 };
 
 export default function ManageMembersPage() {
@@ -34,6 +45,25 @@ export default function ManageMembersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  
+  // Dialog states
+  const [viewDialog, setViewDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [resetPasswordDialog, setResetPasswordDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+  });
+  
+  // Password reset state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     const fetchMembers = async () => {
