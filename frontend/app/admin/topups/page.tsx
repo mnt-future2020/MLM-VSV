@@ -117,7 +117,7 @@ export default function ManageTopupsPage() {
         action={
           <div className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium border border-orange-200 flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            5 Pending
+            {pendingTopups.length} Pending
           </div>
         }
       />
@@ -126,25 +126,25 @@ export default function ManageTopupsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Pending Requests"
-          value="5"
+          value={String(pendingTopups.length)}
           icon={<Clock className="w-6 h-6 text-orange-600" />}
           gradient="bg-orange-500"
         />
         <StatsCard
           label="Pending Amount"
-          value="₹1,00,000"
+          value={`₹${pendingTopups.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
         />
         <StatsCard
-          label="Approved Today"
-          value="12"
+          label="Approved"
+          value={String(approvedTopups.length)}
           icon={<CheckCircle className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
         />
         <StatsCard
-          label="Total Today"
-          value="₹2,45,000"
+          label="Total Approved"
+          value={`₹${approvedTopups.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
         />
