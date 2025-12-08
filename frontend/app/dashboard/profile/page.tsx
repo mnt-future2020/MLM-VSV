@@ -1,221 +1,203 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, MapPin, Calendar, Camera } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, Calendar, MapPin, Edit, Copy, Check } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
+import { axiosInstance } from "@/lib/api";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "John Doe",
-    memberId: "MLM-12345",
-    gender: "Male",
-    dateOfBirth: "1990-01-01",
-    email: "john.doe@example.com",
-    mobile: "+1 234 567 8900",
-    street: "123 Main Street",
-    city: "New York",
-    state: "NY",
-    country: "USA",
-    pinCode: "10001",
-  });
+  const { user, refreshUser } = useAuth();
+  const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Profile updated:", formData);
-    setIsEditing(false);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axiosInstance.get('/api/user/profile');
+        if (response.data.success) {
+          setProfile(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const copyReferralLink = () => {
+    const link = `${window.location.origin}/register?ref=${profile?.referralId}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
+  if (loading) {
+    return (
+      <PageContainer maxWidth="2xl">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="2xl">
       <PageHeader
         icon={<User className="w-6 h-6 text-white" />}
-        title="Personal Details"
-        subtitle="Update your personal information"
+        title="My Profile"
+        subtitle="View and manage your account information"
+        action={
+          <Link href="/dashboard/profile/edit">
+            <Button className="bg-primary-600 hover:bg-primary-700">
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Profile
+            </Button>
+          </Link>
+        }
       />
 
-      {/* Profile Card */}
-      <div className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
-        {/* Profile Header */}
-        <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 pb-6 border-b border-border">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center border-4 border-background shadow-lg">
-              <User className="w-12 h-12 text-primary-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Card */}
+        <div className="lg:col-span-1">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm text-center">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center mx-auto mb-4">
+              <User className="w-12 h-12 text-white" />
             </div>
-            <button className="absolute bottom-0 right-0 p-2 rounded-full bg-primary-500 text-white shadow-md hover:bg-primary-600 transition-colors">
-              <Camera className="w-4 h-4" />
-            </button>
+            <h3 className="text-xl font-bold text-foreground mb-1">{profile?.name}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{profile?.email}</p>
+            <div className={cn(
+              "inline-flex px-3 py-1 rounded-full text-xs font-medium",
+              profile?.isActive ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"
+            )}>
+              {profile?.isActive ? "Active" : "Inactive"}
+            </div>
           </div>
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-foreground">{formData.fullName}</h2>
-            <p className="text-sm text-muted-foreground">Member ID: <span className="font-medium text-primary-600">{formData.memberId}</span></p>
+
+          {/* Referral Card */}
+          <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-6 shadow-lg mt-6 text-white">
+            <h4 className="font-semibold mb-2">Your Referral ID</h4>
+            <p className="text-2xl font-bold mb-4">{profile?.referralId}</p>
+            <Button
+              onClick={copyReferralLink}
+              className="w-full bg-white text-primary-600 hover:bg-gray-100"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Referral Link
+                </>
+              )}
+            </Button>
           </div>
-          <Button
-            onClick={() => setIsEditing(!isEditing)}
-            className="bg-primary-500 hover:bg-primary-600 text-white shadow-md"
-          >
-            {isEditing ? "Cancel Editing" : "Edit Profile"}
-          </Button>
         </div>
 
-        {/* Profile Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-primary-500" />
-              Basic Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label required>Full Name</Label>
-                <Input
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                  disabled={!isEditing}
-                />
+        {/* Details */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Personal Information */}
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Personal Information</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Full Name</p>
+                  <p className="font-semibold text-foreground">{profile?.name}</p>
+                </div>
               </div>
-              <div>
-                <Label required>Gender</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => setFormData({...formData, gender: value})}
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email Address</p>
+                  <p className="font-semibold text-foreground">{profile?.email || "Not provided"}</p>
+                </div>
               </div>
-              <div className="md:col-span-2">
-                <Label required>Date of Birth</Label>
-                <Input
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                  disabled={!isEditing}
-                  icon={<Calendar className="w-4 h-4" />}
-                />
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Mobile Number</p>
+                  <p className="font-semibold text-foreground">{profile?.mobile}</p>
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Phone className="w-5 h-5 text-primary-500" />
-              Contact Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label required>Email Address</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  disabled={!isEditing}
-                  icon={<Mail className="w-4 h-4" />}
-                />
-              </div>
-              <div>
-                <Label required>Mobile Number</Label>
-                <Input
-                  type="tel"
-                  value={formData.mobile}
-                  onChange={(e) => setFormData({...formData, mobile: e.target.value})}
-                  disabled={!isEditing}
-                  icon={<Phone className="w-4 h-4" />}
-                />
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Member Since</p>
+                  <p className="font-semibold text-foreground">
+                    {new Date(profile?.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Address Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-primary-500" />
-              Address Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <Label required>Street Address</Label>
-                <Input
-                  value={formData.street}
-                  onChange={(e) => setFormData({...formData, street: e.target.value})}
-                  disabled={!isEditing}
-                  icon={<MapPin className="w-4 h-4" />}
-                />
+          {/* MLM Information */}
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-4">MLM Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
+                <p className="font-semibold text-foreground">{profile?.currentPlan || "No Plan"}</p>
               </div>
-              <div>
-                <Label required>City</Label>
-                <Input
-                  value={formData.city}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  disabled={!isEditing}
-                />
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Sponsor ID</p>
+                <p className="font-semibold text-foreground">{profile?.sponsorId || "None"}</p>
               </div>
-              <div>
-                <Label required>State</Label>
-                <Input
-                  value={formData.state}
-                  onChange={(e) => setFormData({...formData, state: e.target.value})}
-                  disabled={!isEditing}
-                />
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Team Size</p>
+                <p className="font-semibold text-foreground">{profile?.teamSize || 0}</p>
               </div>
-              <div>
-                <Label required>Country</Label>
-                <Input
-                  value={formData.country}
-                  onChange={(e) => setFormData({...formData, country: e.target.value})}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label required>PIN Code</Label>
-                <Input
-                  value={formData.pinCode}
-                  onChange={(e) => setFormData({...formData, pinCode: e.target.value})}
-                  disabled={!isEditing}
-                />
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Total PV</p>
+                <p className="font-semibold text-foreground">{profile?.totalPV || 0}</p>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          {isEditing && (
-            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-border">
-              <Button
-                type="submit"
-                className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 shadow-lg shadow-primary-500/20"
-              >
-                Update Profile
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsEditing(false)}
-                className="px-8 py-6 border-border hover:bg-muted"
-              >
-                Cancel
-              </Button>
+          {/* Wallet Summary */}
+          {profile?.wallet && (
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Wallet Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-700 mb-1">Balance</p>
+                  <p className="text-2xl font-bold text-green-700">₹{profile.wallet.balance}</p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700 mb-1">Total Earnings</p>
+                  <p className="text-2xl font-bold text-blue-700">₹{profile.wallet.totalEarnings}</p>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <p className="text-sm text-purple-700 mb-1">Withdrawals</p>
+                  <p className="text-2xl font-bold text-purple-700">₹{profile.wallet.totalWithdrawals}</p>
+                </div>
+              </div>
             </div>
           )}
-        </form>
+        </div>
       </div>
     </PageContainer>
   );
