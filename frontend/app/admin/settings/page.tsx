@@ -104,6 +104,7 @@ export default function SettingsPage() {
           companyAddress: data.companyAddress || "123 Business Street, City, State, PIN",
           companyDescription: data.companyDescription || "A transparent, automated MLM system built on Binary + PV earning model",
           pvIncomeRate: data.pvIncomeRate || "25",
+          minimumWithdrawLimit: data.minimumWithdrawLimit || "1000",
         });
 
         // Update SEO settings
