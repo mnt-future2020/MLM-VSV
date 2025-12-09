@@ -255,9 +255,21 @@ export default function AdminTeamListPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-foreground">{member.currentPlan}</td>
                   <td className="px-6 py-4">
-                    <span className={cn("px-2.5 py-0.5 rounded-md text-xs font-medium border", getRankColor(member.rank))}>
-                      {member.rank}
-                    </span>
+                    {member.rank ? (
+                      <span 
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium border"
+                        style={{ 
+                          backgroundColor: `${member.rank.color}15`, 
+                          borderColor: member.rank.color,
+                          color: member.rank.color
+                        }}
+                      >
+                        <span>{member.rank.icon}</span>
+                        <span>{member.rank.name}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <span
