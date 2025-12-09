@@ -246,7 +246,10 @@ export default function AdminReportsPage() {
         }
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => {
+        setActiveTab(value);
+        setReportData([]); // Clear report data when switching tabs
+      }} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8 bg-muted">
           <TabsTrigger value="users">
             <Users className="w-4 h-4 mr-2" />
