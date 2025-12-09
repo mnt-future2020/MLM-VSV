@@ -25,6 +25,21 @@ export default function WithdrawalRequestPage() {
     branch: ""
   });
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axiosInstance.get('/api/settings/public');
+        if (response.data.success && response.data.data) {
+          const limit = parseInt(response.data.data.minimumWithdrawLimit || "1000");
+          setMinimumLimit(limit);
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
