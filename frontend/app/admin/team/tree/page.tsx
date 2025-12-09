@@ -335,6 +335,30 @@ function UserDetailsModal({
               </div>
             </div>
 
+            {/* Income Breakdown */}
+            {userDetails.incomeBreakdown && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Income Breakdown
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-amber-700">Referral Income</p>
+                    <p className="text-lg font-bold text-amber-900">₹{userDetails.incomeBreakdown.REFERRAL_INCOME || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-amber-700">Matching Income</p>
+                    <p className="text-lg font-bold text-amber-900">₹{userDetails.incomeBreakdown.MATCHING_INCOME || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-amber-700">Level Income</p>
+                    <p className="text-lg font-bold text-amber-900">₹{userDetails.incomeBreakdown.LEVEL_INCOME || 0}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* PV Stats */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
               <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
