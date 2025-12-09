@@ -28,6 +28,7 @@ export default function SettingsPage() {
     companyAddress: "123 Business Street, City, State, PIN",
     companyDescription: "A transparent, automated MLM system built on Binary + PV earning model",
     pvIncomeRate: "25", // PV to Income conversion rate (PV × rate = income)
+    minimumWithdrawLimit: "1000", // Minimum withdrawal amount
   });
 
   // SEO Settings State
