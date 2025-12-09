@@ -52,70 +52,32 @@ export default function TopUpPage() {
     }
   }, [user]);
 
-  const handleMemberSearch = async () => {
-    if (!formData.memberId) return;
-
-    try {
-      const response = await axiosInstance.get(`/api/user/referral/${formData.memberId}`);
-      if (response.data.success && response.data.data) {
-        setFormData({ ...formData, memberName: response.data.data.name });
-      } else {
-        alert("Member not found");
-        setFormData({ ...formData, memberName: "" });
-      }
-    } catch (error) {
-      console.error("Error searching member:", error);
-      alert("Failed to find member");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleActivatePlan = async () => {
     if (!selectedPlan) {
-      alert("Please select a plan");
-      return;
-    }
-
-    if (!formData.memberId) {
-      alert("Please enter member ID");
-      return;
-    }
-
-    if (!formData.transactionDetails) {
-      alert("Please enter transaction details");
+      toast.error("Please select a plan");
       return;
     }
 
     try {
       setSubmitting(true);
-      const response = await axiosInstance.post('/api/topup/request', {
-        userId: formData.memberId,
-        planId: selectedPlan,
-        paymentMethod: formData.paymentMode,
-        transactionDetails: formData.transactionDetails,
+      const response = await axiosInstance.post('/api/plans/activate', {
+        planId: selectedPlan
       });
 
       if (response.data.success) {
-        alert("Top up request submitted successfully!");
-        handleReset();
+        toast.success("Plan activated successfully!");
+        setCurrentPlan(selectedPlan);
+        setSelectedPlan("");
+        
+        // Reload user data
+        window.location.reload();
       }
     } catch (error: any) {
-      console.error("Error submitting top up:", error);
-      alert(error.response?.data?.detail || "Failed to submit top up request");
+      console.error("Error activating plan:", error);
+      toast.error(error.response?.data?.detail || "Failed to activate plan");
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleReset = () => {
-    setSelectedPlan("");
-    setFormData({
-      memberId: "",
-      memberName: "",
-      paymentMode: "Bank Transfer",
-      transactionDetails: "",
-    });
   };
 
   if (loading) {
