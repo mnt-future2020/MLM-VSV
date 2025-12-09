@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-interface Activation {
+interface Transaction {
   id: string;
+  type: string;
   userName: string;
   userReferralId: string;
   amount: number;
@@ -20,8 +21,9 @@ export default function AdminEarningsPage() {
   const [loading, setLoading] = useState(true);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [totalActivations, setTotalActivations] = useState(0);
+  const [incomeBreakdown, setIncomeBreakdown] = useState<Record<string, number>>({});
   const [incomeByPlan, setIncomeByPlan] = useState<Record<string, number>>({});
-  const [recentActivations, setRecentActivations] = useState<Activation[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     const fetchEarnings = async () => {
