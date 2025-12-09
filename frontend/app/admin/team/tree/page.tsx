@@ -386,23 +386,7 @@ function UserDetailsModal({
             </div>
 
             {/* Team Stats */}
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-              <h3 className="font-semibold text-purple-900 mb-3">Team Statistics</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs text-purple-700">Total Team</p>
-                  <p className="text-lg font-bold text-purple-900">{userDetails.team.total}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-purple-700">Left Team</p>
-                  <p className="text-lg font-bold text-purple-900">{userDetails.team.left}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-purple-700">Right Team</p>
-                  <p className="text-lg font-bold text-purple-900">{userDetails.team.right}</p>
-                </div>
-              </div>
-            </div>
+            
 
             {/* Dates */}
             <div className="bg-muted/30 rounded-xl p-4">
