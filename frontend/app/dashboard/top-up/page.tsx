@@ -27,21 +27,30 @@ export default function TopUpPage() {
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axiosInstance.get('/api/plans');
-        if (response.data.success) {
-          setPlans(response.data.data || []);
+        // Fetch plans
+        const plansResponse = await axiosInstance.get('/api/plans');
+        if (plansResponse.data.success) {
+          setPlans(plansResponse.data.data || []);
+        }
+        
+        // Set current user's plan
+        if (user?.currentPlan) {
+          setCurrentPlan(user.currentPlan);
         }
       } catch (error) {
-        console.error("Error fetching plans:", error);
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load plans");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPlans();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const handleMemberSearch = async () => {
     if (!formData.memberId) return;
