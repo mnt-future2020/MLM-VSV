@@ -102,6 +102,20 @@ export default function UserDashboard() {
           gradient="bg-purple-500"
           trend={{ value: dashboardData?.currentPlan ? `${dashboardData.currentPlan.pv} PV` : "Activate a plan", isPositive: true }}
         />
+        {dashboardData?.rank && (
+          <div className="bg-card border-2 border-border rounded-xl p-6 shadow-lg" style={{ borderColor: dashboardData.rank.color }}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-muted-foreground">Current Rank</p>
+              <span className="text-3xl">{dashboardData.rank.icon}</span>
+            </div>
+            <h3 className="text-2xl font-bold mb-1" style={{ color: dashboardData.rank.color }}>
+              {dashboardData.rank.name}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Minimum: {dashboardData.rank.minPV} PV
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
