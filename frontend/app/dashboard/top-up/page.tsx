@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { CreditCard, Check, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,6 +35,10 @@ export default function TopUpPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    paymentMode: "Bank Transfer",
+    transactionDetails: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
