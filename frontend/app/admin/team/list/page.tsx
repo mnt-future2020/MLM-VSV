@@ -84,7 +84,7 @@ export default function AdminTeamListPage() {
     const matchesPlacement =
       placementFilter === "All Placement" || member.placement === placementFilter;
 
-    const matchesRank = rankFilter === "All Ranks" || member.rank === rankFilter;
+    const matchesRank = rankFilter === "All Ranks" || member.rank?.name === rankFilter;
 
     return matchesSearch && matchesPlacement && matchesRank;
   });
