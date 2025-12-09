@@ -385,6 +385,20 @@ export default function ManageMembersPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{member.mobile || 'N/A'}</td>
                     <td className="px-6 py-4">
+                      {member.placement ? (
+                        <span className={cn(
+                          "px-2.5 py-0.5 rounded-md text-xs font-medium border",
+                          member.placement === 'LEFT' 
+                            ? "bg-blue-50 text-blue-700 border-blue-200" 
+                            : "bg-purple-50 text-purple-700 border-purple-200"
+                        )}>
+                          {member.placement}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
                       <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                         {member.currentPlan || 'No Plan'}
                       </span>
