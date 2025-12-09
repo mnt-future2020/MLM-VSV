@@ -33,8 +33,9 @@ export default function AdminEarningsPage() {
           const data = response.data.data;
           setTotalEarnings(data.totalEarnings || 0);
           setTotalActivations(data.totalActivations || 0);
+          setIncomeBreakdown(data.incomeBreakdown || {});
           setIncomeByPlan(data.incomeByPlan || {});
-          setRecentActivations(data.recentActivations || []);
+          setRecentTransactions(data.recentTransactions || []);
         }
       } catch (error) {
         console.error("Error fetching admin earnings:", error);
