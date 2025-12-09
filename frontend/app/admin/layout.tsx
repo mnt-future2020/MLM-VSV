@@ -96,6 +96,12 @@ export default function AdminLayout({
       isActive: pathname === "/admin/plans",
     },
     {
+      label: "My Earnings",
+      href: "/admin/earnings",
+      icon: <DollarSign className="w-5 h-5" />,
+      isActive: pathname === "/admin/earnings",
+    },
+    {
       label: "Reports",
       href: "/admin/reports",
       icon: <FileText className="w-5 h-5" />,
