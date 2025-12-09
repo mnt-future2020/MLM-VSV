@@ -50,12 +50,12 @@ export default function AdminLayout({
       icon: <Users className="w-5 h-5" />,
       isActive: pathname === "/admin/members",
     },
-    {
-      label: "User Management",
-      href: "/admin/users",
-      icon: <Users className="w-5 h-5" />,
-      isActive: pathname === "/admin/users",
-    },
+    // {
+    //   label: "User Management",
+    //   href: "/admin/users",
+    //   icon: <Users className="w-5 h-5" />,
+    //   isActive: pathname === "/admin/users",
+    // },
     {
       label: "My Team",
       href: "/admin/team/list",
