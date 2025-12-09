@@ -21,6 +21,12 @@ interface DashboardData {
     right: number;
   };
   currentPlan: any;
+  rank?: {
+    name: string;
+    icon: string;
+    color: string;
+    minPV: number;
+  };
   recentTransactions: any[];
 }
 
