@@ -15,6 +15,7 @@ export default function WithdrawalRequestPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [minimumLimit, setMinimumLimit] = useState(1000);
   const [formData, setFormData] = useState({
     amount: "",
     accountNumber: "",
