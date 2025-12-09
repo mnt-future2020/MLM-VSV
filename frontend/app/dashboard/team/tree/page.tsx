@@ -260,11 +260,30 @@ function UserDetailsModal({
             {/* Sponsor Info */}
             {userDetails.sponsor && (
               <div className="bg-muted/30 rounded-xl p-4">
-                <h3 className="font-semibold text-foreground mb-3">Sponsor Details</h3>
-                <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground mb-3">Sponsor & Placement Details</h3>
+                <div className="grid grid-cols-3 gap-4">
                   <div>
+                    <p className="text-xs text-muted-foreground">Sponsor Name</p>
                     <p className="text-sm font-medium text-foreground">{userDetails.sponsor.name}</p>
-                    <p className="text-xs text-muted-foreground">{userDetails.sponsor.referralId}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Sponsor ID</p>
+                    <p className="text-sm font-medium text-foreground">{userDetails.sponsor.referralId}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Placement Side</p>
+                    {userDetails.placement ? (
+                      <span className={cn(
+                        "inline-block px-2.5 py-0.5 rounded-md text-xs font-medium border",
+                        userDetails.placement === 'LEFT' 
+                          ? "bg-blue-100 text-blue-800 border-blue-300" 
+                          : "bg-purple-100 text-purple-800 border-purple-300"
+                      )}>
+                        {userDetails.placement}
+                      </span>
+                    ) : (
+                      <p className="text-sm font-medium text-foreground">-</p>
+                    )}
                   </div>
                 </div>
               </div>
