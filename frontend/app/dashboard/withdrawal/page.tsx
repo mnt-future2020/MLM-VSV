@@ -88,10 +88,10 @@ export default function WithdrawalRequestPage() {
                 value={formData.amount}
                 onChange={(e) => setFormData({...formData, amount: e.target.value})}
                 required
-                min="100"
+                min={minimumLimit}
                 step="0.01"
               />
-              <p className="text-xs text-muted-foreground mt-1">Minimum withdrawal: ₹100</p>
+              <p className="text-xs text-muted-foreground mt-1">Minimum withdrawal: ₹{minimumLimit}</p>
             </div>
 
             <div className="border-t border-border pt-6">
