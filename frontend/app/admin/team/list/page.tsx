@@ -237,9 +237,15 @@ export default function AdminTeamListPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-muted-foreground">
-                    {new Date(member.joinDate).toLocaleDateString()}
+                    <span className="text-xs text-muted-foreground">
+  {new Date(member.joinedAt).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })}
+</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-foreground">{member.package}</td>
+                  <td className="px-6 py-4 text-sm text-foreground">{member.currentPlan}</td>
                   <td className="px-6 py-4">
                     <span className={cn("px-2.5 py-0.5 rounded-md text-xs font-medium border", getRankColor(member.rank))}>
                       {member.rank}
@@ -249,12 +255,12 @@ export default function AdminTeamListPage() {
                     <span
                       className={cn(
                         "px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                        member.status === "Active"
+                        member.isActive ==true
                           ? "bg-green-50 text-green-700 border-green-200"
                           : "bg-red-50 text-red-700 border-red-200"
                       )}
                     >
-                      {member.status}
+                      {member.isActive}
                     </span>
                   </td>
                 </tr>
