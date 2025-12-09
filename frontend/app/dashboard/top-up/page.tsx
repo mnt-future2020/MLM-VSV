@@ -1,29 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, Search, Check } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { CreditCard, Check, Loader2 } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { axiosInstance } from "@/lib/api";
+import { toast } from "sonner";
 
 interface Plan {
   id: string;
   name: string;
   amount: number;
   pv: number;
-  description?: string;
+  referralIncome: number;
+  dailyCapping: number;
 }
 
 export default function TopUpPage() {
@@ -32,12 +24,7 @@ export default function TopUpPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    memberId: "",
-    memberName: "",
-    paymentMode: "Bank Transfer",
-    transactionDetails: "",
-  });
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
