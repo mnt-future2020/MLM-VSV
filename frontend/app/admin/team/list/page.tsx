@@ -20,12 +20,20 @@ type TeamMember = {
   id: string;
   name: string;
   email: string;
-  contact: string;
+  mobile: string;
+  referralId: string;
   placement: "LEFT" | "RIGHT";
-  joinDate: string;
-  package: string;
-  rank: string;
-  status: "Active" | "Inactive";
+  joinedAt: string;
+  currentPlan: string;
+  rank?: {
+    name: string;
+    icon: string;
+    color: string;
+    minPV: number;
+  };
+  isActive: boolean;
+  sponsorName: string;
+  sponsorId: string;
 };
 
 export default function AdminTeamListPage() {
