@@ -49,13 +49,18 @@ export default function TopUpPage() {
           setPlans(plansResponse.data.data || []);
         }
         
-        // Set current user's plan
-        if (user?.currentPlan) {
-          setCurrentPlan(user.currentPlan);
+        // Fetch fresh user data from dashboard API (not from JWT token)
+        const dashboardResponse = await axiosInstance.get('/api/user/dashboard');
+        if (dashboardResponse.data.success) {
+          const dashboardData = dashboardResponse.data.data;
+          // Set current plan from fresh database data
+          if (dashboardData.currentPlan) {
+            setCurrentPlan(dashboardData.currentPlan.name);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Failed to load plans");
+        toast.error("Failed to load data");
       } finally {
         setLoading(false);
       }
