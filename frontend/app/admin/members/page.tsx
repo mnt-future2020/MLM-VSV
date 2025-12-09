@@ -533,8 +533,8 @@ export default function ManageMembersPage() {
               {/* Sponsor Info */}
               {viewMemberDetails.sponsor && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <h3 className="font-semibold text-blue-900 mb-3">Sponsor Details</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <h3 className="font-semibold text-blue-900 mb-3">Sponsor & Placement Details</h3>
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label className="text-xs text-blue-700">Sponsor Name</Label>
                       <p className="text-sm font-medium text-blue-900">{viewMemberDetails.sponsor.name}</p>
@@ -542,6 +542,21 @@ export default function ManageMembersPage() {
                     <div>
                       <Label className="text-xs text-blue-700">Sponsor ID</Label>
                       <p className="text-sm font-medium text-blue-900">{viewMemberDetails.sponsor.referralId}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-blue-700">Placement Side</Label>
+                      {viewMemberDetails.placement ? (
+                        <span className={cn(
+                          "inline-block px-2.5 py-0.5 rounded-md text-xs font-medium border",
+                          viewMemberDetails.placement === 'LEFT' 
+                            ? "bg-blue-100 text-blue-800 border-blue-300" 
+                            : "bg-purple-100 text-purple-800 border-purple-300"
+                        )}>
+                          {viewMemberDetails.placement}
+                        </span>
+                      ) : (
+                        <p className="text-sm font-medium text-blue-900">-</p>
+                      )}
                     </div>
                   </div>
                 </div>
