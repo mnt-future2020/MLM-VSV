@@ -37,6 +37,7 @@ type Member = {
   joinedAt: string;
   sponsorId?: string;
   username?: string;
+  placement?: string | null;
 };
 
 export default function ManageMembersPage() {
