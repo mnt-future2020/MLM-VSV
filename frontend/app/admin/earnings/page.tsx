@@ -78,28 +78,28 @@ export default function AdminEarningsPage() {
           value={`₹${totalEarnings.toLocaleString()}`}
           icon={<TrendingUp className="w-6 h-6 text-green-600" />}
           gradient="bg-green-500"
-          trend={{ value: "All time", isPositive: true }}
+          trend={{ value: "All income types", isPositive: true }}
         />
         <StatsCard
-          label="Total Activations"
-          value={totalActivations.toString()}
+          label="Referral Income"
+          value={`₹${(incomeBreakdown.REFERRAL_INCOME || 0).toLocaleString()}`}
           icon={<Users className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
-          trend={{ value: "Plan purchases", isPositive: true }}
+          trend={{ value: "Direct referrals", isPositive: true }}
         />
         <StatsCard
-          label="Basic Plans"
-          value={`₹${(incomeByPlan.Basic || 0).toLocaleString()}`}
-          icon={<Package className="w-6 h-6 text-yellow-600" />}
-          gradient="bg-yellow-500"
-          trend={{ value: "₹111 each", isPositive: true }}
-        />
-        <StatsCard
-          label="Premium Plans"
-          value={`₹${((incomeByPlan.Standard || 0) + (incomeByPlan.Advanced || 0) + (incomeByPlan.Premium || 0)).toLocaleString()}`}
+          label="Matching Income"
+          value={`₹${(incomeBreakdown.MATCHING_INCOME || 0).toLocaleString()}`}
           icon={<BarChart3 className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
-          trend={{ value: "Higher tiers", isPositive: true }}
+          trend={{ value: "Binary matching", isPositive: true }}
+        />
+        <StatsCard
+          label="Plan Activations"
+          value={`₹${(incomeBreakdown.PLAN_ACTIVATION || 0).toLocaleString()}`}
+          icon={<Package className="w-6 h-6 text-yellow-600" />}
+          gradient="bg-yellow-500"
+          trend={{ value: `${totalActivations} activations`, isPositive: true }}
         />
       </div>
 
