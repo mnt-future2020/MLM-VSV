@@ -66,32 +66,49 @@ export default function TopUpPage() {
     }
   }, [user]);
 
-  const handleActivatePlan = async () => {
+  const handleSubmitRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!selectedPlan) {
       toast.error("Please select a plan");
       return;
     }
 
+    if (!formData.transactionDetails.trim()) {
+      toast.error("Please enter transaction details");
+      return;
+    }
+
     try {
       setSubmitting(true);
-      const response = await axiosInstance.post('/api/plans/activate', {
-        planId: selectedPlan
+      const response = await axiosInstance.post('/api/topup/request', {
+        planId: selectedPlan,
+        paymentMethod: formData.paymentMode,
+        transactionDetails: formData.transactionDetails
       });
 
       if (response.data.success) {
-        toast.success("Plan activated successfully!");
-        setCurrentPlan(selectedPlan);
+        toast.success("Topup request submitted successfully! Waiting for admin approval.");
         setSelectedPlan("");
-        
-        // Reload user data
-        window.location.reload();
+        setFormData({
+          paymentMode: "Bank Transfer",
+          transactionDetails: "",
+        });
       }
     } catch (error: any) {
-      console.error("Error activating plan:", error);
-      toast.error(error.response?.data?.detail || "Failed to activate plan");
+      console.error("Error submitting request:", error);
+      toast.error(error.response?.data?.detail || "Failed to submit request");
     } finally {
       setSubmitting(false);
     }
+  };
+  
+  const handleReset = () => {
+    setSelectedPlan("");
+    setFormData({
+      paymentMode: "Bank Transfer",
+      transactionDetails: "",
+    });
   };
 
   if (loading) {
