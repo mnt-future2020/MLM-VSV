@@ -353,6 +353,7 @@ export default function ManageMembersPage() {
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Referral ID</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Member Details</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Mobile</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Side</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Current Plan</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Joined Date</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Status</th>
