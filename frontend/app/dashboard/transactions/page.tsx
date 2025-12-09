@@ -93,7 +93,7 @@ export default function TransactionsPage() {
             <SelectItem value="debit">Debits Only</SelectItem>
             <SelectItem value="REFERRAL_INCOME">Referral Income</SelectItem>
             <SelectItem value="MATCHING_INCOME">Matching Income</SelectItem>
-            <SelectItem value="PLAN_ACTIVATION">Plan Activation</SelectItem>
+            <SelectItem value="LEVEL_INCOME">Level Income</SelectItem>
             <SelectItem value="WITHDRAWAL_REQUEST">Withdrawals</SelectItem>
           </SelectContent>
         </Select>
