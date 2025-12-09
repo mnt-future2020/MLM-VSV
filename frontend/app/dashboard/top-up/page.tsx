@@ -125,8 +125,8 @@ export default function TopUpPage() {
     <PageContainer maxWidth="2xl">
       <PageHeader
         icon={<CreditCard className="w-6 h-6 text-white" />}
-        title="Upgrade Plan"
-        subtitle="Choose a plan to activate or upgrade your account"
+        title="Plan Upgrade Request"
+        subtitle="Submit a request to upgrade your plan"
       />
 
       {/* Current Plan Display */}
@@ -183,50 +183,103 @@ export default function TopUpPage() {
         })}
       </div>
 
-      {/* Activate Button */}
-      {selectedPlan && (
-        <div className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
-          <div className="flex flex-col items-center text-center space-y-6">
+      {/* Request Form */}
+      {selectedPlan ? (
+        <form onSubmit={handleSubmitRequest} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
+          <h2 className="text-lg font-semibold text-foreground mb-6 pb-2 border-b border-border">
+            Payment & Request Details
+          </h2>
+          
+          <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Ready to activate?</h3>
-              <p className="text-sm text-muted-foreground">
-                Click the button below to activate your selected plan
+              <Label>Selected Plan</Label>
+              <Input
+                value={plans.find(p => p.id === selectedPlan)?.name || ""}
+                disabled
+                className="bg-muted/50 font-medium"
+              />
+            </div>
+
+            <div>
+              <Label>Amount</Label>
+              <Input
+                value={`₹${plans.find(p => p.id === selectedPlan)?.amount.toLocaleString() || 0}`}
+                disabled
+                className="bg-muted/50 font-medium text-primary-600"
+              />
+            </div>
+
+            <div>
+              <Label required>Payment Mode</Label>
+              <Select
+                value={formData.paymentMode}
+                onValueChange={(value) => setFormData({...formData, paymentMode: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="UPI">UPI</SelectItem>
+                  <SelectItem value="Card">Card</SelectItem>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label required>Transaction Details</Label>
+              <Textarea
+                placeholder="Enter transaction ID, reference number, UTR, or other payment details"
+                value={formData.transactionDetails}
+                onChange={(e) => setFormData({...formData, transactionDetails: e.target.value})}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Please provide complete payment details for verification
               </p>
             </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-              <Button
-                onClick={handleActivatePlan}
-                disabled={submitting}
-                className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 text-lg shadow-lg shadow-primary-500/20"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Activating...
-                  </>
-                ) : (
-                  "Activate Plan"
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedPlan("")}
-                disabled={submitting}
-                className="px-8 py-6 text-lg border-border hover:bg-muted"
-              >
-                Cancel
-              </Button>
-            </div>
           </div>
-        </div>
-      )}
-      
-      {!selectedPlan && (
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 text-lg shadow-lg shadow-primary-500/20"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Request"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleReset}
+              disabled={submitting}
+              className="px-8 py-6 text-lg border-border hover:bg-muted"
+            >
+              Cancel
+            </Button>
+          </div>
+          
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> Your request will be sent to admin for approval. 
+              Plan will be activated once admin approves your payment.
+            </p>
+          </div>
+        </form>
+      ) : (
         <div className="bg-muted/50 border border-border rounded-xl p-8 text-center">
           <p className="text-muted-foreground">
-            Select a plan from above to get started
+            Select a plan from above to submit upgrade request
           </p>
         </div>
       )}
