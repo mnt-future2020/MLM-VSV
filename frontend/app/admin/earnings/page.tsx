@@ -127,63 +127,84 @@ export default function AdminEarningsPage() {
         </div>
       </div>
 
-      {/* Recent Activations */}
+      {/* Recent Transactions */}
       <div className="bg-card border border-border rounded-xl shadow-sm">
         <div className="p-6 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary-600" />
-            Recent Plan Activations
+            Recent Earnings
           </h2>
         </div>
         <div className="divide-y divide-border">
-          {recentActivations.length > 0 ? (
-            recentActivations.map((activation) => (
-              <div
-                key={activation.id}
-                className="p-6 hover:bg-muted/30 transition-colors"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                        <Users className="w-5 h-5 text-primary-600" />
+          {recentTransactions.length > 0 ? (
+            recentTransactions.map((transaction) => {
+              const getTypeIcon = () => {
+                if (transaction.type === 'REFERRAL_INCOME') return '👥';
+                if (transaction.type === 'MATCHING_INCOME') return '🤝';
+                if (transaction.type === 'LEVEL_INCOME') return '📊';
+                if (transaction.type === 'PLAN_ACTIVATION') return '💰';
+                return '💵';
+              };
+              
+              const getTypeColor = () => {
+                if (transaction.type === 'REFERRAL_INCOME') return 'bg-blue-100 text-blue-700';
+                if (transaction.type === 'MATCHING_INCOME') return 'bg-purple-100 text-purple-700';
+                if (transaction.type === 'LEVEL_INCOME') return 'bg-green-100 text-green-700';
+                if (transaction.type === 'PLAN_ACTIVATION') return 'bg-yellow-100 text-yellow-700';
+                return 'bg-gray-100 text-gray-700';
+              };
+
+              return (
+                <div
+                  key={transaction.id}
+                  className="p-6 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="text-2xl">{getTypeIcon()}</div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground">
+                              {transaction.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </h3>
+                            <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", getTypeColor())}>
+                              {transaction.userName}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {transaction.userReferralId}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">
-                          {activation.userName}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {activation.userReferralId}
-                        </p>
-                      </div>
+                      <p className="text-sm text-muted-foreground ml-11">
+                        {transaction.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 ml-11">
+                        {new Date(transaction.createdAt).toLocaleDateString('en-IN', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground ml-13">
-                      {activation.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1 ml-13">
-                      {new Date(activation.createdAt).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">
-                      +₹{activation.amount.toLocaleString()}
-                    </p>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-600">
+                        +₹{transaction.amount.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="p-12 text-center">
-              <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No Activations Yet</h3>
+              <DollarSign className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Earnings Yet</h3>
               <p className="text-muted-foreground">
-                Plan activations will appear here once users purchase plans
+                Your earnings will appear here as users join and activate plans
               </p>
             </div>
           )}
