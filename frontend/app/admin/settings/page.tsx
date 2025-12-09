@@ -347,6 +347,26 @@ export default function SettingsPage() {
                       </p>
                     </div>
 
+                    <div>
+                      <Label htmlFor="minimumWithdrawLimit">Minimum Withdraw Limit (₹)</Label>
+                      <Input
+                        id="minimumWithdrawLimit"
+                        type="number"
+                        value={generalSettings.minimumWithdrawLimit}
+                        onChange={(e) =>
+                          setGeneralSettings({
+                            ...generalSettings,
+                            minimumWithdrawLimit: e.target.value,
+                          })
+                        }
+                        className="mt-2"
+                        placeholder="1000"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Minimum amount users can withdraw (default: ₹1000)
+                      </p>
+                    </div>
+
                     <div className="md:col-span-2">
                       <Label htmlFor="companyDescription">
                         Company Description
