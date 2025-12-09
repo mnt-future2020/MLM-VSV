@@ -18,6 +18,7 @@ import {
   Network,
   List,
   GitBranch,
+  TrendingUp,
 } from "lucide-react";
 
 export default function AdminLayout({
