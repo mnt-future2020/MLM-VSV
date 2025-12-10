@@ -32,7 +32,6 @@ interface Plan {
   name: string;
   amount: number;
   pv: number;
-  referralIncome: number;
   dailyCapping: number;
   matchingIncome: number;
   description: string;
