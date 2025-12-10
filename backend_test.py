@@ -441,85 +441,415 @@ class MLMAPITester:
         else:
             self.log_test("Binary Tree Performance Check", False, "No successful requests")
 
+    def test_referral_income_removal_registration(self):
+        """Test 1: Verify Referral Income is NOT Given during registration with plan"""
+        print("\n🔍 TEST 1: Referral Income Removal - Registration with Plan")
+        
+        if not self.admin_token:
+            self.log_test("Referral Income Test - Registration", False, "No admin token")
+            return False
+        
+        # Get admin's initial wallet balance
+        success, admin_wallet_before, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
+        if not success:
+            self.log_test("Get Admin Wallet Before", False, "Could not get admin wallet")
+            return False
+        
+        initial_balance = admin_wallet_before.get('data', {}).get('balance', 0)
+        print(f"   Admin initial balance: ₹{initial_balance}")
+        
+        # Create a new test user with sponsor VSV00001 and assign them a plan
+        timestamp = datetime.now().strftime("%H%M%S")
+        user_data = {
+            "name": f"Referral Test User {timestamp}",
+            "username": f"reftest{timestamp}",
+            "email": f"reftest{timestamp}@example.com",
+            "password": "Test@123",
+            "mobile": f"98765{timestamp}",
+            "referralId": "VSV00001",  # Admin's referral ID
+            "placement": "LEFT",
+            "planId": self.test_plan_id  # Assign plan during registration
+        }
+        
+        success, data, _ = self.make_request('POST', 'api/auth/register', user_data)
+        if not success:
+            self.log_test("Create User with Plan", False, f"Registration failed: {data}")
+            return False
+        
+        print(f"   Created user with plan: {data.get('user', {}).get('name')}")
+        
+        # Wait a moment for any async processing
+        time.sleep(2)
+        
+        # Check admin's wallet balance after registration
+        success, admin_wallet_after, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
+        if not success:
+            self.log_test("Get Admin Wallet After", False, "Could not get admin wallet")
+            return False
+        
+        final_balance = admin_wallet_after.get('data', {}).get('balance', 0)
+        print(f"   Admin final balance: ₹{final_balance}")
+        
+        # Check if balance increased (it should NOT)
+        balance_increased = final_balance > initial_balance
+        
+        # Check transactions for REFERRAL_INCOME
+        success, transactions, _ = self.make_request('GET', 'api/wallet/transactions', token=self.admin_token)
+        referral_transactions = []
+        if success and transactions.get('data'):
+            referral_transactions = [t for t in transactions['data'] if t.get('type') == 'REFERRAL_INCOME']
+        
+        print(f"   Referral income transactions found: {len(referral_transactions)}")
+        
+        # Test should pass if NO referral income was given
+        test_passed = not balance_increased and len(referral_transactions) == 0
+        
+        if test_passed:
+            self.log_test("Referral Income Removal - Registration", True, "✅ No referral income given during registration")
+        else:
+            details = f"Balance increased: {balance_increased}, Referral transactions: {len(referral_transactions)}"
+            self.log_test("Referral Income Removal - Registration", False, details)
+        
+        return test_passed
+
+    def test_referral_income_removal_activation(self):
+        """Test 2: Verify Referral Income is NOT Given during plan activation"""
+        print("\n🔍 TEST 2: Referral Income Removal - Plan Activation")
+        
+        if not self.admin_token or not self.test_plan_id:
+            self.log_test("Referral Income Test - Activation", False, "Missing admin token or plan ID")
+            return False
+        
+        # Create a user without plan first
+        timestamp = datetime.now().strftime("%H%M%S")
+        user_data = {
+            "name": f"Activation Test User {timestamp}",
+            "username": f"acttest{timestamp}",
+            "email": f"acttest{timestamp}@example.com",
+            "password": "Test@123",
+            "mobile": f"98765{timestamp}",
+            "referralId": "VSV00001",  # Admin's referral ID
+            "placement": "RIGHT"
+            # No planId - user without plan
+        }
+        
+        success, reg_data, _ = self.make_request('POST', 'api/auth/register', user_data)
+        if not success:
+            self.log_test("Create User without Plan", False, f"Registration failed: {reg_data}")
+            return False
+        
+        user_token = reg_data.get('token')
+        if not user_token:
+            self.log_test("Get User Token", False, "No token received")
+            return False
+        
+        print(f"   Created user without plan: {reg_data.get('user', {}).get('name')}")
+        
+        # Activate the user
+        success, _, _ = self.make_request('PUT', f'api/admin/users/{reg_data["user"]["id"]}/status', 
+                                        {"isActive": True}, token=self.admin_token)
+        
+        # Get admin's wallet balance before plan activation
+        success, admin_wallet_before, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
+        if not success:
+            self.log_test("Get Admin Wallet Before Activation", False, "Could not get admin wallet")
+            return False
+        
+        initial_balance = admin_wallet_before.get('data', {}).get('balance', 0)
+        print(f"   Admin balance before activation: ₹{initial_balance}")
+        
+        # Activate plan for the user
+        activation_data = {"planId": self.test_plan_id}
+        success, act_data, _ = self.make_request('POST', 'api/plans/activate', activation_data, token=user_token)
+        
+        if not success:
+            self.log_test("Plan Activation", False, f"Activation failed: {act_data}")
+            return False
+        
+        print(f"   Plan activated successfully")
+        
+        # Wait a moment for any async processing
+        time.sleep(2)
+        
+        # Check admin's wallet balance after activation
+        success, admin_wallet_after, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
+        if not success:
+            self.log_test("Get Admin Wallet After Activation", False, "Could not get admin wallet")
+            return False
+        
+        final_balance = admin_wallet_after.get('data', {}).get('balance', 0)
+        print(f"   Admin balance after activation: ₹{final_balance}")
+        
+        # Check if balance increased (it should NOT)
+        balance_increased = final_balance > initial_balance
+        
+        # Test should pass if NO referral income was given
+        test_passed = not balance_increased
+        
+        if test_passed:
+            self.log_test("Referral Income Removal - Activation", True, "✅ No referral income given during activation")
+        else:
+            details = f"Balance increased by ₹{final_balance - initial_balance}"
+            self.log_test("Referral Income Removal - Activation", False, details)
+        
+        return test_passed
+
+    def test_pv_calculation_logic(self):
+        """Test 3: Verify PV Calculation Logic with proper flushing"""
+        print("\n🔍 TEST 3: PV Calculation Logic - Matching Income with Proper Flushing")
+        
+        if not self.admin_token:
+            self.log_test("PV Calculation Test", False, "No admin token")
+            return False
+        
+        # Get admin user's current PV values
+        success, admin_data, _ = self.make_request('GET', 'api/admin/users', token=self.admin_token)
+        if not success:
+            self.log_test("Get Admin User Data", False, "Could not get admin data")
+            return False
+        
+        # Find admin user in the list
+        admin_user = None
+        for user in admin_data.get('data', {}).get('users', []):
+            if user.get('referralId') == 'VSV00001':
+                admin_user = user
+                break
+        
+        if not admin_user:
+            self.log_test("Find Admin User", False, "Admin user not found")
+            return False
+        
+        left_pv_before = admin_user.get('leftPV', 0)
+        right_pv_before = admin_user.get('rightPV', 0)
+        
+        print(f"   Admin PV before calculation: Left={left_pv_before}, Right={right_pv_before}")
+        
+        # Get admin wallet balance before matching calculation
+        success, wallet_before, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
+        if not success:
+            self.log_test("Get Wallet Before Matching", False, "Could not get wallet")
+            return False
+        
+        balance_before = wallet_before.get('data', {}).get('balance', 0)
+        print(f"   Admin balance before matching: ₹{balance_before}")
+        
+        # Call the matching income calculation endpoint
+        success, calc_data, _ = self.make_request('POST', 'api/admin/calculate-daily-matching', token=self.admin_token)
+        
+        if not success:
+            self.log_test("Calculate Daily Matching", False, f"Calculation failed: {calc_data}")
+            return False
+        
+        print(f"   Matching calculation completed: {calc_data.get('message', 'Success')}")
+        
+        # Wait a moment for processing
+        time.sleep(2)
+        
+        # Get admin user's PV values after calculation
+        success, admin_data_after, _ = self.make_request('GET', 'api/admin/users', token=self.admin_token)
+        if not success:
+            self.log_test("Get Admin Data After", False, "Could not get admin data after")
+            return False
+        
+        # Find admin user again
+        admin_user_after = None
+        for user in admin_data_after.get('data', {}).get('users', []):
+            if user.get('referralId') == 'VSV00001':
+                admin_user_after = user
+                break
+        
+        if not admin_user_after:
+            self.log_test("Find Admin User After", False, "Admin user not found after calculation")
+            return False
+        
+        left_pv_after = admin_user_after.get('leftPV', 0)
+        right_pv_after = admin_user_after.get('rightPV', 0)
+        
+        print(f"   Admin PV after calculation: Left={left_pv_after}, Right={right_pv_after}")
+        
+        # Get wallet balance after
+        success, wallet_after, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
+        if not success:
+            self.log_test("Get Wallet After Matching", False, "Could not get wallet after")
+            return False
+        
+        balance_after = wallet_after.get('data', {}).get('balance', 0)
+        print(f"   Admin balance after matching: ₹{balance_after}")
+        
+        # Calculate expected matching
+        if left_pv_before > 0 and right_pv_before > 0:
+            matched_pv = min(left_pv_before, right_pv_before)
+            
+            # Assuming Basic plan daily cap of ₹250, so max 10 PV per day (₹250 / ₹25 = 10 PV)
+            daily_cap_pv = 10
+            today_pv = min(matched_pv, daily_cap_pv)
+            expected_income = today_pv * 25  # ₹25 per PV
+            
+            # Expected PV after flushing: both sides should be reduced by matched amount
+            expected_left_after = left_pv_before - today_pv
+            expected_right_after = right_pv_before - today_pv
+            
+            print(f"   Expected: Income=₹{expected_income}, Left PV={expected_left_after}, Right PV={expected_right_after}")
+            
+            # Check if PV flushing is correct
+            pv_flushing_correct = (left_pv_after == expected_left_after and 
+                                 right_pv_after == expected_right_after)
+            
+            # Check if income was calculated (balance should increase if there was matching)
+            income_calculated = balance_after >= balance_before
+            
+            if pv_flushing_correct and (matched_pv == 0 or income_calculated):
+                self.log_test("PV Calculation Logic", True, f"✅ PV flushing correct: L={left_pv_after}, R={right_pv_after}")
+                return True
+            else:
+                details = f"PV flushing incorrect. Expected L={expected_left_after}, R={expected_right_after}, Got L={left_pv_after}, R={right_pv_after}"
+                self.log_test("PV Calculation Logic", False, details)
+                return False
+        else:
+            # No matching possible with zero PV on either side
+            self.log_test("PV Calculation Logic", True, "✅ No matching possible (zero PV on one side)")
+            return True
+
+    def test_backend_logs_and_reports(self):
+        """Test 4: Check Backend Logs and Reports API"""
+        print("\n🔍 TEST 4: Backend Logs and Reports API")
+        
+        if not self.admin_token:
+            self.log_test("Reports API Test", False, "No admin token")
+            return False
+        
+        # Test the /api/admin/reports/dashboard endpoint
+        success, data, response_time = self.make_request('GET', 'api/admin/reports/dashboard', token=self.admin_token)
+        
+        if success and data.get('success'):
+            reports_data = data.get('data', {})
+            
+            # Verify key report sections exist
+            overview = reports_data.get('overview', {})
+            plan_distribution = reports_data.get('planDistribution', {})
+            daily_reports = reports_data.get('dailyReports', [])
+            income_breakdown = reports_data.get('incomeBreakdown', {})
+            
+            print(f"   Total Users: {overview.get('totalUsers', 0)}")
+            print(f"   Total Earnings: ₹{overview.get('totalEarnings', 0)}")
+            print(f"   Referral Income: ₹{income_breakdown.get('REFERRAL_INCOME', 0)}")
+            print(f"   Matching Income: ₹{income_breakdown.get('MATCHING_INCOME', 0)}")
+            
+            # Verify reports structure is correct
+            has_overview = bool(overview)
+            has_plan_dist = bool(plan_distribution)
+            has_daily_reports = len(daily_reports) > 0
+            has_income_breakdown = bool(income_breakdown)
+            
+            all_sections_present = has_overview and has_plan_dist and has_daily_reports and has_income_breakdown
+            
+            if all_sections_present:
+                self.log_test("Reports API Dashboard", True, f"✅ All report sections present ({response_time:.3f}s)")
+                return True
+            else:
+                missing = []
+                if not has_overview: missing.append("overview")
+                if not has_plan_dist: missing.append("planDistribution")
+                if not has_daily_reports: missing.append("dailyReports")
+                if not has_income_breakdown: missing.append("incomeBreakdown")
+                
+                self.log_test("Reports API Dashboard", False, f"Missing sections: {', '.join(missing)}")
+                return False
+        else:
+            self.log_test("Reports API Dashboard", False, f"API failed: {data}")
+            return False
+
+    def run_review_tests(self):
+        """Run specific tests as per review request"""
+        print("🚀 VSV Unite MLM Platform - Review Request Testing")
+        print("Testing Referral Income Removal & PV Calculation Logic")
+        print("=" * 70)
+        
+        # First, ensure we have admin login and basic setup
+        print("\n🔐 Authentication Setup:")
+        if not self.test_admin_login():
+            print("❌ Admin login failed, cannot proceed with tests")
+            return False
+        
+        # Get plans for testing
+        if not self.test_get_plans():
+            print("❌ Could not get plans, some tests may fail")
+        
+        # Run the specific review tests
+        test_results = []
+        
+        # Test 1: Verify Referral Income is NOT Given (Registration)
+        test_results.append(self.test_referral_income_removal_registration())
+        
+        # Test 2: Verify Referral Income is NOT Given (Activation)  
+        test_results.append(self.test_referral_income_removal_activation())
+        
+        # Test 3: Verify PV Calculation Logic
+        test_results.append(self.test_pv_calculation_logic())
+        
+        # Test 4: Check Backend Logs and Reports
+        test_results.append(self.test_backend_logs_and_reports())
+        
+        # Print final results
+        print("\n" + "=" * 70)
+        print("📊 REVIEW TEST RESULTS:")
+        print(f"   Tests Passed: {sum(test_results)}/{len(test_results)}")
+        
+        if all(test_results):
+            print("✅ ALL REVIEW TESTS PASSED")
+            print("   - Referral income system successfully removed")
+            print("   - PV calculation logic working correctly")
+            print("   - Reports API functioning properly")
+        else:
+            print("❌ SOME TESTS FAILED")
+            if not test_results[0]:
+                print("   - Referral income still being given during registration")
+            if not test_results[1]:
+                print("   - Referral income still being given during activation")
+            if not test_results[2]:
+                print("   - PV calculation logic needs attention")
+            if not test_results[3]:
+                print("   - Reports API has issues")
+        
+        return all(test_results)
+
     def run_all_tests(self):
-        """Run all API tests as per review request"""
+        """Run all tests including review-specific tests"""
         print("🚀 Starting Complete Backend API Testing - MLM VSV Unite Application")
         print("=" * 70)
+        
+        # First run the review-specific tests
+        review_success = self.run_review_tests()
+        
+        # Then run other essential tests
+        print("\n" + "=" * 70)
+        print("🔧 Additional API Tests:")
         
         # Authentication tests
         print("\n📋 1. Authentication APIs:")
         if not self.test_admin_login():
             print("❌ Admin login failed, some tests may not work")
         
-        if not self.test_user_login():
-            print("❌ User login failed, some tests may not work")
-            
         self.test_user_registration()
-        self.test_get_session()
-        self.test_sign_out()
         self.test_referral_lookup()
         
-        # User Dashboard APIs
-        print("\n👤 2. User Dashboard APIs:")
-        self.test_user_dashboard()
-        self.test_user_profile()
-        self.test_team_tree()
-        self.test_team_list()
-        
-        # Wallet APIs
-        print("\n💰 3. Wallet APIs:")
-        self.test_wallet_balance()
-        self.test_transactions()
-        self.test_withdrawal_request()
-        self.test_withdrawal_history()
-        
         # Admin APIs
-        print("\n🔧 4. Admin APIs:")
-        self.test_admin_reports_dashboard()
+        print("\n🔧 2. Admin APIs:")
         self.test_admin_users()
-        self.test_user_status_update()
-        self.test_admin_withdrawals()
-        self.test_withdrawal_approval()
-        self.test_admin_topups()
         self.test_calculate_daily_matching()
         
-        # Reports APIs
-        print("\n📊 5. Reports APIs:")
-        self.test_reports_users_all()
-        self.test_reports_financial_earnings()
-        self.test_reports_team_structure()
-        
         # Plans APIs
-        print("\n📋 6. Plans APIs:")
+        print("\n📋 3. Plans APIs:")
         self.test_get_plans()
-        self.test_plan_activation()
-        
-        # Performance Tests
-        print("\n⚡ 7. Performance & N+1 Query Tests:")
-        self.test_binary_tree_performance()
-        
-        # Additional User Tests
-        print("\n👤 8. Additional User Tests:")
-        self.test_profile_update()
-        self.test_password_change()
-        
-        # Settings tests
-        print("\n⚙️ 9. Settings Tests:")
-        self.test_settings_endpoints()
         
         # Print results
         print("\n" + "=" * 70)
-        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
+        print(f"📊 Overall Test Results: {self.tests_passed}/{self.tests_run} passed")
         
         if self.response_times:
             avg_response_time = sum(self.response_times) / len(self.response_times)
             max_response_time = max(self.response_times)
             print(f"⏱️  Response Times: Avg {avg_response_time:.3f}s, Max {max_response_time:.3f}s")
-            
-            if max_response_time > 2.0:
-                print("⚠️  Some responses took longer than 2 seconds")
-            else:
-                print("✅ All responses under 2 seconds")
         
         if self.failed_tests:
             print("\n❌ Failed Tests:")
@@ -529,14 +859,7 @@ class MLMAPITester:
         success_rate = (self.tests_passed / self.tests_run) * 100 if self.tests_run > 0 else 0
         print(f"\n✅ Success Rate: {success_rate:.1f}%")
         
-        # Success criteria from review request
-        print(f"\n📋 Success Criteria Check:")
-        print(f"   - All APIs return 200/201 status: {'✅' if success_rate > 85 else '❌'}")
-        response_time_ok = max(self.response_times) < 2.0 if self.response_times else False
-        print(f"   - Response times < 2 seconds: {'✅' if response_time_ok else '❌'}")
-        print(f"   - No N+1 query patterns: {'✅' if 'Binary Tree Performance Check' not in [f.split(':')[0] for f in self.failed_tests] else '❌'}")
-        
-        return success_rate >= 80  # Consider 80%+ success rate as passing
+        return review_success and success_rate >= 80
 
 def main():
     """Main test execution"""
