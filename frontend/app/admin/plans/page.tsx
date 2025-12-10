@@ -160,7 +160,7 @@ export default function AdminPlansPage() {
         name: planForm.name,
         amount: Number(planForm.amount),
         pv: Number(planForm.pv),
-        referralIncome: Number(planForm.referralIncome),
+        referralIncome: 0, // Referral income system removed
         dailyCapping: Number(planForm.dailyCapping),
         matchingIncome: Number(planForm.matchingIncome),
         description: planForm.description,
