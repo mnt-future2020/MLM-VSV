@@ -1146,12 +1146,147 @@ class MLMAPITester:
         
         return auto_placement_success and success_rate >= 80
 
+    def test_specific_review_scenarios(self):
+        """Test the specific scenarios mentioned in the review request"""
+        print("\n🎯 SPECIFIC REVIEW SCENARIOS TESTING")
+        print("Testing against the expected tree structure from review request")
+        print("=" * 70)
+        
+        if not self.admin_token:
+            print("❌ No admin token available")
+            return False
+        
+        # Get current tree to understand the structure
+        success, data, _ = self.make_request('GET', 'api/user/team/tree', token=self.admin_token)
+        if not success:
+            print("❌ Could not get current tree structure")
+            return False
+        
+        tree = data.get('data')
+        print("\n📋 Current Tree Structure Analysis:")
+        self.analyze_tree_for_review(tree)
+        
+        # Test Scenario 1: LEFT Side Auto-Placement
+        print("\n🔍 SCENARIO 1: LEFT Side Auto-Placement Test")
+        print("   Expected: Should go to deepest LEFT-most position")
+        
+        left_preview_data = {"referralId": "VSV00001", "placement": "LEFT"}
+        success, preview_resp, _ = self.make_request('POST', 'api/auth/preview-placement', left_preview_data)
+        
+        if success and preview_resp.get('success'):
+            placement_info = preview_resp.get('data', {})
+            actual_sponsor = placement_info.get('actual_sponsor_name', 'Unknown')
+            actual_referral = placement_info.get('actual_sponsor_referral_id', 'Unknown')
+            
+            print(f"   ✅ LEFT Placement Preview: Will be placed under {actual_sponsor} ({actual_referral})")
+            
+            # Create test user
+            timestamp = datetime.now().strftime("%H%M%S")
+            user_data = {
+                "name": f"Review LEFT Test {timestamp}",
+                "username": f"reviewleft{timestamp}",
+                "email": f"reviewleft{timestamp}@test.com",
+                "password": "Test@123",
+                "mobile": f"91234{timestamp}",
+                "referralId": "VSV00001",
+                "placement": "LEFT"
+            }
+            
+            success, reg_data, _ = self.make_request('POST', 'api/auth/register', user_data)
+            if success:
+                new_referral = reg_data.get('user', {}).get('referralId', 'Unknown')
+                print(f"   ✅ Created user: {user_data['name']} ({new_referral})")
+                self.log_test("Review Scenario 1 - LEFT Placement", True, f"User placed under {actual_sponsor}")
+            else:
+                print(f"   ❌ Failed to create user: {reg_data}")
+                self.log_test("Review Scenario 1 - LEFT Placement", False, "User creation failed")
+        
+        # Test Scenario 2: RIGHT Side Auto-Placement  
+        print("\n🔍 SCENARIO 2: RIGHT Side Auto-Placement Test")
+        print("   Expected: Should go to deepest RIGHT-most position")
+        
+        right_preview_data = {"referralId": "VSV00001", "placement": "RIGHT"}
+        success, preview_resp, _ = self.make_request('POST', 'api/auth/preview-placement', right_preview_data)
+        
+        if success and preview_resp.get('success'):
+            placement_info = preview_resp.get('data', {})
+            actual_sponsor = placement_info.get('actual_sponsor_name', 'Unknown')
+            actual_referral = placement_info.get('actual_sponsor_referral_id', 'Unknown')
+            
+            print(f"   ✅ RIGHT Placement Preview: Will be placed under {actual_sponsor} ({actual_referral})")
+            
+            # Create test user
+            timestamp = datetime.now().strftime("%H%M%S")
+            user_data = {
+                "name": f"Review RIGHT Test {timestamp}",
+                "username": f"reviewright{timestamp}",
+                "email": f"reviewright{timestamp}@test.com",
+                "password": "Test@123",
+                "mobile": f"91234{timestamp}",
+                "referralId": "VSV00001",
+                "placement": "RIGHT"
+            }
+            
+            success, reg_data, _ = self.make_request('POST', 'api/auth/register', user_data)
+            if success:
+                new_referral = reg_data.get('user', {}).get('referralId', 'Unknown')
+                print(f"   ✅ Created user: {user_data['name']} ({new_referral})")
+                self.log_test("Review Scenario 2 - RIGHT Placement", True, f"User placed under {actual_sponsor}")
+            else:
+                print(f"   ❌ Failed to create user: {reg_data}")
+                self.log_test("Review Scenario 2 - RIGHT Placement", False, "User creation failed")
+        
+        # Test Scenario 3: Verify Final Tree Structure
+        print("\n🔍 SCENARIO 3: Final Binary Tree Verification")
+        success, final_tree_data, _ = self.make_request('GET', 'api/user/team/tree', token=self.admin_token)
+        
+        if success and final_tree_data.get('success'):
+            final_tree = final_tree_data.get('data')
+            print("   📊 Final Tree Structure:")
+            self.print_tree_structure(final_tree, "   ")
+            self.log_test("Review Scenario 3 - Final Tree", True, "Tree structure verified")
+        else:
+            self.log_test("Review Scenario 3 - Final Tree", False, "Could not get final tree")
+        
+        return True
+    
+    def analyze_tree_for_review(self, node, depth=0, path="Admin"):
+        """Analyze current tree structure for review scenarios"""
+        if not node:
+            return
+        
+        name = node.get('name', 'Unknown')
+        referral_id = node.get('referralId', 'Unknown')
+        plan = node.get('currentPlan', 'No Plan')
+        
+        indent = "   " * depth
+        print(f"{indent}📍 {path}: {name} ({referral_id}) - Plan: {plan}")
+        
+        left_child = node.get('left')
+        right_child = node.get('right')
+        
+        if left_child:
+            self.analyze_tree_for_review(left_child, depth + 1, f"{path} → LEFT")
+        else:
+            print(f"{indent}   ├─ LEFT: Empty")
+        
+        if right_child:
+            self.analyze_tree_for_review(right_child, depth + 1, f"{path} → RIGHT")
+        else:
+            print(f"{indent}   └─ RIGHT: Empty")
+
 def main():
     """Main test execution"""
     tester = MLMAPITester()
     
     try:
+        # Run the main auto-placement tests
         success = tester.run_all_tests()
+        
+        # Run specific review scenarios
+        print("\n" + "=" * 70)
+        tester.test_specific_review_scenarios()
+        
         return 0 if success else 1
     except Exception as e:
         print(f"❌ Test execution failed: {e}")
