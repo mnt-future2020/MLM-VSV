@@ -30,6 +30,7 @@ type UserDetails = {
   referralId: string;
   sponsorId: string;
   sponsor: { name: string; referralId: string } | null;
+  placement?: string;
   isActive: boolean;
   currentPlan: {
     name: string;
@@ -55,6 +56,11 @@ type UserDetails = {
   };
   joinedAt: string;
   lastActive: string;
+  incomeBreakdown?: {
+    REFERRAL_INCOME: number;
+    MATCHING_INCOME: number;
+    LEVEL_INCOME: number;
+  };
 };
 
 function TreeNodeComponent({ 
