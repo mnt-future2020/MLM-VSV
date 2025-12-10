@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Comprehensive MLM Platform Backend API Testing
-Tests all endpoints for VSV Unite MLM Platform as per review request
+VSV Unite MLM Platform Backend Testing - Referral Income Removal & PV Calculation
+Tests specific changes made to the MLM platform as per review request:
+1. Verify Referral Income is NOT Given
+2. Verify PV Calculation Logic (matching income with proper PV flushing)
+3. Check Backend Logs
+4. Test Reports API
 """
 
 import requests
