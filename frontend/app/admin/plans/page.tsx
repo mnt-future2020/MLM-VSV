@@ -142,7 +142,6 @@ export default function AdminPlansPage() {
       name: plan.name,
       amount: String(plan.amount),
       pv: String(plan.pv),
-      referralIncome: String(plan.referralIncome),
       dailyCapping: String(plan.dailyCapping),
       matchingIncome: String(plan.matchingIncome),
       description: plan.description,
