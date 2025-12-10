@@ -57,7 +57,6 @@ export default function AdminPlansPage() {
     name: "",
     amount: "",
     pv: "",
-    referralIncome: "",
     dailyCapping: "",
     matchingIncome: "",
     description: "",
