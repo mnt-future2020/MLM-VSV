@@ -730,54 +730,319 @@ class MLMAPITester:
             self.log_test("PV Calculation Logic", False, "; ".join(details))
             return False
 
-    def test_backend_logs_and_reports(self):
-        """Test 4: Check Backend Logs and Reports API"""
-        print("\n🔍 TEST 4: Backend Logs and Reports API")
+    def test_get_current_tree_structure(self):
+        """Get current binary tree structure for testing"""
+        print("\n🌳 Getting Current Binary Tree Structure")
         
         if not self.admin_token:
-            self.log_test("Reports API Test", False, "No admin token")
-            return False
+            self.log_test("Get Tree Structure", False, "No admin token")
+            return None
         
-        # Test the /api/admin/reports/dashboard endpoint
-        success, data, response_time = self.make_request('GET', 'api/admin/reports/dashboard', token=self.admin_token)
+        # Get admin's team tree
+        success, data, response_time = self.make_request('GET', 'api/user/team/tree', token=self.admin_token)
         
         if success and data.get('success'):
-            reports_data = data.get('data', {})
+            tree_data = data.get('data')
+            self.log_test("Get Tree Structure", True, response_time=response_time)
             
-            # Verify key report sections exist
-            overview = reports_data.get('overview', {})
-            plan_distribution = reports_data.get('planDistribution', {})
-            daily_reports = reports_data.get('dailyReports', [])
-            income_breakdown = reports_data.get('incomeBreakdown', {})
+            # Print current tree structure
+            self.print_tree_structure(tree_data, "Admin (VSV00001)")
+            return tree_data
+        else:
+            self.log_test("Get Tree Structure", False, f"API failed: {data}")
+            return None
+    
+    def print_tree_structure(self, node, prefix="", is_last=True):
+        """Print tree structure in a readable format"""
+        if not node:
+            return
+        
+        # Print current node
+        name = node.get('name', 'Unknown')
+        referral_id = node.get('referralId', 'Unknown')
+        plan = node.get('currentPlan', 'No Plan')
+        
+        connector = "└─ " if is_last else "├─ "
+        print(f"   {prefix}{connector}{name} ({referral_id}) - Plan: {plan}")
+        
+        # Prepare prefix for children
+        child_prefix = prefix + ("    " if is_last else "│   ")
+        
+        # Print children
+        left_child = node.get('left')
+        right_child = node.get('right')
+        
+        if left_child or right_child:
+            if left_child:
+                print(f"   {child_prefix}├─ LEFT: ", end="")
+                self.print_tree_structure(left_child, child_prefix + "│   ", False)
+            else:
+                print(f"   {child_prefix}├─ LEFT: Empty")
             
-            print(f"   Total Users: {overview.get('totalUsers', 0)}")
-            print(f"   Total Earnings: ₹{overview.get('totalEarnings', 0)}")
-            print(f"   Referral Income: ₹{income_breakdown.get('REFERRAL_INCOME', 0)}")
-            print(f"   Matching Income: ₹{income_breakdown.get('MATCHING_INCOME', 0)}")
+            if right_child:
+                print(f"   {child_prefix}└─ RIGHT: ", end="")
+                self.print_tree_structure(right_child, child_prefix + "    ", True)
+            else:
+                print(f"   {child_prefix}└─ RIGHT: Empty")
+
+    def test_preview_placement_api(self):
+        """Test the preview placement API"""
+        print("\n🔍 TEST: Preview Placement API")
+        
+        # Test LEFT placement preview
+        preview_data = {
+            "referralId": "VSV00001",
+            "placement": "LEFT"
+        }
+        
+        success, data, response_time = self.make_request('POST', 'api/auth/preview-placement', preview_data)
+        
+        if success and data.get('success'):
+            placement_info = data.get('data', {})
+            actual_sponsor_name = placement_info.get('actual_sponsor_name', 'Unknown')
+            actual_sponsor_referral = placement_info.get('actual_sponsor_referral_id', 'Unknown')
+            placement_side = placement_info.get('placement', 'Unknown')
+            is_direct = placement_info.get('is_direct_placement', False)
             
-            # Verify reports structure is correct
-            has_overview = bool(overview)
-            has_plan_dist = bool(plan_distribution)
-            has_daily_reports = len(daily_reports) > 0
-            has_income_breakdown = bool(income_breakdown)
+            print(f"   LEFT Placement Preview:")
+            print(f"   - Will be placed under: {actual_sponsor_name} ({actual_sponsor_referral})")
+            print(f"   - Placement side: {placement_side}")
+            print(f"   - Direct placement: {is_direct}")
             
-            all_sections_present = has_overview and has_plan_dist and has_daily_reports and has_income_breakdown
+            self.log_test("Preview Placement API (LEFT)", True, response_time=response_time)
+            left_result = placement_info
+        else:
+            self.log_test("Preview Placement API (LEFT)", False, f"API failed: {data}")
+            left_result = None
+        
+        # Test RIGHT placement preview
+        preview_data = {
+            "referralId": "VSV00001", 
+            "placement": "RIGHT"
+        }
+        
+        success, data, response_time = self.make_request('POST', 'api/auth/preview-placement', preview_data)
+        
+        if success and data.get('success'):
+            placement_info = data.get('data', {})
+            actual_sponsor_name = placement_info.get('actual_sponsor_name', 'Unknown')
+            actual_sponsor_referral = placement_info.get('actual_sponsor_referral_id', 'Unknown')
+            placement_side = placement_info.get('placement', 'Unknown')
+            is_direct = placement_info.get('is_direct_placement', False)
             
-            if all_sections_present:
-                self.log_test("Reports API Dashboard", True, f"✅ All report sections present ({response_time:.3f}s)")
+            print(f"   RIGHT Placement Preview:")
+            print(f"   - Will be placed under: {actual_sponsor_name} ({actual_sponsor_referral})")
+            print(f"   - Placement side: {placement_side}")
+            print(f"   - Direct placement: {is_direct}")
+            
+            self.log_test("Preview Placement API (RIGHT)", True, response_time=response_time)
+            right_result = placement_info
+        else:
+            self.log_test("Preview Placement API (RIGHT)", False, f"API failed: {data}")
+            right_result = None
+        
+        return left_result, right_result
+
+    def test_left_auto_placement(self):
+        """Test 1: LEFT Side Auto-Placement Logic"""
+        print("\n🔍 TEST 1: LEFT Side Auto-Placement")
+        print("   Expected: Should go to deepest LEFT-most position")
+        
+        if not self.admin_token:
+            self.log_test("LEFT Auto-Placement Test", False, "No admin token")
+            return False
+        
+        # First get preview to see where user will be placed
+        preview_data = {
+            "referralId": "VSV00001",
+            "placement": "LEFT"
+        }
+        
+        success, preview_response, _ = self.make_request('POST', 'api/auth/preview-placement', preview_data)
+        
+        if not success or not preview_response.get('success'):
+            self.log_test("LEFT Placement Preview", False, f"Preview failed: {preview_response}")
+            return False
+        
+        expected_placement = preview_response.get('data', {})
+        expected_sponsor_name = expected_placement.get('actual_sponsor_name', 'Unknown')
+        expected_sponsor_referral = expected_placement.get('actual_sponsor_referral_id', 'Unknown')
+        
+        print(f"   Preview shows placement under: {expected_sponsor_name} ({expected_sponsor_referral})")
+        
+        # Create new user with LEFT placement
+        timestamp = datetime.now().strftime("%H%M%S")
+        user_data = {
+            "name": f"LEFT Test User {timestamp}",
+            "username": f"lefttest{timestamp}",
+            "email": f"lefttest{timestamp}@example.com",
+            "password": "Test@123",
+            "mobile": f"98765{timestamp}",
+            "referralId": "VSV00001",
+            "placement": "LEFT"
+        }
+        
+        success, reg_data, response_time = self.make_request('POST', 'api/auth/register', user_data)
+        
+        if not success or not reg_data.get('success'):
+            self.log_test("LEFT User Registration", False, f"Registration failed: {reg_data}")
+            return False
+        
+        new_user_id = reg_data.get('user', {}).get('id')
+        new_user_referral = reg_data.get('user', {}).get('referralId')
+        
+        print(f"   Created user: {user_data['name']} ({new_user_referral})")
+        
+        # Verify placement by checking the binary tree
+        success, tree_data, _ = self.make_request('GET', 'api/user/team/tree', token=self.admin_token)
+        
+        if not success or not tree_data.get('success'):
+            self.log_test("Get Tree After LEFT Placement", False, f"Tree API failed: {tree_data}")
+            return False
+        
+        # Find the new user in the tree and verify placement
+        tree = tree_data.get('data')
+        placement_correct = self.verify_user_placement_in_tree(tree, new_user_referral, expected_sponsor_referral, "LEFT")
+        
+        if placement_correct:
+            self.log_test("LEFT Auto-Placement Logic", True, f"✅ User correctly placed under {expected_sponsor_name} on LEFT", response_time)
+            return True
+        else:
+            self.log_test("LEFT Auto-Placement Logic", False, f"User not found in expected position")
+            return False
+
+    def test_right_auto_placement(self):
+        """Test 2: RIGHT Side Auto-Placement Logic"""
+        print("\n🔍 TEST 2: RIGHT Side Auto-Placement")
+        print("   Expected: Should go to deepest RIGHT-most position")
+        
+        if not self.admin_token:
+            self.log_test("RIGHT Auto-Placement Test", False, "No admin token")
+            return False
+        
+        # First get preview to see where user will be placed
+        preview_data = {
+            "referralId": "VSV00001",
+            "placement": "RIGHT"
+        }
+        
+        success, preview_response, _ = self.make_request('POST', 'api/auth/preview-placement', preview_data)
+        
+        if not success or not preview_response.get('success'):
+            self.log_test("RIGHT Placement Preview", False, f"Preview failed: {preview_response}")
+            return False
+        
+        expected_placement = preview_response.get('data', {})
+        expected_sponsor_name = expected_placement.get('actual_sponsor_name', 'Unknown')
+        expected_sponsor_referral = expected_placement.get('actual_sponsor_referral_id', 'Unknown')
+        
+        print(f"   Preview shows placement under: {expected_sponsor_name} ({expected_sponsor_referral})")
+        
+        # Create new user with RIGHT placement
+        timestamp = datetime.now().strftime("%H%M%S")
+        user_data = {
+            "name": f"RIGHT Test User {timestamp}",
+            "username": f"righttest{timestamp}",
+            "email": f"righttest{timestamp}@example.com",
+            "password": "Test@123",
+            "mobile": f"98765{timestamp}",
+            "referralId": "VSV00001",
+            "placement": "RIGHT"
+        }
+        
+        success, reg_data, response_time = self.make_request('POST', 'api/auth/register', user_data)
+        
+        if not success or not reg_data.get('success'):
+            self.log_test("RIGHT User Registration", False, f"Registration failed: {reg_data}")
+            return False
+        
+        new_user_id = reg_data.get('user', {}).get('id')
+        new_user_referral = reg_data.get('user', {}).get('referralId')
+        
+        print(f"   Created user: {user_data['name']} ({new_user_referral})")
+        
+        # Verify placement by checking the binary tree
+        success, tree_data, _ = self.make_request('GET', 'api/user/team/tree', token=self.admin_token)
+        
+        if not success or not tree_data.get('success'):
+            self.log_test("Get Tree After RIGHT Placement", False, f"Tree API failed: {tree_data}")
+            return False
+        
+        # Find the new user in the tree and verify placement
+        tree = tree_data.get('data')
+        placement_correct = self.verify_user_placement_in_tree(tree, new_user_referral, expected_sponsor_referral, "RIGHT")
+        
+        if placement_correct:
+            self.log_test("RIGHT Auto-Placement Logic", True, f"✅ User correctly placed under {expected_sponsor_name} on RIGHT", response_time)
+            return True
+        else:
+            self.log_test("RIGHT Auto-Placement Logic", False, f"User not found in expected position")
+            return False
+
+    def verify_user_placement_in_tree(self, tree_node, target_referral_id, expected_parent_referral_id, expected_side):
+        """Recursively verify user placement in binary tree"""
+        if not tree_node:
+            return False
+        
+        # Check if this node is the expected parent
+        if tree_node.get('referralId') == expected_parent_referral_id:
+            # Check the appropriate child based on expected side
+            child_node = tree_node.get('left') if expected_side == "LEFT" else tree_node.get('right')
+            
+            if child_node and child_node.get('referralId') == target_referral_id:
+                return True
+        
+        # Recursively check children
+        left_result = self.verify_user_placement_in_tree(tree_node.get('left'), target_referral_id, expected_parent_referral_id, expected_side)
+        right_result = self.verify_user_placement_in_tree(tree_node.get('right'), target_referral_id, expected_parent_referral_id, expected_side)
+        
+        return left_result or right_result
+
+    def test_binary_tree_after_placement(self):
+        """Test 3: Verify Binary Tree Structure After Placement"""
+        print("\n🔍 TEST 3: Binary Tree Structure After Placement")
+        
+        if not self.admin_token:
+            self.log_test("Tree Structure Verification", False, "No admin token")
+            return False
+        
+        # Get final tree structure
+        success, data, response_time = self.make_request('GET', 'api/user/team/tree', token=self.admin_token)
+        
+        if success and data.get('success'):
+            tree_data = data.get('data')
+            
+            print("   Final Binary Tree Structure:")
+            self.print_tree_structure(tree_data, "")
+            
+            # Verify tree integrity
+            tree_valid = self.validate_tree_structure(tree_data)
+            
+            if tree_valid:
+                self.log_test("Binary Tree Structure Verification", True, "✅ Tree structure is valid and consistent", response_time)
                 return True
             else:
-                missing = []
-                if not has_overview: missing.append("overview")
-                if not has_plan_dist: missing.append("planDistribution")
-                if not has_daily_reports: missing.append("dailyReports")
-                if not has_income_breakdown: missing.append("incomeBreakdown")
-                
-                self.log_test("Reports API Dashboard", False, f"Missing sections: {', '.join(missing)}")
+                self.log_test("Binary Tree Structure Verification", False, "Tree structure has issues")
                 return False
         else:
-            self.log_test("Reports API Dashboard", False, f"API failed: {data}")
+            self.log_test("Binary Tree Structure Verification", False, f"API failed: {data}")
             return False
+
+    def validate_tree_structure(self, node, depth=0):
+        """Validate binary tree structure integrity"""
+        if not node:
+            return True
+        
+        # Basic node validation
+        if not node.get('referralId') or not node.get('name'):
+            print(f"   ❌ Invalid node at depth {depth}: missing referralId or name")
+            return False
+        
+        # Validate children
+        left_valid = self.validate_tree_structure(node.get('left'), depth + 1)
+        right_valid = self.validate_tree_structure(node.get('right'), depth + 1)
+        
+        return left_valid and right_valid
 
     def run_review_tests(self):
         """Run specific tests as per review request"""
