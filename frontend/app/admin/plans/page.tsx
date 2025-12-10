@@ -321,15 +321,6 @@ export default function AdminPlansPage() {
                 />
               </div>
               <div>
-                <Label>Referral Income (₹)</Label>
-                <Input
-                  type="number"
-                  value={planForm.referralIncome}
-                  onChange={(e) => setPlanForm({...planForm, referralIncome: e.target.value})}
-                  placeholder="e.g., 200"
-                />
-              </div>
-              <div>
                 <Label>Daily Capping (₹)</Label>
                 <Input
                   type="number"
