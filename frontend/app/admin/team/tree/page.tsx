@@ -55,6 +55,11 @@ type UserDetails = {
   };
   joinedAt: string;
   lastActive: string;
+  incomeBreakdown?: {
+    REFERRAL_INCOME: number;
+    MATCHING_INCOME: number;
+    LEVEL_INCOME: number;
+  };
 };
 
 function TreeNodeComponent({ 
