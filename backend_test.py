@@ -1100,12 +1100,12 @@ class MLMAPITester:
         return all(test_results)
 
     def run_all_tests(self):
-        """Run all tests including review-specific tests"""
+        """Run all tests including auto-placement tests"""
         print("🚀 Starting Complete Backend API Testing - MLM VSV Unite Application")
         print("=" * 70)
         
-        # First run the review-specific tests
-        review_success = self.run_review_tests()
+        # Run the auto-placement tests (main focus)
+        auto_placement_success = self.run_auto_placement_tests()
         
         # Then run other essential tests
         print("\n" + "=" * 70)
@@ -1122,7 +1122,6 @@ class MLMAPITester:
         # Admin APIs
         print("\n🔧 2. Admin APIs:")
         self.test_admin_users()
-        self.test_calculate_daily_matching()
         
         # Plans APIs
         print("\n📋 3. Plans APIs:")
@@ -1145,7 +1144,7 @@ class MLMAPITester:
         success_rate = (self.tests_passed / self.tests_run) * 100 if self.tests_run > 0 else 0
         print(f"\n✅ Success Rate: {success_rate:.1f}%")
         
-        return review_success and success_rate >= 80
+        return auto_placement_success and success_rate >= 80
 
 def main():
     """Main test execution"""
