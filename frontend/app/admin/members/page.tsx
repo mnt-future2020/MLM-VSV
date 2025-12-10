@@ -405,7 +405,7 @@ export default function ManageMembersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs text-muted-foreground">
-  {new Date(member.createdAt).toLocaleDateString("en-GB", {
+  {new Date(member.joinedAt).toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
