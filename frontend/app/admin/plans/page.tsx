@@ -255,10 +255,6 @@ export default function AdminPlansPage() {
                 <span className="font-semibold text-foreground">{plan.pv}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Referral Income:</span>
-                <span className="font-semibold text-foreground">₹{plan.referralIncome}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Daily Capping:</span>
                 <span className="font-semibold text-foreground">₹{plan.dailyCapping}</span>
               </div>
