@@ -1044,10 +1044,10 @@ class MLMAPITester:
         
         return left_valid and right_valid
 
-    def run_review_tests(self):
-        """Run specific tests as per review request"""
-        print("🚀 VSV Unite MLM Platform - Review Request Testing")
-        print("Testing Referral Income Removal & PV Calculation Logic")
+    def run_auto_placement_tests(self):
+        """Run auto-placement tests as per review request"""
+        print("🚀 VSV Unite MLM Platform - Auto-Placement Logic Testing")
+        print("Testing Binary Tree Auto-Placement Logic")
         print("=" * 70)
         
         # First, ensure we have admin login and basic setup
@@ -1056,45 +1056,46 @@ class MLMAPITester:
             print("❌ Admin login failed, cannot proceed with tests")
             return False
         
-        # Get plans for testing
-        if not self.test_get_plans():
-            print("❌ Could not get plans, some tests may fail")
+        # Get current tree structure
+        current_tree = self.test_get_current_tree_structure()
+        if not current_tree:
+            print("❌ Could not get current tree structure")
+            return False
         
-        # Run the specific review tests
+        # Test preview placement API
+        print("\n🔍 Testing Preview Placement API:")
+        left_preview, right_preview = self.test_preview_placement_api()
+        
+        # Run the specific auto-placement tests
         test_results = []
         
-        # Test 1: Verify Referral Income is NOT Given (Registration)
-        test_results.append(self.test_referral_income_removal_registration())
+        # Test 1: LEFT Side Auto-Placement
+        test_results.append(self.test_left_auto_placement())
         
-        # Test 2: Verify Referral Income is NOT Given (Activation)  
-        test_results.append(self.test_referral_income_removal_activation())
+        # Test 2: RIGHT Side Auto-Placement  
+        test_results.append(self.test_right_auto_placement())
         
-        # Test 3: Verify PV Calculation Logic
-        test_results.append(self.test_pv_calculation_logic())
-        
-        # Test 4: Check Backend Logs and Reports
-        test_results.append(self.test_backend_logs_and_reports())
+        # Test 3: Verify Binary Tree Structure After Placement
+        test_results.append(self.test_binary_tree_after_placement())
         
         # Print final results
         print("\n" + "=" * 70)
-        print("📊 REVIEW TEST RESULTS:")
+        print("📊 AUTO-PLACEMENT TEST RESULTS:")
         print(f"   Tests Passed: {sum(test_results)}/{len(test_results)}")
         
         if all(test_results):
-            print("✅ ALL REVIEW TESTS PASSED")
-            print("   - Referral income system successfully removed")
-            print("   - PV calculation logic working correctly")
-            print("   - Reports API functioning properly")
+            print("✅ ALL AUTO-PLACEMENT TESTS PASSED")
+            print("   - LEFT side auto-placement working correctly")
+            print("   - RIGHT side auto-placement working correctly")
+            print("   - Binary tree structure maintained properly")
         else:
             print("❌ SOME TESTS FAILED")
             if not test_results[0]:
-                print("   - Referral income still being given during registration")
+                print("   - LEFT side auto-placement has issues")
             if not test_results[1]:
-                print("   - Referral income still being given during activation")
+                print("   - RIGHT side auto-placement has issues")
             if not test_results[2]:
-                print("   - PV calculation logic needs attention")
-            if not test_results[3]:
-                print("   - Reports API has issues")
+                print("   - Binary tree structure validation failed")
         
         return all(test_results)
 
