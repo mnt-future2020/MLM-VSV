@@ -610,10 +610,12 @@ class MLMAPITester:
         
         # Find admin user in the list
         admin_user = None
-        for user in admin_data.get('data', {}).get('users', []):
-            if user.get('referralId') == 'VSV00001':
-                admin_user = user
-                break
+        users_list = admin_data.get('data', [])
+        if isinstance(users_list, list):
+            for user in users_list:
+                if user.get('referralId') == 'VSV00001':
+                    admin_user = user
+                    break
         
         if not admin_user:
             self.log_test("Find Admin User", False, "Admin user not found")
