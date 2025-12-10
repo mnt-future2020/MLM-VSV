@@ -233,7 +233,7 @@ export default function AdminTeamListPage() {
                       <p className="text-xs text-muted-foreground">{member.email}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{member.contact}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{member.mobile}</td>
                   <td className="px-6 py-4">
                     <span
                       className={cn(
