@@ -602,6 +602,13 @@ class MLMAPITester:
             self.log_test("PV Calculation Test", False, "No admin token")
             return False
         
+        # First, ensure admin has a plan for matching income calculation
+        if self.test_plan_id:
+            activation_data = {"planId": self.test_plan_id}
+            success, _, _ = self.make_request('POST', 'api/plans/activate', activation_data, token=self.admin_token)
+            if success:
+                print(f"   Admin plan activated for testing")
+        
         # Get admin user's current PV values
         success, admin_data, _ = self.make_request('GET', 'api/admin/users', token=self.admin_token)
         if not success:
@@ -625,6 +632,12 @@ class MLMAPITester:
         right_pv_before = admin_user.get('rightPV', 0)
         
         print(f"   Admin PV before calculation: Left={left_pv_before}, Right={right_pv_before}")
+        
+        # If admin has no PV, the test is still valid (no matching possible)
+        if left_pv_before == 0 or right_pv_before == 0:
+            print(f"   No PV available for matching (Left={left_pv_before}, Right={right_pv_before})")
+            self.log_test("PV Calculation Logic", True, "✅ No matching possible (zero PV on one side)")
+            return True
         
         # Get admin wallet balance before matching calculation
         success, wallet_before, _ = self.make_request('GET', 'api/wallet/balance', token=self.admin_token)
@@ -681,38 +694,41 @@ class MLMAPITester:
         print(f"   Admin balance after matching: ₹{balance_after}")
         
         # Calculate expected matching
-        if left_pv_before > 0 and right_pv_before > 0:
-            matched_pv = min(left_pv_before, right_pv_before)
-            
-            # Assuming Basic plan daily cap of ₹250, so max 10 PV per day (₹250 / ₹25 = 10 PV)
-            daily_cap_pv = 10
-            today_pv = min(matched_pv, daily_cap_pv)
-            expected_income = today_pv * 25  # ₹25 per PV
-            
-            # Expected PV after flushing: both sides should be reduced by matched amount
-            expected_left_after = left_pv_before - today_pv
-            expected_right_after = right_pv_before - today_pv
-            
-            print(f"   Expected: Income=₹{expected_income}, Left PV={expected_left_after}, Right PV={expected_right_after}")
-            
-            # Check if PV flushing is correct
-            pv_flushing_correct = (left_pv_after == expected_left_after and 
-                                 right_pv_after == expected_right_after)
-            
-            # Check if income was calculated (balance should increase if there was matching)
-            income_calculated = balance_after >= balance_before
-            
-            if pv_flushing_correct and (matched_pv == 0 or income_calculated):
-                self.log_test("PV Calculation Logic", True, f"✅ PV flushing correct: L={left_pv_after}, R={right_pv_after}")
-                return True
-            else:
-                details = f"PV flushing incorrect. Expected L={expected_left_after}, R={expected_right_after}, Got L={left_pv_after}, R={right_pv_after}"
-                self.log_test("PV Calculation Logic", False, details)
-                return False
-        else:
-            # No matching possible with zero PV on either side
-            self.log_test("PV Calculation Logic", True, "✅ No matching possible (zero PV on one side)")
+        matched_pv = min(left_pv_before, right_pv_before)
+        
+        # Assuming Basic plan daily cap of ₹250, so max 10 PV per day (₹250 / ₹25 = 10 PV)
+        daily_cap_pv = 10
+        today_pv = min(matched_pv, daily_cap_pv)
+        expected_income = today_pv * 25  # ₹25 per PV
+        
+        # Expected PV after flushing: both sides should be reduced by matched amount
+        expected_left_after = left_pv_before - today_pv
+        expected_right_after = right_pv_before - today_pv
+        
+        print(f"   Expected: Income=₹{expected_income}, Left PV={expected_left_after}, Right PV={expected_right_after}")
+        
+        # Check if PV flushing is correct
+        pv_flushing_correct = (left_pv_after == expected_left_after and 
+                             right_pv_after == expected_right_after)
+        
+        # Check if income was calculated correctly
+        income_earned = balance_after - balance_before
+        income_correct = income_earned == expected_income
+        
+        print(f"   Actual income earned: ₹{income_earned}")
+        
+        if pv_flushing_correct and income_correct:
+            self.log_test("PV Calculation Logic", True, f"✅ PV flushing and income correct: L={left_pv_after}, R={right_pv_after}, Income=₹{income_earned}")
             return True
+        else:
+            details = []
+            if not pv_flushing_correct:
+                details.append(f"PV flushing incorrect. Expected L={expected_left_after}, R={expected_right_after}, Got L={left_pv_after}, R={right_pv_after}")
+            if not income_correct:
+                details.append(f"Income incorrect. Expected ₹{expected_income}, Got ₹{income_earned}")
+            
+            self.log_test("PV Calculation Logic", False, "; ".join(details))
+            return False
 
     def test_backend_logs_and_reports(self):
         """Test 4: Check Backend Logs and Reports API"""
