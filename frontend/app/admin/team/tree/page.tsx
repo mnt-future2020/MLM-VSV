@@ -29,6 +29,7 @@ type UserDetails = {
   referralId: string;
   sponsorId: string;
   sponsor: { name: string; referralId: string } | null;
+  placement?: string;
   isActive: boolean;
   currentPlan: {
     name: string;
