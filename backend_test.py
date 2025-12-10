@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-VSV Unite MLM Platform Backend Testing - Referral Income Removal & PV Calculation
-Tests specific changes made to the MLM platform as per review request:
-1. Verify Referral Income is NOT Given
-2. Verify PV Calculation Logic (matching income with proper PV flushing)
-3. Check Backend Logs
-4. Test Reports API
+VSV Unite MLM Platform Backend Testing - Auto-Placement Logic Testing
+Tests the new auto-placement logic for binary tree as per review request:
+1. Test LEFT Side Auto-Placement (deepest LEFT-most position)
+2. Test RIGHT Side Auto-Placement (deepest RIGHT-most position)  
+3. Verify Binary Tree Structure After Placement
+4. Test Preview Placement API
 """
 
 import requests
