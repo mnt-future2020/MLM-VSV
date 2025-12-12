@@ -193,7 +193,7 @@ export default function UserDashboard() {
       </div>
 
       {/* Team Structure Preview */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+      {/* <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-foreground">Team Overview</h2>
           <Link href="/dashboard/team/tree">
@@ -244,7 +244,7 @@ export default function UserDashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </PageContainer>
   );
 }

@@ -72,35 +72,10 @@ export default function TransactionsPage() {
         icon={<Receipt className="w-6 h-6 text-white" />}
         title="Transaction History"
         subtitle="View all your financial transactions"
-        action={
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-        }
       />
 
-      {/* Filter */}
-      <div className="bg-card border border-border rounded-xl p-4 mb-6 flex items-center gap-4">
-        <Filter className="w-5 h-5 text-muted-foreground" />
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Transactions</SelectItem>
-            <SelectItem value="credit">Credits Only</SelectItem>
-            <SelectItem value="debit">Debits Only</SelectItem>
-            <SelectItem value="REFERRAL_INCOME">Referral Income</SelectItem>
-            <SelectItem value="MATCHING_INCOME">Matching Income</SelectItem>
-            <SelectItem value="LEVEL_INCOME">Level Income</SelectItem>
-            <SelectItem value="WITHDRAWAL_REQUEST">Withdrawals</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="ml-auto text-sm text-muted-foreground">
-          Showing {filteredTransactions.length} transactions
-        </div>
-      </div>
+    
+      
 
       {/* Transactions List */}
       <div className="space-y-4">

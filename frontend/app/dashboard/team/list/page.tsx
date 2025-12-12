@@ -97,12 +97,6 @@ export default function TeamListPage() {
         icon={<Users className="w-6 h-6 text-white" />}
         title="Team Members"
         subtitle="Manage and view your direct referrals"
-        action={
-          <Button className="bg-primary-600 hover:bg-primary-700">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Member
-          </Button>
-        }
       />
 
       {/* Stats */}

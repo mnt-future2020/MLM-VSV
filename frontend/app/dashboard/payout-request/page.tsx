@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, DollarSign, AlertCircle, Clock, Receipt } from "lucide-react";
+import {
+  FileText,
+  DollarSign,
+  AlertCircle,
+  Clock,
+  Receipt,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,7 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
+import {
+  PageContainer,
+  PageHeader,
+  StatsCard,
+} from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -32,24 +42,39 @@ export default function PayoutReportsPage() {
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
   const [remarks, setRemarks] = useState("");
-  const [withdrawalHistory, setWithdrawalHistory] = useState<WithdrawalRequest[]>([]);
-  const [walletData, setWalletData] = useState({ balance: 0, totalWithdrawals: 0 });
+  const [withdrawalHistory, setWithdrawalHistory] = useState<
+    WithdrawalRequest[]
+  >([]);
+  const [walletData, setWalletData] = useState({
+    balance: 0,
+    totalWithdrawals: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [minWithdrawal, setMinWithdrawal] = useState(1000);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch wallet balance
-        const walletRes = await axiosInstance.get('/api/wallet/balance');
+        const walletRes = await axiosInstance.get("/api/wallet/balance");
         if (walletRes.data.success) {
           setWalletData(walletRes.data.data);
         }
 
         // Fetch withdrawal history
-        const historyRes = await axiosInstance.get('/api/withdrawal/history');
+        const historyRes = await axiosInstance.get("/api/withdrawal/history");
         if (historyRes.data.success) {
           setWithdrawalHistory(historyRes.data.data || []);
+        }
+
+        // Fetch settings for minimum withdrawal
+        const settingsRes = await axiosInstance.get("/api/settings/public");
+        if (
+          settingsRes.data.success &&
+          settingsRes.data.data?.minimumWithdrawLimit
+        ) {
+          setMinWithdrawal(Number(settingsRes.data.data.minimumWithdrawLimit));
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -64,43 +89,45 @@ export default function PayoutReportsPage() {
   }, [user]);
 
   const pendingWithdrawals = withdrawalHistory
-    .filter(w => w.status === "PENDING")
+    .filter((w) => w.status === "PENDING")
     .reduce((sum, w) => sum + w.amount, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!withdrawalAmount || parseFloat(withdrawalAmount) < 1000) {
-      alert("Minimum withdrawal amount is ₹1,000");
+    if (!withdrawalAmount || parseFloat(withdrawalAmount) < minWithdrawal) {
+      alert(`Minimum withdrawal amount is ₹${minWithdrawal.toLocaleString()}`);
       return;
     }
 
     try {
       setSubmitting(true);
-      const response = await axiosInstance.post('/api/withdrawal/request', {
+      const response = await axiosInstance.post("/api/withdrawal/request", {
         amount: parseFloat(withdrawalAmount),
         paymentMethod,
-        remarks
+        remarks,
       });
 
       if (response.data.success) {
         alert("Withdrawal request submitted successfully!");
         setWithdrawalAmount("");
         setRemarks("");
-        
+
         // Refresh data
-        const historyRes = await axiosInstance.get('/api/withdrawal/history');
+        const historyRes = await axiosInstance.get("/api/withdrawal/history");
         if (historyRes.data.success) {
           setWithdrawalHistory(historyRes.data.data || []);
         }
 
-        const walletRes = await axiosInstance.get('/api/wallet/balance');
+        const walletRes = await axiosInstance.get("/api/wallet/balance");
         if (walletRes.data.success) {
           setWalletData(walletRes.data.data);
         }
       }
     } catch (error: any) {
       console.error("Error submitting withdrawal:", error);
-      alert(error.response?.data?.detail || "Failed to submit withdrawal request");
+      alert(
+        error.response?.data?.detail || "Failed to submit withdrawal request"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -135,7 +162,7 @@ export default function PayoutReportsPage() {
     <PageContainer maxWidth="xl">
       <PageHeader
         icon={<FileText className="w-6 h-6 text-white" />}
-        title="Payout Reports"
+        title="Payout Request"
         subtitle="Request withdrawals and view payout history"
       />
 
@@ -166,7 +193,9 @@ export default function PayoutReportsPage() {
         {/* Withdrawal Request Form */}
         <div className="lg:col-span-1">
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm sticky top-6">
-            <h2 className="text-lg font-semibold text-foreground mb-6">Request Withdrawal</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-6">
+              Request Withdrawal
+            </h2>
 
             {/* Important Notice */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex gap-3">
@@ -174,7 +203,10 @@ export default function PayoutReportsPage() {
               <div className="text-sm text-blue-800 space-y-1">
                 <p className="font-semibold">Important Notice:</p>
                 <ul className="list-disc list-inside space-y-1 text-xs opacity-90">
-                  <li>Minimum withdrawal amount is ₹1,000</li>
+                  <li>
+                    Minimum withdrawal amount is ₹
+                    {minWithdrawal.toLocaleString()}
+                  </li>
                   <li>Processing time: 3-5 business days</li>
                   <li>Ensure your bank details are up to date</li>
                 </ul>
@@ -185,14 +217,16 @@ export default function PayoutReportsPage() {
               <div>
                 <Label required>Withdrawal Amount</Label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    ₹
+                  </span>
                   <Input
                     type="number"
                     placeholder="Enter amount"
                     value={withdrawalAmount}
                     onChange={(e) => setWithdrawalAmount(e.target.value)}
                     className="pl-8"
-                    min="1000"
+                    min={minWithdrawal}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -256,18 +290,30 @@ export default function PayoutReportsPage() {
         <div className="lg:col-span-2">
           <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <div className="p-6 border-b border-border bg-muted/30">
-              <h2 className="text-lg font-semibold text-foreground">Withdrawal History</h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                Withdrawal History
+              </h2>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Date</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Amount</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Method</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Status</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Processed</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">
+                      Date
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">
+                      Amount
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">
+                      Method
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">
+                      Status
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">
+                      Processed
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -290,18 +336,28 @@ export default function PayoutReportsPage() {
                           {request.paymentMethod || "N/A"}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium border", getStatusColor(request.status))}>
+                          <span
+                            className={cn(
+                              "px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                              getStatusColor(request.status)
+                            )}
+                          >
                             {request.status}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {request.approvedAt ? new Date(request.approvedAt).toLocaleDateString() : "-"}
+                          {request.approvedAt
+                            ? new Date(request.approvedAt).toLocaleDateString()
+                            : "-"}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-muted-foreground"
+                      >
                         No withdrawal history
                       </td>
                     </tr>

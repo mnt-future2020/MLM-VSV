@@ -114,12 +114,6 @@ export default function AdminTeamListPage() {
         icon={<Users className="w-6 h-6 text-white" />}
         title="My Team"
         subtitle="View and manage members under your ID"
-        action={
-          <Button className="gap-2 bg-primary-500 hover:bg-primary-600 text-white shadow-md">
-            <UserPlus className="w-4 h-4" />
-            Add New Member
-          </Button>
-        }
       />
 
       {/* Stats Cards */}

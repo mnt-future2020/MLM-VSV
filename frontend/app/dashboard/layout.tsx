@@ -66,12 +66,6 @@ export default function DashboardLayout({
           icon: <User className="w-4 h-4" />,
           isActive: pathname === "/dashboard/profile/edit",
         },
-        {
-          label: "Change Password",
-          href: "/change-password",
-          icon: <Lock className="w-4 h-4" />,
-          isActive: pathname === "/change-password",
-        },
       ],
     },
     {
@@ -108,8 +102,8 @@ export default function DashboardLayout({
       isActive: pathname === "/dashboard/earnings",
     },
     {
-      label: "Payout Reports",
-      href: "/dashboard/payout-reports",
+      label: "Payout Request",
+      href: "/dashboard/payout-request",
       icon: <FileText className="w-5 h-5" />,
       isActive: pathname === "/dashboard/payout-reports",
     },

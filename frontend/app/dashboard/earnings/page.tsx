@@ -91,13 +91,7 @@ export default function EarningsPage() {
           gradient="bg-primary-500"
           trend={{ value: "All time", isPositive: true }}
         />
-        <StatsCard
-          label="Referral Income"
-          value={`₹${referralIncome}`}
-          icon={<Users className="w-6 h-6 text-blue-600" />}
-          gradient="bg-blue-500"
-          trend={{ value: "Direct referrals", isPositive: true }}
-        />
+      
         <StatsCard
           label="Matching Income"
           value={`₹${matchingIncome}`}
@@ -105,13 +99,7 @@ export default function EarningsPage() {
           gradient="bg-green-500"
           trend={{ value: "Binary PV matching", isPositive: true }}
         />
-        <StatsCard
-          label="Level Income"
-          value={`₹${levelIncome}`}
-          icon={<Gift className="w-6 h-6 text-purple-600" />}
-          gradient="bg-purple-500"
-          trend={{ value: "Team levels", isPositive: true }}
-        />
+       
       </div>
 
       {/* Income Breakdown */}
