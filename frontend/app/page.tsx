@@ -33,6 +33,71 @@ export default function Home() {
     fetchSettings();
   }, []);
 
+  // Update SEO meta tags when settings are loaded
+  useEffect(() => {
+    if (settings) {
+      // Update document title
+      if (settings.metaTitle) {
+        document.title = settings.metaTitle;
+      }
+      
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription && settings.metaDescription) {
+        metaDescription.setAttribute('content', settings.metaDescription);
+      } else if (settings.metaDescription) {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = settings.metaDescription;
+        document.head.appendChild(newMeta);
+      }
+
+      // Update meta keywords
+      let metaKeywords = document.querySelector('meta[name="keywords"]');
+      if (metaKeywords && settings.metaKeywords) {
+        metaKeywords.setAttribute('content', settings.metaKeywords);
+      } else if (settings.metaKeywords) {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'keywords';
+        newMeta.content = settings.metaKeywords;
+        document.head.appendChild(newMeta);
+      }
+
+      // Update OG Image
+      let ogImage = document.querySelector('meta[property="og:image"]');
+      if (ogImage && settings.ogImage) {
+        ogImage.setAttribute('content', settings.ogImage);
+      } else if (settings.ogImage) {
+        const newMeta = document.createElement('meta');
+        newMeta.setAttribute('property', 'og:image');
+        newMeta.content = settings.ogImage;
+        document.head.appendChild(newMeta);
+      }
+
+      // Update OG Title
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle && settings.metaTitle) {
+        ogTitle.setAttribute('content', settings.metaTitle);
+      } else if (settings.metaTitle) {
+        const newMeta = document.createElement('meta');
+        newMeta.setAttribute('property', 'og:title');
+        newMeta.content = settings.metaTitle;
+        document.head.appendChild(newMeta);
+      }
+
+      // Update OG Description
+      let ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc && settings.metaDescription) {
+        ogDesc.setAttribute('content', settings.metaDescription);
+      } else if (settings.metaDescription) {
+        const newMeta = document.createElement('meta');
+        newMeta.setAttribute('property', 'og:description');
+        newMeta.content = settings.metaDescription;
+        document.head.appendChild(newMeta);
+      }
+    }
+  }, [settings]);
+
   // Default fallback data
   const heroImages = settings?.heroSlides?.map((slide: any) => slide.image) || [
     "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
