@@ -113,6 +113,7 @@ export default function AdminReportsPage() {
     description, 
     endpoint, 
     icon: Icon,
+    sectionKey,
     showPlanFilter = false,
     showStatusFilter = false
   }: { 
@@ -120,9 +121,13 @@ export default function AdminReportsPage() {
     description: string; 
     endpoint: string; 
     icon: any;
+    sectionKey: string;
     showPlanFilter?: boolean;
     showStatusFilter?: boolean;
-  }) => (
+  }) => {
+    const filters = sectionFilters[sectionKey] || { startDate: "", endDate: "" };
+    
+    return (
     <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
       <div className="flex items-start gap-4 mb-6">
         <div className="p-3 bg-primary-50 rounded-lg">
@@ -139,8 +144,8 @@ export default function AdminReportsPage() {
           <Label className="text-sm mb-2 block">Start Date</Label>
           <Input 
             type="date" 
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            value={filters.startDate}
+            onChange={(e) => updateSectionFilter(sectionKey, "startDate", e.target.value)}
             className="border-border"
           />
         </div>
@@ -148,8 +153,8 @@ export default function AdminReportsPage() {
           <Label className="text-sm mb-2 block">End Date</Label>
           <Input 
             type="date" 
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            value={filters.endDate}
+            onChange={(e) => updateSectionFilter(sectionKey, "endDate", e.target.value)}
             className="border-border"
           />
         </div>
@@ -157,7 +162,7 @@ export default function AdminReportsPage() {
         {showPlanFilter && (
           <div>
             <Label className="text-sm mb-2 block">Plan Filter</Label>
-            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+            <Select value={filters.planFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "planFilter", val)}>
               <SelectTrigger className="border-border">
                 <SelectValue placeholder="Select plan" />
               </SelectTrigger>
@@ -174,7 +179,7 @@ export default function AdminReportsPage() {
         {showStatusFilter && (
           <div>
             <Label className="text-sm mb-2 block">Status Filter</Label>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <Select value={filters.statusFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "statusFilter", val)}>
               <SelectTrigger className="border-border">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -191,7 +196,7 @@ export default function AdminReportsPage() {
 
       <div className="flex flex-wrap gap-3">
         <Button
-          onClick={() => loadPreview(endpoint)}
+          onClick={() => loadPreview(endpoint, sectionKey)}
           disabled={loading}
           className="gap-2"
           variant="outline"
@@ -200,7 +205,7 @@ export default function AdminReportsPage() {
           {loading ? "Loading..." : "Preview"}
         </Button>
         <Button
-          onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'))}
+          onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
           disabled={loading}
           className="gap-2 bg-green-600 hover:bg-green-700 text-white"
         >
