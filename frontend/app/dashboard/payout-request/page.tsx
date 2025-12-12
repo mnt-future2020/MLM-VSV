@@ -327,7 +327,7 @@ export default function PayoutReportsPage() {
                         )}
                       >
                         <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {new Date(request.createdAt).toLocaleDateString()}
+                          {new Date(request.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                         </td>
                         <td className="px-6 py-4 text-sm font-semibold text-foreground">
                           ₹{request.amount.toLocaleString()}
@@ -347,7 +347,7 @@ export default function PayoutReportsPage() {
                         </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">
                           {request.approvedAt
-                            ? new Date(request.approvedAt).toLocaleDateString()
+                            ? new Date(request.approvedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
                             : "-"}
                         </td>
                       </tr>
