@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentSystemTime, setCurrentSystemTime] = useState("");
 
   // General Settings State
   const [generalSettings, setGeneralSettings] = useState({
@@ -28,6 +29,8 @@ export default function SettingsPage() {
     companyAddress: "123 Business Street, City, State, PIN",
     companyDescription: "A transparent, automated MLM system built on Binary + PV earning model",
     minimumWithdrawLimit: "1000", // Minimum withdrawal amount
+    systemTimeOffset: "0", // Time offset in minutes (+/- from actual time)
+    eodTime: "23:59", // End of Day time for calculations
   });
 
   // SEO Settings State
