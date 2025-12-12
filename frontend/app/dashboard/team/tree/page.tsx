@@ -387,8 +387,8 @@ function UserDetailsModal({
                   <p className="text-lg font-bold text-blue-900">{userDetails.pv.totalPV}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-blue-700">Daily PV Used</p>
-                  <p className="text-lg font-bold text-blue-900">{userDetails.pv.dailyPVUsed}</p>
+                  <p className="text-xs text-blue-700">Plan PV</p>
+                  <p className="text-lg font-bold text-blue-900">{userDetails.pv.planPV || 0}</p>
                 </div>
               </div>
             </div>
