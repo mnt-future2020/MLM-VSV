@@ -787,10 +787,10 @@ export default function ManageMembersPage() {
                   </div>
                   <div>
                     <Label className="text-xs text-purple-700">
-                      Daily PV Used
+                      Plan PV
                     </Label>
                     <p className="text-lg font-bold text-purple-900">
-                      {viewMemberDetails.pv.dailyPVUsed}
+                      {viewMemberDetails.pv.planPV || 0}
                     </p>
                   </div>
                 </div>
