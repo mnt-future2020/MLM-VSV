@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
-import { Save, Building2, Search, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Settings as SettingsIcon, Loader2, Mail, Send, Award } from "lucide-react";
+import { Save, Building2, Search, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Settings as SettingsIcon, Loader2, Mail, Send, Award, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getSettings, updateGeneralSettings, updateSeoSettings, updateHeroSettings } from "@/lib/settings-api";
 import { getEmailConfiguration, updateEmailConfiguration, testEmailConfiguration } from "@/lib/email-config-api";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { RanksTab } from "@/components/settings/RanksTab";
+import { axiosInstance } from "@/lib/api";
 
 type TabType = "general" | "seo" | "hero" | "email" | "ranks";
 
