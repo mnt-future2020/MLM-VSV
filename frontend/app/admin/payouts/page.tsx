@@ -252,7 +252,7 @@ export default function PayoutManagementPage() {
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground mb-3 space-y-1">
-                  <p>Requested: {new Date(req.requestedAt).toLocaleString()}</p>
+                  <p>Requested: {new Date(req.requestedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
                 </div>
 
                 {/* {req.status === "PENDING" && (
