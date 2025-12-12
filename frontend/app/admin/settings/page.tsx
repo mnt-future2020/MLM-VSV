@@ -89,6 +89,20 @@ export default function SettingsPage() {
   // Fetch settings on mount
   useEffect(() => {
     fetchSettings();
+    // Fetch system time periodically
+    const fetchSystemTime = async () => {
+      try {
+        const response = await axiosInstance.get('/api/system/time');
+        if (response.data.success) {
+          setCurrentSystemTime(response.data.data.currentTimeFormatted);
+        }
+      } catch (error) {
+        console.error("Error fetching system time:", error);
+      }
+    };
+    fetchSystemTime();
+    const interval = setInterval(fetchSystemTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchSettings = async () => {
@@ -106,6 +120,8 @@ export default function SettingsPage() {
           companyAddress: data.companyAddress || "123 Business Street, City, State, PIN",
           companyDescription: data.companyDescription || "A transparent, automated MLM system built on Binary + PV earning model",
           minimumWithdrawLimit: data.minimumWithdrawLimit || "1000",
+          systemTimeOffset: data.systemTimeOffset || "0",
+          eodTime: data.eodTime || "23:59",
         });
 
         // Update SEO settings
