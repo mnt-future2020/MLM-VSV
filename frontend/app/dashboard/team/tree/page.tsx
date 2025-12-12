@@ -47,6 +47,7 @@ type UserDetails = {
     leftPV: number;
     rightPV: number;
     totalPV: number;
+    planPV: number;
     dailyPVUsed: number;
   };
   team: {
