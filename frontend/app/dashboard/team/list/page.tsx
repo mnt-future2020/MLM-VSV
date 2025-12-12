@@ -210,7 +210,7 @@ export default function TeamListPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-foreground">
-                        {new Date(member.joinedAt).toLocaleDateString()}
+                        {new Date(member.joinedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })}
                       </p>
                     </td>
                     <td className="px-6 py-4">
