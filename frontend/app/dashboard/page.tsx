@@ -9,6 +9,17 @@ import { useAuth } from "@/contexts/auth-context";
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/lib/api";
 
+// Helper function to format date in IST
+const formatDateIST = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
 interface DashboardData {
   wallet: {
     balance: number;
