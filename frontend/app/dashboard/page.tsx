@@ -182,7 +182,7 @@ export default function UserDashboard() {
                     <div>
                       <p className="text-sm font-medium text-foreground">{transaction.type || transaction.description}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(transaction.createdAt).toLocaleDateString()}
+                        {formatDateIST(transaction.createdAt)}
                       </p>
                     </div>
                   </div>
