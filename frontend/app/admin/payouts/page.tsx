@@ -316,7 +316,7 @@ export default function PayoutManagementPage() {
                 <div className="text-right">
                   <p className="text-muted-foreground mb-1">Request Date:</p>
                   <p className="font-medium text-foreground">
-                    {new Date(selectedRequest.requestedAt).toLocaleDateString()}
+                    {new Date(selectedRequest.requestedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                   </p>
                 </div>
               </div>
@@ -351,7 +351,7 @@ export default function PayoutManagementPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Approved At:</span>
                     <span className="font-medium text-foreground">
-                      {new Date(selectedRequest.approvedAt).toLocaleString()}
+                      {new Date(selectedRequest.approvedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST
                     </span>
                   </div>
                 )}
@@ -359,7 +359,7 @@ export default function PayoutManagementPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Rejected At:</span>
                     <span className="font-medium text-foreground">
-                      {new Date(selectedRequest.rejectedAt).toLocaleString()}
+                      {new Date(selectedRequest.rejectedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST
                     </span>
                   </div>
                 )}
