@@ -286,15 +286,14 @@ export default function NewMemberPage() {
               />
             </div>
             <div>
-              <Label required>Email ID</Label>
+              <Label>Email ID <span className="text-gray-400 font-normal">(Optional)</span></Label>
               <Input
                 type="email"
-                placeholder="Enter email address"
+                placeholder="Enter email address (optional)"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                required
               />
             </div>
             <div>
