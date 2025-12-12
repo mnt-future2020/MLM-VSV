@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FileText, Download, Users, DollarSign, TrendingUp, Network, BarChart3, Calendar } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
@@ -12,25 +12,51 @@ import { axiosInstance } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 
+// Define types for each report section's date filters
+interface SectionFilters {
+  startDate: string;
+  endDate: string;
+  planFilter?: string;
+  statusFilter?: string;
+}
+
 export default function AdminReportsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("users");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [reportData, setReportData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const previewRef = useRef<HTMLDivElement>(null);
+  
+  // Separate filters for each section
+  const [sectionFilters, setSectionFilters] = useState<Record<string, SectionFilters>>({
+    users: { startDate: "", endDate: "" },
+    earnings: { startDate: "", endDate: "" },
+    transactions: { startDate: "", endDate: "" },
+    payouts: { startDate: "", endDate: "", statusFilter: "all" },
+    plans: { startDate: "", endDate: "", planFilter: "all" },
+    network: { startDate: "", endDate: "" }
+  });
 
-  const downloadReport = async (endpoint: string, format: "excel" | "pdf", filename: string) => {
+  const updateSectionFilter = (section: string, field: keyof SectionFilters, value: string) => {
+    setSectionFilters(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+  };
+
+  const downloadReport = async (endpoint: string, format: "excel" | "pdf", filename: string, section: string) => {
     try {
       setLoading(true);
+      const filters = sectionFilters[section] || { startDate: "", endDate: "" };
       let url = `${endpoint}?format=${format}`;
       
-      if (startDate) url += `&start_date=${startDate}`;
-      if (endDate) url += `&end_date=${endDate}`;
-      if (selectedPlan && selectedPlan !== "all") url += `&plan_id=${selectedPlan}`;
-      if (selectedStatus && selectedStatus !== "all") url += `&status=${selectedStatus}`;
+      if (filters.startDate) url += `&start_date=${filters.startDate}`;
+      if (filters.endDate) url += `&end_date=${filters.endDate}`;
+      if (filters.planFilter && filters.planFilter !== "all") url += `&plan_id=${filters.planFilter}`;
+      if (filters.statusFilter && filters.statusFilter !== "all") url += `&status=${filters.statusFilter}`;
 
       const response = await axiosInstance.get(url, {
         responseType: 'blob'
