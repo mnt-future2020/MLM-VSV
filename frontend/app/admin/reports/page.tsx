@@ -81,19 +81,24 @@ export default function AdminReportsPage() {
     }
   };
 
-  const loadPreview = async (endpoint: string) => {
+  const loadPreview = async (endpoint: string, section: string) => {
     try {
       setLoading(true);
+      const filters = sectionFilters[section] || { startDate: "", endDate: "" };
       let url = `${endpoint}?format=json`;
       
-      if (startDate) url += `&start_date=${startDate}`;
-      if (endDate) url += `&end_date=${endDate}`;
-      if (selectedPlan && selectedPlan !== "all") url += `&plan_id=${selectedPlan}`;
-      if (selectedStatus && selectedStatus !== "all") url += `&status=${selectedStatus}`;
+      if (filters.startDate) url += `&start_date=${filters.startDate}`;
+      if (filters.endDate) url += `&end_date=${filters.endDate}`;
+      if (filters.planFilter && filters.planFilter !== "all") url += `&plan_id=${filters.planFilter}`;
+      if (filters.statusFilter && filters.statusFilter !== "all") url += `&status=${filters.statusFilter}`;
 
       const response = await axiosInstance.get(url);
       if (response.data.success) {
         setReportData(response.data.data || []);
+        // Auto scroll to preview section
+        setTimeout(() => {
+          previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
       }
     } catch (error) {
       console.error("Preview error:", error);
