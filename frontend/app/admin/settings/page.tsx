@@ -383,6 +383,65 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+
+              {/* System Time Settings */}
+              <div className="mt-8 pt-6 border-t border-border">
+                <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary-500" />
+                  System Time Settings
+                </h2>
+                <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-primary-700 font-medium">Current System Time (IST)</p>
+                      <p className="text-2xl font-bold text-primary-900">{currentSystemTime || "Loading..."}</p>
+                    </div>
+                    <div className="w-14 h-14 rounded-full bg-primary-500 flex items-center justify-center">
+                      <Clock className="w-7 h-7 text-white" />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="systemTimeOffset">Time Offset (Minutes)</Label>
+                    <Input
+                      id="systemTimeOffset"
+                      type="number"
+                      value={generalSettings.systemTimeOffset}
+                      onChange={(e) =>
+                        setGeneralSettings({
+                          ...generalSettings,
+                          systemTimeOffset: e.target.value,
+                        })
+                      }
+                      className="mt-2"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Adjust system time (+/- minutes). Example: +30 means 30 mins ahead
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="eodTime">End of Day (EOD) Time</Label>
+                    <Input
+                      id="eodTime"
+                      type="time"
+                      value={generalSettings.eodTime}
+                      onChange={(e) =>
+                        setGeneralSettings({
+                          ...generalSettings,
+                          eodTime: e.target.value,
+                        })
+                      }
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Time when PV matching, carry forward calculations run (default: 23:59)
+                    </p>
+                  </div>
+                </div>
+              </div>
               </div>
             )}
 
