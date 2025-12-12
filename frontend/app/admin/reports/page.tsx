@@ -278,7 +278,7 @@ export default function AdminReportsPage() {
         action={
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
-            {startDate && endDate ? `${startDate} to ${endDate}` : "Select date range"}
+            Select date range in each section
           </div>
         }
       />
@@ -313,6 +313,7 @@ export default function AdminReportsPage() {
             description="Complete list of all members with their details, plans, and wallet balance"
             endpoint="/api/admin/reports/users/all"
             icon={Users}
+            sectionKey="users"
           />
           
           <ReportSection
@@ -320,6 +321,7 @@ export default function AdminReportsPage() {
             description="Breakdown of active and inactive users in the system"
             endpoint="/api/admin/reports/users/active-inactive"
             icon={Users}
+            sectionKey="users"
           />
           
           <ReportSection
@@ -327,10 +329,11 @@ export default function AdminReportsPage() {
             description="Get users filtered by their subscription plan"
             endpoint="/api/admin/reports/users/by-plan"
             icon={Users}
+            sectionKey="plans"
             showPlanFilter={true}
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
 
         {/* FINANCIAL REPORTS TAB */}
@@ -340,6 +343,7 @@ export default function AdminReportsPage() {
             description="Complete earnings breakdown with transaction details"
             endpoint="/api/admin/reports/financial/earnings"
             icon={DollarSign}
+            sectionKey="earnings"
           />
           
           <ReportSection
@@ -347,6 +351,7 @@ export default function AdminReportsPage() {
             description="Analysis of different income types (Referral, Matching, Level)"
             endpoint="/api/admin/reports/financial/income-breakdown"
             icon={TrendingUp}
+            sectionKey="earnings"
           />
           
           <ReportSection
