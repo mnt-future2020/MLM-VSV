@@ -507,13 +507,13 @@ function UserDetailsModal({
                 <div>
                   <p className="text-xs text-muted-foreground">Joined</p>
                   <p className="text-sm font-medium text-foreground">
-                    {new Date(userDetails.joinedAt).toLocaleString("en-IN")}
+                    {new Date(userDetails.joinedAt).toLocaleString("en-IN", { timeZone: 'Asia/Kolkata' })} IST
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Last Active</p>
                   <p className="text-sm font-medium text-foreground">
-                    {new Date(userDetails.lastActive).toLocaleString("en-IN")}
+                    {new Date(userDetails.lastActive).toLocaleString("en-IN", { timeZone: 'Asia/Kolkata' })} IST
                   </p>
                 </div>
               </div>
