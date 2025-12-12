@@ -462,7 +462,7 @@ export default function PayoutManagementPage() {
                     </td>
                     <td className="px-6 py-3 text-sm text-muted-foreground">
                       {payout.approvedAt
-                        ? new Date(payout.approvedAt).toLocaleString()
+                        ? new Date(payout.approvedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST'
                         : "N/A"}
                     </td>
                     <td className="px-6 py-3">
