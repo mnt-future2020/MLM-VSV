@@ -240,7 +240,8 @@ export default function AdminTeamListPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-muted-foreground">
                     <span className="text-xs text-muted-foreground">
-  {new Date(member.joinedAt).toLocaleDateString("en-GB", {
+  {new Date(member.joinedAt).toLocaleDateString("en-IN", {
+    timeZone: 'Asia/Kolkata',
     day: "2-digit",
     month: "short",
     year: "numeric",
