@@ -213,7 +213,7 @@ export default function AdminReportsPage() {
           Download Excel
         </Button>
         <Button
-          onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'))}
+          onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
           disabled={loading}
           className="gap-2 bg-red-600 hover:bg-red-700 text-white"
         >
@@ -223,6 +223,7 @@ export default function AdminReportsPage() {
       </div>
     </div>
   );
+  };
 
   const renderPreviewTable = () => {
     if (reportData.length === 0) {
