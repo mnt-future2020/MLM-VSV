@@ -326,26 +326,6 @@ export default function SettingsPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="pvIncomeRate">PV Income Rate (₹)</Label>
-                      <Input
-                        id="pvIncomeRate"
-                        type="number"
-                        value={generalSettings.pvIncomeRate}
-                        onChange={(e) =>
-                          setGeneralSettings({
-                            ...generalSettings,
-                            pvIncomeRate: e.target.value,
-                          })
-                        }
-                        className="mt-2"
-                        placeholder="25"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Income per PV (e.g., 25 means PV 1 = ₹25, PV 2 = ₹50)
-                      </p>
-                    </div>
-
-                    <div>
                       <Label htmlFor="minimumWithdrawLimit">Minimum Withdraw Limit (₹)</Label>
                       <Input
                         id="minimumWithdrawLimit"
