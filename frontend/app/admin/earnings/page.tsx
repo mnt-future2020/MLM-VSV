@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TrendingUp, Download, DollarSign, Package, BarChart3, Calendar, Clock } from "lucide-react";
+import { TrendingUp, Download, DollarSign, Package, BarChart3, Calendar, Clock, Wallet, Activity } from "lucide-react";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/lib/api";
@@ -15,6 +15,13 @@ interface Transaction {
   amount: number;
   description: string;
   createdAt: string;
+}
+
+interface AdminPV {
+  leftPV: number;
+  rightPV: number;
+  totalPV: number;
+  matchablePV: number;
 }
 
 // Helper function to format date in IST
@@ -34,12 +41,14 @@ const formatDateIST = (dateString: string) => {
 export default function AdminEarningsPage() {
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const [netProfit, setNetProfit] = useState(0);
   const [totalActivations, setTotalActivations] = useState(0);
   const [incomeByPlan, setIncomeByPlan] = useState<Record<string, number>>({});
   const [matchingIncomePaid, setMatchingIncomePaid] = useState(0);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [thisMonthRevenue, setThisMonthRevenue] = useState(0);
+  const [adminPV, setAdminPV] = useState<AdminPV>({ leftPV: 0, rightPV: 0, totalPV: 0, matchablePV: 0 });
 
   useEffect(() => {
     const fetchEarnings = async () => {
@@ -48,40 +57,21 @@ export default function AdminEarningsPage() {
         if (response.data.success) {
           const data = response.data.data;
           
-          // Calculate total revenue from plan activations only
-          const planActivationIncome = data.incomeBreakdown?.PLAN_ACTIVATION || 0;
-          setTotalRevenue(planActivationIncome);
+          // Set data from API
+          setTotalRevenue(data.totalRevenue || 0);
+          setNetProfit(data.netProfit || 0);
           setTotalActivations(data.totalActivations || 0);
           setIncomeByPlan(data.incomeByPlan || {});
-          
-          // Calculate matching income paid to users (for tracking)
-          setMatchingIncomePaid(data.incomeBreakdown?.MATCHING_INCOME || 0);
+          setMatchingIncomePaid(data.totalMatchingPaid || 0);
+          setTodayRevenue(data.todayRevenue || 0);
+          setThisMonthRevenue(data.monthRevenue || 0);
+          setAdminPV(data.adminPV || { leftPV: 0, rightPV: 0, totalPV: 0, matchablePV: 0 });
           
           // Filter transactions to show plan activations and matching income
           const filteredTransactions = (data.recentTransactions || []).filter((t: Transaction) => 
             t.type === 'PLAN_ACTIVATION' || t.type === 'MATCHING_INCOME'
           );
           setRecentTransactions(filteredTransactions);
-
-          // Calculate today's and this month's revenue
-          const allTransactions = data.allTransactions || [];
-          const now = new Date();
-          const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-          let todaySum = 0;
-          let monthSum = 0;
-
-          allTransactions.forEach((t: any) => {
-            if (t.type === 'PLAN_ACTIVATION') {
-              const txnDate = new Date(t.createdAt);
-              if (txnDate >= todayStart) todaySum += t.amount || 0;
-              if (txnDate >= monthStart) monthSum += t.amount || 0;
-            }
-          });
-
-          setTodayRevenue(todaySum);
-          setThisMonthRevenue(monthSum);
         }
       } catch (error) {
         console.error("Error fetching admin earnings:", error);
@@ -117,8 +107,8 @@ export default function AdminEarningsPage() {
         }
       />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Stats Cards - Row 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard
           label="Total Revenue"
           value={`₹${totalRevenue.toLocaleString()}`}
@@ -127,18 +117,11 @@ export default function AdminEarningsPage() {
           trend={{ value: `${totalActivations} plan activations`, isPositive: true }}
         />
         <StatsCard
-          label="Today's Revenue"
-          value={`₹${todayRevenue.toLocaleString()}`}
-          icon={<Calendar className="w-6 h-6 text-blue-600" />}
-          gradient="bg-blue-500"
-          trend={{ value: "Today", isPositive: true }}
-        />
-        <StatsCard
-          label="This Month"
-          value={`₹${thisMonthRevenue.toLocaleString()}`}
-          icon={<Clock className="w-6 h-6 text-purple-600" />}
-          gradient="bg-purple-500"
-          trend={{ value: "Current month", isPositive: true }}
+          label="Net Profit"
+          value={`₹${netProfit.toLocaleString()}`}
+          icon={<Wallet className="w-6 h-6 text-emerald-600" />}
+          gradient="bg-emerald-500"
+          trend={{ value: "Revenue - Payouts", isPositive: netProfit > 0 }}
         />
         <StatsCard
           label="Matching Income Paid"
@@ -147,6 +130,39 @@ export default function AdminEarningsPage() {
           gradient="bg-orange-500"
           trend={{ value: "Paid to users", isPositive: true }}
         />
+        <StatsCard
+          label="Today's Revenue"
+          value={`₹${todayRevenue.toLocaleString()}`}
+          icon={<Calendar className="w-6 h-6 text-blue-600" />}
+          gradient="bg-blue-500"
+          trend={{ value: "Today", isPositive: todayRevenue > 0 }}
+        />
+      </div>
+
+      {/* Admin PV Stats - Row 2 */}
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 mb-8 text-white">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5" />
+          Admin Matching Points (PV)
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <p className="text-white/70 text-sm mb-1">Left PV</p>
+            <p className="text-3xl font-bold">{adminPV.leftPV}</p>
+          </div>
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <p className="text-white/70 text-sm mb-1">Right PV</p>
+            <p className="text-3xl font-bold">{adminPV.rightPV}</p>
+          </div>
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <p className="text-white/70 text-sm mb-1">Matchable PV</p>
+            <p className="text-3xl font-bold">{adminPV.matchablePV}</p>
+          </div>
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <p className="text-white/70 text-sm mb-1">Total PV</p>
+            <p className="text-3xl font-bold">{adminPV.totalPV}</p>
+          </div>
+        </div>
       </div>
 
       {/* Income Breakdown by Plan */}
@@ -170,6 +186,28 @@ export default function AdminEarningsPage() {
               No plan activations yet
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Profit Summary Card */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-8">
+        <h3 className="text-lg font-semibold text-green-900 mb-4">Profit Summary</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-4 bg-white/60 rounded-lg">
+            <p className="text-sm text-green-600 mb-1">Total Revenue</p>
+            <p className="text-2xl font-bold text-green-800">₹{totalRevenue.toLocaleString()}</p>
+            <p className="text-xs text-green-600 mt-1">From all plan activations</p>
+          </div>
+          <div className="text-center p-4 bg-white/60 rounded-lg">
+            <p className="text-sm text-orange-600 mb-1">Total Payouts</p>
+            <p className="text-2xl font-bold text-orange-800">- ₹{matchingIncomePaid.toLocaleString()}</p>
+            <p className="text-xs text-orange-600 mt-1">Matching income paid to users</p>
+          </div>
+          <div className="text-center p-4 bg-green-100/60 rounded-lg border-2 border-green-300">
+            <p className="text-sm text-green-700 mb-1 font-medium">Net Profit</p>
+            <p className="text-3xl font-bold text-green-900">₹{netProfit.toLocaleString()}</p>
+            <p className="text-xs text-green-700 mt-1">Your actual earnings</p>
+          </div>
         </div>
       </div>
 
