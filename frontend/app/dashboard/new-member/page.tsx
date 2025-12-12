@@ -110,8 +110,7 @@ export default function NewMemberPage() {
     if (
       !formData.fullName ||
       !formData.username ||
-      !formData.mobile ||
-      !formData.email
+      !formData.mobile
     ) {
       toast.error("Please fill all required fields");
       return;
