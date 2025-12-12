@@ -426,6 +426,7 @@ export default function AdminReportsPage() {
             description="Analyze user distribution across different plans with revenue"
             endpoint="/api/admin/reports/analytics/plan-distribution"
             icon={BarChart3}
+            sectionKey="plans"
           />
           
           <ReportSection
@@ -433,9 +434,10 @@ export default function AdminReportsPage() {
             description="Monthly growth trends for users and revenue"
             endpoint="/api/admin/reports/analytics/growth"
             icon={TrendingUp}
+            sectionKey="earnings"
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
       </Tabs>
     </PageContainer>
