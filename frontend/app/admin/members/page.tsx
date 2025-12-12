@@ -839,8 +839,8 @@ export default function ManageMembersPage() {
                     </Label>
                     <p className="text-sm font-medium">
                       {new Date(viewMemberDetails.joinedAt).toLocaleString(
-                        "en-IN"
-                      )}
+                        "en-IN", { timeZone: 'Asia/Kolkata' }
+                      )} IST
                     </p>
                   </div>
                   <div>
@@ -849,8 +849,8 @@ export default function ManageMembersPage() {
                     </Label>
                     <p className="text-sm font-medium">
                       {new Date(viewMemberDetails.lastActive).toLocaleString(
-                        "en-IN"
-                      )}
+                        "en-IN", { timeZone: 'Asia/Kolkata' }
+                      )} IST
                     </p>
                   </div>
                 </div>
