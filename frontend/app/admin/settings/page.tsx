@@ -442,6 +442,40 @@ export default function SettingsPage() {
                     </p>
                   </div>
                 </div>
+
+                {/* EOD Processing Button */}
+                <div className="mt-6 pt-6 border-t border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">Manual EOD Processing</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Run the daily PV matching calculation manually. This will process all users with active plans and calculate their matching income.
+                  </p>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Are you sure you want to run EOD matching calculation? This will process all users.")) {
+                        return;
+                      }
+                      try {
+                        setSaving(true);
+                        const response = await axiosInstance.post('/api/admin/calculate-daily-matching');
+                        if (response.data.success) {
+                          toast.success(`EOD Processing Complete! ${response.data.summary.totalUsersProcessed} users processed, ₹${response.data.summary.totalIncomePaid} income distributed.`);
+                        } else {
+                          toast.error("EOD processing failed");
+                        }
+                      } catch (error) {
+                        console.error("EOD processing error:", error);
+                        toast.error("Failed to run EOD processing");
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                    disabled={saving}
+                    className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    {saving ? "Processing..." : "Run EOD Matching Now"}
+                  </Button>
+                </div>
               </div>
               </div>
             )}
