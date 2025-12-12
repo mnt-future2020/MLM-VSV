@@ -132,13 +132,15 @@ export default function TransactionsPage() {
                       </p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <span>📅</span>
-                        {new Date(transaction.createdAt).toLocaleDateString('en-IN', {
+                        {new Date(transaction.createdAt).toLocaleString('en-IN', {
+                          timeZone: 'Asia/Kolkata',
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                          minute: '2-digit',
+                          hour12: true
+                        })} IST
                       </p>
                     </div>
                   </div>
