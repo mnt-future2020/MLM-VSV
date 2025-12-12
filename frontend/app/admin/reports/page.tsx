@@ -359,6 +359,7 @@ export default function AdminReportsPage() {
             description="Complete withdrawal/payout history with status tracking"
             endpoint="/api/admin/reports/financial/withdrawals"
             icon={DollarSign}
+            sectionKey="payouts"
             showStatusFilter={true}
           />
 
@@ -367,6 +368,7 @@ export default function AdminReportsPage() {
             description="History of all wallet topups and recharges"
             endpoint="/api/admin/reports/financial/topups"
             icon={DollarSign}
+            sectionKey="transactions"
           />
 
           <ReportSection
@@ -374,9 +376,10 @@ export default function AdminReportsPage() {
             description="Daily breakdown of registrations, topups, payouts and net business"
             endpoint="/api/admin/reports/financial/business"
             icon={BarChart3}
+            sectionKey="earnings"
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
 
         {/* TEAM/NETWORK REPORTS TAB */}
@@ -386,6 +389,7 @@ export default function AdminReportsPage() {
             description="Complete team hierarchy with sponsor relationships"
             endpoint="/api/admin/reports/team/structure"
             icon={Network}
+            sectionKey="network"
           />
           
           <ReportSection
@@ -393,6 +397,7 @@ export default function AdminReportsPage() {
             description="Direct and total downline count for all users"
             endpoint="/api/admin/reports/team/downline"
             icon={Network}
+            sectionKey="network"
           />
           
           <ReportSection
@@ -400,9 +405,10 @@ export default function AdminReportsPage() {
             description="Export complete binary tree data with positions and counts"
             endpoint="/api/admin/reports/team/binary-tree"
             icon={Network}
+            sectionKey="network"
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
 
         {/* ANALYTICS REPORTS TAB */}
@@ -412,6 +418,7 @@ export default function AdminReportsPage() {
             description="Track daily new user registrations over time"
             endpoint="/api/admin/reports/analytics/registrations"
             icon={TrendingUp}
+            sectionKey="users"
           />
           
           <ReportSection
