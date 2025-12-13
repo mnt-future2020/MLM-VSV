@@ -10,8 +10,9 @@ sys.path.insert(0, '/app/backend')
 
 # Connect to MongoDB
 mongo_url = os.getenv('MONGO_URL')
+db_name = os.getenv('MONGO_DB_NAME', 'mlm_vsv_unite')
 client = MongoClient(mongo_url)
-db = client['binary_mlm']
+db = client[db_name]
 users_collection = db['users']
 plans_collection = db['plans']
 wallets_collection = db['wallets']
