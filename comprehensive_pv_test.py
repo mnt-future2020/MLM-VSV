@@ -126,7 +126,7 @@ print("Scenario: Left=50, Right=60, Daily Cap allows only 10 PV")
 test_user2_id = users_collection.insert_one({
     "name": "Test User Capping",
     "username": "pvtest_cap",
-    "email": "pvtest2@example.com",
+    "email": "pvtest_cap@example.com",
     "referralId": "PVTEST_CAP",
     "password": "hashed",
     "mobile": "9999999998",
