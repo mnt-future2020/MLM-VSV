@@ -58,7 +58,7 @@ def setup_test_scenario():
             "rightPV": 37,
             "totalPV": 17,  # Previous total
             "dailyPVUsed": 0,  # Fresh day - no PV used yet
-            "lastMatchingDate": datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0),
+            "lastMatchingDate": datetime.now(IST) - timedelta(days=1),  # Yesterday to trigger fresh day
             "createdAt": datetime.now(IST)
         })
         test_user = users_collection.find_one({"referralId": "TEST001"})
@@ -82,7 +82,7 @@ def setup_test_scenario():
                     "totalPV": 17,
                     "dailyPVUsed": 0,  # Fresh day
                     "currentPlan": str(test_plan["_id"]),
-                    "lastMatchingDate": datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0)
+                    "lastMatchingDate": datetime.now(IST) - timedelta(days=1)  # Yesterday
                 }
             }
         )
