@@ -57,7 +57,7 @@ def setup_test_scenario():
             "leftPV": 14,
             "rightPV": 37,
             "totalPV": 17,  # Previous total
-            "dailyPVUsed": 10,  # Used 10 PV today already
+            "dailyPVUsed": 0,  # Fresh day - no PV used yet
             "lastMatchingDate": datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0),
             "createdAt": datetime.now(IST)
         })
@@ -80,7 +80,7 @@ def setup_test_scenario():
                     "leftPV": 14,
                     "rightPV": 37,
                     "totalPV": 17,
-                    "dailyPVUsed": 10,
+                    "dailyPVUsed": 0,  # Fresh day
                     "currentPlan": str(test_plan["_id"]),
                     "lastMatchingDate": datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0)
                 }
