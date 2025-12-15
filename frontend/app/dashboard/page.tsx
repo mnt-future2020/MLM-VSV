@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/lib/api";
+import { KYCBanner } from "@/components/kyc-banner";
 
 // Helper function to format date in IST
 const formatDateIST = (dateString: string) => {
