@@ -52,6 +52,12 @@ export default function AdminLayout({
       icon: <Users className="w-5 h-5" />,
       isActive: pathname === "/admin/members",
     },
+    {
+      label: "KYC Management",
+      href: "/admin/kyc",
+      icon: <FileCheck className="w-5 h-5" />,
+      isActive: pathname?.startsWith("/admin/kyc"),
+    },
     // {
     //   label: "User Management",
     //   href: "/admin/users",
