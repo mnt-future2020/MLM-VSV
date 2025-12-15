@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload, CheckCircle2, XCircle, Clock, AlertCircle, FileImage } from "lucide-react";
+import { Upload, CheckCircle2, XCircle, Clock, AlertCircle, FileImage, User, Camera } from "lucide-react";
 
 interface KYCData {
   kycStatus: string;
@@ -28,7 +28,8 @@ export default function KYCPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [kycData, setKycData] = useState<KYCData | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const idProofInputRef = useRef<HTMLInputElement>(null);
+  const profilePhotoInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -43,12 +44,16 @@ export default function KYCPage() {
       ifsc: "",
       bankName: ""
     },
-    idProofBase64: ""
+    idProofBase64: "",
+    profilePhotoBase64: ""
   });
   
   const [idProofPreview, setIdProofPreview] = useState<string | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const [fileSize, setFileSize] = useState<number>(0);
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
+  const [idProofError, setIdProofError] = useState<string | null>(null);
+  const [profilePhotoError, setProfilePhotoError] = useState<string | null>(null);
+  const [idProofSize, setIdProofSize] = useState<number>(0);
+  const [profilePhotoSize, setProfilePhotoSize] = useState<number>(0);
 
   useEffect(() => {
     fetchKYCStatus();
@@ -82,7 +87,8 @@ export default function KYCPage() {
             dob: form.dob || "",
             idNumber: form.idNumber || "",
             bank: form.bank || { accountName: "", accountNumber: "", ifsc: "", bankName: "" },
-            idProofBase64: ""
+            idProofBase64: "",
+            profilePhotoBase64: ""
           });
         }
       }
@@ -93,24 +99,32 @@ export default function KYCPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    type: 'idProof' | 'profilePhoto'
+  ) => {
     const file = e.target.files?.[0];
-    setFileError(null);
+    const setError = type === 'idProof' ? setIdProofError : setProfilePhotoError;
+    const setPreview = type === 'idProof' ? setIdProofPreview : setProfilePhotoPreview;
+    const setSize = type === 'idProof' ? setIdProofSize : setProfilePhotoSize;
+    const fieldName = type === 'idProof' ? 'idProofBase64' : 'profilePhotoBase64';
+    
+    setError(null);
     
     if (!file) return;
     
     // Validate file type
     if (!file.type.includes('jpeg') && !file.type.includes('jpg')) {
-      setFileError("Only JPEG images are allowed");
+      setError("Only JPEG images are allowed");
       return;
     }
     
     // Validate file size (500KB = 512000 bytes)
     const sizeKB = file.size / 1024;
-    setFileSize(sizeKB);
+    setSize(sizeKB);
     
     if (sizeKB > 500) {
-      setFileError(`File size must be under 500KB. Current size: ${sizeKB.toFixed(1)}KB`);
+      setError(`File size must be under 500KB. Current size: ${sizeKB.toFixed(1)}KB`);
       return;
     }
     
@@ -118,8 +132,8 @@ export default function KYCPage() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
-      setIdProofPreview(base64);
-      setFormData(prev => ({ ...prev, idProofBase64: base64 }));
+      setPreview(base64);
+      setFormData(prev => ({ ...prev, [fieldName]: base64 }));
     };
     reader.readAsDataURL(file);
   };
@@ -246,7 +260,7 @@ export default function KYCPage() {
         <CardHeader>
           <CardTitle>Complete Your KYC</CardTitle>
           <CardDescription>
-            Please fill in your details and upload your ID proof to activate your account.
+            Please fill in your details and upload your documents to activate your account.
           </CardDescription>
           <div className="mt-4">
             {renderStatusBadge(kycData?.kycStatus || "PENDING_KYC")}
@@ -260,6 +274,45 @@ export default function KYCPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6" data-testid="kyc-form">
+            {/* Profile Photo Upload */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Profile Photo</h3>
+              <div className="flex justify-center">
+                <div className="relative">
+                  <input
+                    ref={profilePhotoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg"
+                    onChange={(e) => handleFileChange(e, 'profilePhoto')}
+                    className="hidden"
+                    data-testid="profile-photo-input"
+                  />
+                  <div
+                    onClick={() => profilePhotoInputRef.current?.click()}
+                    className={`w-32 h-32 rounded-full border-4 cursor-pointer overflow-hidden transition-all
+                      ${profilePhotoError ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-400 bg-gray-50'}`}
+                  >
+                    {profilePhotoPreview ? (
+                      <img src={profilePhotoPreview} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                        <User className="w-10 h-10" />
+                        <Camera className="w-5 h-5 mt-1" />
+                      </div>
+                    )}
+                  </div>
+                  {profilePhotoPreview && (
+                    <p className="text-xs text-center mt-2 text-gray-500">{profilePhotoSize.toFixed(1)}KB</p>
+                  )}
+                </div>
+              </div>
+              {profilePhotoError && (
+                <p className="text-sm text-red-600 text-center">{profilePhotoError}</p>
+              )}
+              <p className="text-xs text-gray-500 text-center">Click to upload profile photo (JPEG, max 500KB)</p>
+              <p className="text-xs text-amber-600 text-center">This photo will be displayed in your binary tree</p>
+            </div>
+
             {/* Personal Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Personal Information</h3>
@@ -338,22 +391,22 @@ export default function KYCPage() {
                 <Label>ID Proof Document (JPEG only, max 500KB) *</Label>
                 <div className="mt-2">
                   <input
-                    ref={fileInputRef}
+                    ref={idProofInputRef}
                     type="file"
                     accept="image/jpeg,image/jpg"
-                    onChange={handleFileChange}
+                    onChange={(e) => handleFileChange(e, 'idProof')}
                     className="hidden"
                     data-testid="id-proof-input"
                   />
                   <div
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => idProofInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-                      ${fileError ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'}`}
+                      ${idProofError ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'}`}
                   >
                     {idProofPreview ? (
                       <div className="space-y-2">
                         <img src={idProofPreview} alt="ID Preview" className="max-h-40 mx-auto rounded" />
-                        <p className="text-sm text-gray-600">Size: {fileSize.toFixed(1)}KB</p>
+                        <p className="text-sm text-gray-600">Size: {idProofSize.toFixed(1)}KB</p>
                         <p className="text-sm text-blue-600">Click to change</p>
                       </div>
                     ) : (
@@ -364,8 +417,8 @@ export default function KYCPage() {
                       </div>
                     )}
                   </div>
-                  {fileError && (
-                    <p className="mt-2 text-sm text-red-600">{fileError}</p>
+                  {idProofError && (
+                    <p className="mt-2 text-sm text-red-600">{idProofError}</p>
                   )}
                 </div>
               </div>
@@ -429,7 +482,7 @@ export default function KYCPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={submitting || !!fileError || !formData.idProofBase64}
+              disabled={submitting || !!idProofError || !formData.idProofBase64}
               data-testid="kyc-submit-btn"
             >
               {submitting ? (
