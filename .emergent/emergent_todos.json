@@ -1,0 +1,22 @@
+[
+  {
+    "content": "Phase 2: Backend - Add KYC collection, endpoints, and modify registration",
+    "status": "in_progress"
+  },
+  {
+    "content": "Phase 2: Frontend - Add KYC pages (user, sponsor, admin) with shadcn UI",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: Update user dashboard with KYC status banner",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: All user stories covered in Development",
+    "status": "pending"
+  },
+  {
+    "content": "Phase 2: End to End Testing using Testing Agent",
+    "status": "pending"
+  }
+]
