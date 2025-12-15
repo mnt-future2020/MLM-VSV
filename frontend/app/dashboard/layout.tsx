@@ -16,6 +16,7 @@ import {
   FileText,
   ChevronDown,
   Lock,
+  FileCheck,
 } from "lucide-react";
 
 export default function DashboardLayout({
