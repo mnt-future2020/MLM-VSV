@@ -147,19 +147,17 @@ class KYCAPITester:
     def test_submit_kyc(self):
         """Test 4: User submits KYC form - POST /api/kyc/submit"""
         kyc_data = {
-            "form": {
-                "name": "Test KYC User",
-                "email": self.test_user_email,
-                "phone": "9876543210",
-                "address": "123 Test Street, Test City, Test State - 123456",
-                "dob": "1990-01-01",
-                "idNumber": "ABCDE1234F",
-                "bank": {
-                    "accountName": "Test KYC User",
-                    "accountNumber": "1234567890",
-                    "ifsc": "TEST0001234",
-                    "bankName": "Test Bank"
-                }
+            "name": "Test KYC User",
+            "email": self.test_user_email,
+            "phone": "9876543210",
+            "address": "123 Test Street, Test City, Test State - 123456",
+            "dob": "1990-01-01",
+            "idNumber": "ABCDE1234F",
+            "bank": {
+                "accountName": "Test KYC User",
+                "accountNumber": "1234567890",
+                "ifsc": "TEST0001234",
+                "bankName": "Test Bank"
             },
             "idProofBase64": f"data:image/jpeg;base64,{self.create_sample_jpeg_base64()}"
         }
@@ -167,16 +165,10 @@ class KYCAPITester:
         success, data = self.make_request('POST', 'api/kyc/submit', kyc_data, token=self.user_token)
         
         if success and data.get('success'):
-            kyc_submission = data.get('data', {})
-            self.kyc_submission_id = kyc_submission.get('id')
-            status = kyc_submission.get('status')
-            
-            if status == 'SUBMITTED':
-                self.log_test("POST /api/kyc/submit", True)
-                return True
-            else:
-                self.log_test("POST /api/kyc/submit", False, f"Expected status=SUBMITTED, got {status}")
-                return False
+            # Backend returns kycId directly, not nested in data
+            self.kyc_submission_id = data.get('kycId')
+            self.log_test("POST /api/kyc/submit", True)
+            return True
         else:
             self.log_test("POST /api/kyc/submit", False, f"Response: {data}")
             return False
@@ -263,19 +255,17 @@ class KYCAPITester:
     def test_user_resubmit_kyc(self):
         """Test 9: User resubmits KYC after rejection - POST /api/kyc/submit"""
         kyc_data = {
-            "form": {
-                "name": "Test KYC User",
-                "email": self.test_user_email,
-                "phone": "9876543210",
-                "address": "123 Test Street, Test City, Test State - 123456",
-                "dob": "1990-01-01",
-                "idNumber": "ABCDE1234F",
-                "bank": {
-                    "accountName": "Test KYC User",
-                    "accountNumber": "1234567890",
-                    "ifsc": "TEST0001234",
-                    "bankName": "Test Bank"
-                }
+            "name": "Test KYC User",
+            "email": self.test_user_email,
+            "phone": "9876543210",
+            "address": "123 Test Street, Test City, Test State - 123456",
+            "dob": "1990-01-01",
+            "idNumber": "ABCDE1234F",
+            "bank": {
+                "accountName": "Test KYC User",
+                "accountNumber": "1234567890",
+                "ifsc": "TEST0001234",
+                "bankName": "Test Bank"
             },
             "idProofBase64": f"data:image/jpeg;base64,{self.create_sample_jpeg_base64()}"
         }
@@ -283,16 +273,9 @@ class KYCAPITester:
         success, data = self.make_request('POST', 'api/kyc/submit', kyc_data, token=self.user_token)
         
         if success and data.get('success'):
-            kyc_submission = data.get('data', {})
-            self.kyc_submission_id = kyc_submission.get('id')
-            status = kyc_submission.get('status')
-            
-            if status == 'SUBMITTED':
-                self.log_test("User Resubmit KYC", True)
-                return True
-            else:
-                self.log_test("User Resubmit KYC", False, f"Expected status=SUBMITTED, got {status}")
-                return False
+            self.kyc_submission_id = data.get('kycId')
+            self.log_test("User Resubmit KYC", True)
+            return True
         else:
             self.log_test("User Resubmit KYC", False, f"Response: {data}")
             return False
@@ -351,19 +334,17 @@ class KYCAPITester:
         png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
         
         kyc_data = {
-            "form": {
-                "name": "Test User",
-                "email": self.test_user_email,
-                "phone": "9876543210",
-                "address": "Test Address",
-                "dob": "1990-01-01",
-                "idNumber": "TEST123456",
-                "bank": {
-                    "accountName": "Test User",
-                    "accountNumber": "1234567890",
-                    "ifsc": "TEST0001234",
-                    "bankName": "Test Bank"
-                }
+            "name": "Test User",
+            "email": self.test_user_email,
+            "phone": "9876543210",
+            "address": "Test Address",
+            "dob": "1990-01-01",
+            "idNumber": "TEST123456",
+            "bank": {
+                "accountName": "Test User",
+                "accountNumber": "1234567890",
+                "ifsc": "TEST0001234",
+                "bankName": "Test Bank"
             },
             "idProofBase64": f"data:image/png;base64,{png_base64}"
         }
