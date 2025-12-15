@@ -211,7 +211,6 @@ export default function NewMemberPage() {
                 <Input
                   placeholder="Enter sponsor ID"
                   value={formData.sponsorId}
-                  disabled
                   className="bg-muted/50"
                 />
               </div>
