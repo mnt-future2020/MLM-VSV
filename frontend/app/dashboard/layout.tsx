@@ -37,6 +37,27 @@ export default function DashboardLayout({
       isActive: pathname === "/dashboard",
     },
     {
+      label: "KYC",
+      href: "/dashboard/kyc",
+      icon: <FileCheck className="w-5 h-5" />,
+      isActive: pathname?.startsWith("/dashboard/kyc"),
+      hasDropdown: true,
+      subLinks: [
+        {
+          label: "My KYC",
+          href: "/dashboard/kyc",
+          icon: <FileCheck className="w-4 h-4" />,
+          isActive: pathname === "/dashboard/kyc",
+        },
+        {
+          label: "Submit for Member",
+          href: "/dashboard/kyc/submit-for",
+          icon: <UserPlus className="w-4 h-4" />,
+          isActive: pathname === "/dashboard/kyc/submit-for",
+        },
+      ],
+    },
+    {
       label: "New Member",
       href: "/dashboard/new-member",
       icon: <UserPlus className="w-5 h-5" />,
