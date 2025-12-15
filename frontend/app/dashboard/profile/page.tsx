@@ -160,7 +160,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-muted/30 rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
-                <p className="font-semibold text-foreground">{profile?.currentPlanName || "No Plan"}</p>
+                <p className="font-semibold text-foreground">{profile?.currentPlan || "No Plan"}</p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">Sponsor ID</p>

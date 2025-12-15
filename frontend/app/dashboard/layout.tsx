@@ -48,13 +48,7 @@ export default function DashboardLayout({
           href: "/dashboard/kyc",
           icon: <FileCheck className="w-4 h-4" />,
           isActive: pathname === "/dashboard/kyc",
-        },
-        {
-          label: "Submit for Member",
-          href: "/dashboard/kyc/submit-for",
-          icon: <UserPlus className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/kyc/submit-for",
-        },
+        }
       ],
     },
     {
