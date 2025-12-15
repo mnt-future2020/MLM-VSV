@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, Search, Check } from "lucide-react";
+import { CreditCard, Check, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -17,13 +17,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { axiosInstance } from "@/lib/api";
+import { toast } from "sonner";
 
 interface Plan {
   id: string;
   name: string;
   amount: number;
   pv: number;
-  description?: string;
+  referralIncome: number;
+  dailyCapping: number;
 }
 
 export default function TopUpPage() {
@@ -32,91 +34,83 @@ export default function TopUpPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    memberId: "",
-    memberName: "",
     paymentMode: "Bank Transfer",
     transactionDetails: "",
   });
 
   useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axiosInstance.get('/api/plans');
-        if (response.data.success) {
-          setPlans(response.data.data || []);
+        // Fetch plans
+        const plansResponse = await axiosInstance.get('/api/plans');
+        if (plansResponse.data.success) {
+          setPlans(plansResponse.data.data || []);
+        }
+        
+        // Fetch fresh user data from dashboard API (not from JWT token)
+        const dashboardResponse = await axiosInstance.get('/api/user/dashboard');
+        if (dashboardResponse.data.success) {
+          const dashboardData = dashboardResponse.data.data;
+          // Set current plan from fresh database data
+          if (dashboardData.currentPlan) {
+            setCurrentPlan(dashboardData.currentPlan.name);
+          }
         }
       } catch (error) {
-        console.error("Error fetching plans:", error);
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPlans();
-  }, []);
-
-  const handleMemberSearch = async () => {
-    if (!formData.memberId) return;
-
-    try {
-      const response = await axiosInstance.get(`/api/user/referral/${formData.memberId}`);
-      if (response.data.success && response.data.data) {
-        setFormData({ ...formData, memberName: response.data.data.name });
-      } else {
-        alert("Member not found");
-        setFormData({ ...formData, memberName: "" });
-      }
-    } catch (error) {
-      console.error("Error searching member:", error);
-      alert("Failed to find member");
+    if (user) {
+      fetchData();
     }
-  };
+  }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedPlan) {
-      alert("Please select a plan");
+      toast.error("Please select a plan");
       return;
     }
 
-    if (!formData.memberId) {
-      alert("Please enter member ID");
-      return;
-    }
-
-    if (!formData.transactionDetails) {
-      alert("Please enter transaction details");
+    if (!formData.transactionDetails.trim()) {
+      toast.error("Please enter transaction details");
       return;
     }
 
     try {
       setSubmitting(true);
       const response = await axiosInstance.post('/api/topup/request', {
-        userId: formData.memberId,
         planId: selectedPlan,
         paymentMethod: formData.paymentMode,
-        transactionDetails: formData.transactionDetails,
+        transactionDetails: formData.transactionDetails
       });
 
       if (response.data.success) {
-        alert("Top up request submitted successfully!");
-        handleReset();
+        toast.success("Topup request submitted successfully! Waiting for admin approval.");
+        setSelectedPlan("");
+        setFormData({
+          paymentMode: "Bank Transfer",
+          transactionDetails: "",
+        });
       }
     } catch (error: any) {
-      console.error("Error submitting top up:", error);
-      alert(error.response?.data?.detail || "Failed to submit top up request");
+      console.error("Error submitting request:", error);
+      toast.error(error.response?.data?.detail || "Failed to submit request");
     } finally {
       setSubmitting(false);
     }
   };
-
+  
   const handleReset = () => {
     setSelectedPlan("");
     setFormData({
-      memberId: "",
-      memberName: "",
       paymentMode: "Bank Transfer",
       transactionDetails: "",
     });
@@ -136,139 +130,164 @@ export default function TopUpPage() {
     <PageContainer maxWidth="2xl">
       <PageHeader
         icon={<CreditCard className="w-6 h-6 text-white" />}
-        title="Top Up"
-        subtitle="Purchase a new plan to grow your business"
+        title="Plan Upgrade Request"
+        subtitle="Submit a request to upgrade your plan"
       />
+
+      {/* Current Plan Display */}
+      {currentPlan && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">Current Plan</h3>
+          <p className="text-2xl font-bold text-blue-700">{currentPlan}</p>
+        </div>
+      )}
 
       {/* Plan Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {plans.map((plan, index) => (
-          <button
-            key={plan.id}
-            onClick={() => setSelectedPlan(plan.id)}
-            className={cn(
-              "relative p-6 rounded-xl border-2 transition-all text-left group hover:shadow-lg",
-              selectedPlan === plan.id
-                ? "border-primary-500 bg-primary-50"
-                : "border-border bg-card hover:border-primary-200"
-            )}
-          >
-            {index === 1 && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
-                Popular
-              </span>
-            )}
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-base font-semibold text-foreground group-hover:text-primary-600 transition-colors">{plan.name}</h3>
-              {selectedPlan === plan.id && <Check className="w-5 h-5 text-primary-600" />}
-            </div>
-            <p className="text-3xl font-bold text-primary-600 mb-1">₹{plan.amount?.toLocaleString() || 0}</p>
-            <p className="text-sm text-muted-foreground">{plan.pv} PV Points</p>
-          </button>
-        ))}
+        {plans.map((plan, index) => {
+          const isCurrentPlan = currentPlan === plan.name;
+          
+          return (
+            <button
+              key={plan.id}
+              onClick={() => !isCurrentPlan && setSelectedPlan(plan.id)}
+              disabled={isCurrentPlan}
+              className={cn(
+                "relative p-6 rounded-xl border-2 transition-all text-left group hover:shadow-lg",
+                isCurrentPlan
+                  ? "border-green-500 bg-green-50 cursor-not-allowed opacity-60"
+                  : selectedPlan === plan.id
+                  ? "border-primary-500 bg-primary-50"
+                  : "border-border bg-card hover:border-primary-200"
+              )}
+            >
+              {isCurrentPlan && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
+                  Current Plan
+                </span>
+              )}
+              {index === 1 && !isCurrentPlan && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
+                  Popular
+                </span>
+              )}
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-base font-semibold text-foreground group-hover:text-primary-600 transition-colors">
+                  {plan.name}
+                </h3>
+                {selectedPlan === plan.id && !isCurrentPlan && <Check className="w-5 h-5 text-primary-600" />}
+              </div>
+              <p className="text-3xl font-bold text-primary-600 mb-2">₹{plan.amount?.toLocaleString() || 0}</p>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>{plan.pv} PV Points</p>
+                <p>₹{plan.referralIncome} Referral Income</p>
+                <p>₹{plan.dailyCapping} Daily Cap</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Top Up Form */}
-      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
-        <h2 className="text-lg font-semibold text-foreground mb-6 pb-2 border-b border-border">Top Up Details</h2>
-        
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Request Form */}
+      {selectedPlan ? (
+        <form onSubmit={handleSubmitRequest} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm">
+          <h2 className="text-lg font-semibold text-foreground mb-6 pb-2 border-b border-border">
+            Payment & Request Details
+          </h2>
+          
+          <div className="space-y-6">
             <div>
-              <Label required>Member ID</Label>
-              <div className="relative">
-                <Input
-                  placeholder="Enter member referral ID"
-                  value={formData.memberId}
-                  onChange={(e) => setFormData({...formData, memberId: e.target.value})}
-                />
-                <button
-                  type="button"
-                  onClick={handleMemberSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary-600 transition-colors"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div>
-              <Label>Member Name</Label>
+              <Label>Selected Plan</Label>
               <Input
-                placeholder="Auto-filled"
-                value={formData.memberName}
+                value={plans.find(p => p.id === selectedPlan)?.name || ""}
                 disabled
-                className="bg-muted/50"
+                className="bg-muted/50 font-medium"
               />
             </div>
+
+            <div>
+              <Label>Amount</Label>
+              <Input
+                value={`₹${plans.find(p => p.id === selectedPlan)?.amount.toLocaleString() || 0}`}
+                disabled
+                className="bg-muted/50 font-medium text-primary-600"
+              />
+            </div>
+
+            <div>
+              <Label required>Payment Mode</Label>
+              <Select
+                value={formData.paymentMode}
+                onValueChange={(value) => setFormData({...formData, paymentMode: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="UPI">UPI</SelectItem>
+                  <SelectItem value="Card">Card</SelectItem>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label required>Transaction Details</Label>
+              <Textarea
+                placeholder="Enter transaction ID, reference number, UTR, or other payment details"
+                value={formData.transactionDetails}
+                onChange={(e) => setFormData({...formData, transactionDetails: e.target.value})}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Please provide complete payment details for verification
+              </p>
+            </div>
           </div>
 
-          <div>
-            <Label required>Selected Package</Label>
-            <Select
-              value={selectedPlan}
-              onValueChange={(value) => setSelectedPlan(value)}
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 text-lg shadow-lg shadow-primary-500/20"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a package from above" />
-              </SelectTrigger>
-              <SelectContent>
-                {plans.map((plan) => (
-                  <SelectItem key={plan.id} value={plan.id}>
-                    {plan.name} - ₹{plan.amount}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label required>Payment Mode</Label>
-            <Select
-              value={formData.paymentMode}
-              onValueChange={(value) => setFormData({...formData, paymentMode: value})}
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Request"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleReset}
+              disabled={submitting}
+              className="px-8 py-6 text-lg border-border hover:bg-muted"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                <SelectItem value="UPI">UPI</SelectItem>
-                <SelectItem value="Card">Card</SelectItem>
-                <SelectItem value="Cash">Cash</SelectItem>
-              </SelectContent>
-            </Select>
+              Cancel
+            </Button>
           </div>
-
-          <div>
-            <Label required>Transaction Details</Label>
-            <Textarea
-              placeholder="Enter transaction ID, reference number, or other payment details"
-              value={formData.transactionDetails}
-              onChange={(e) => setFormData({...formData, transactionDetails: e.target.value})}
-              rows={4}
-            />
+          
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> Your request will be sent to admin for approval. 
+              Plan will be activated once admin approves your payment.
+            </p>
           </div>
+        </form>
+      ) : (
+        <div className="bg-muted/50 border border-border rounded-xl p-8 text-center">
+          <p className="text-muted-foreground">
+            Select a plan from above to submit upgrade request
+          </p>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-6 text-lg shadow-lg shadow-primary-500/20"
-          >
-            {submitting ? "Submitting..." : "Submit Top Up Request"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="px-8 py-6 text-lg border-border hover:bg-muted"
-          >
-            Reset
-          </Button>
-        </div>
-      </form>
+      )}
     </PageContainer>
   );
 }

@@ -8,6 +8,18 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/lib/api";
+import { KYCBanner } from "@/components/kyc-banner";
+
+// Helper function to format date in IST
+const formatDateIST = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+};
 
 interface DashboardData {
   wallet: {
@@ -21,6 +33,12 @@ interface DashboardData {
     right: number;
   };
   currentPlan: any;
+  rank?: {
+    name: string;
+    icon: string;
+    color: string;
+    minPV: number;
+  };
   recentTransactions: any[];
 }
 
@@ -66,6 +84,9 @@ export default function UserDashboard() {
         subtitle="Here's what's happening with your account today."
       />
 
+      {/* KYC Banner */}
+      <KYCBanner />
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
@@ -96,6 +117,20 @@ export default function UserDashboard() {
           gradient="bg-purple-500"
           trend={{ value: dashboardData?.currentPlan ? `${dashboardData.currentPlan.pv} PV` : "Activate a plan", isPositive: true }}
         />
+        {dashboardData?.rank && (
+          <div className="bg-card border-2 border-border rounded-xl p-6 shadow-lg" style={{ borderColor: dashboardData.rank.color }}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-muted-foreground">Current Rank</p>
+              <span className="text-3xl">{dashboardData.rank.icon}</span>
+            </div>
+            <h3 className="text-2xl font-bold mb-1" style={{ color: dashboardData.rank.color }}>
+              {dashboardData.rank.name}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Minimum: {dashboardData.rank.minPV} PV
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -151,7 +186,7 @@ export default function UserDashboard() {
                     <div>
                       <p className="text-sm font-medium text-foreground">{transaction.type || transaction.description}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(transaction.createdAt).toLocaleDateString()}
+                        {formatDateIST(transaction.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -173,7 +208,7 @@ export default function UserDashboard() {
       </div>
 
       {/* Team Structure Preview */}
-      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+      {/* <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-foreground">Team Overview</h2>
           <Link href="/dashboard/team/tree">
@@ -224,7 +259,7 @@ export default function UserDashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </PageContainer>
   );
 }

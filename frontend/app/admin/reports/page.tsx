@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FileText, Download, Users, DollarSign, TrendingUp, Network, BarChart3, Calendar } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
@@ -12,25 +12,51 @@ import { axiosInstance } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 
+// Define types for each report section's date filters
+interface SectionFilters {
+  startDate: string;
+  endDate: string;
+  planFilter?: string;
+  statusFilter?: string;
+}
+
 export default function AdminReportsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("users");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [reportData, setReportData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const previewRef = useRef<HTMLDivElement>(null);
+  
+  // Separate filters for each section
+  const [sectionFilters, setSectionFilters] = useState<Record<string, SectionFilters>>({
+    users: { startDate: "", endDate: "" },
+    earnings: { startDate: "", endDate: "" },
+    transactions: { startDate: "", endDate: "" },
+    payouts: { startDate: "", endDate: "", statusFilter: "all" },
+    plans: { startDate: "", endDate: "", planFilter: "all" },
+    network: { startDate: "", endDate: "" }
+  });
 
-  const downloadReport = async (endpoint: string, format: "excel" | "pdf", filename: string) => {
+  const updateSectionFilter = (section: string, field: keyof SectionFilters, value: string) => {
+    setSectionFilters(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+  };
+
+  const downloadReport = async (endpoint: string, format: "excel" | "pdf", filename: string, section: string) => {
     try {
       setLoading(true);
+      const filters = sectionFilters[section] || { startDate: "", endDate: "" };
       let url = `${endpoint}?format=${format}`;
       
-      if (startDate) url += `&start_date=${startDate}`;
-      if (endDate) url += `&end_date=${endDate}`;
-      if (selectedPlan && selectedPlan !== "all") url += `&plan_id=${selectedPlan}`;
-      if (selectedStatus && selectedStatus !== "all") url += `&status=${selectedStatus}`;
+      if (filters.startDate) url += `&start_date=${filters.startDate}`;
+      if (filters.endDate) url += `&end_date=${filters.endDate}`;
+      if (filters.planFilter && filters.planFilter !== "all") url += `&plan_id=${filters.planFilter}`;
+      if (filters.statusFilter && filters.statusFilter !== "all") url += `&status=${filters.statusFilter}`;
 
       const response = await axiosInstance.get(url, {
         responseType: 'blob'
@@ -55,19 +81,24 @@ export default function AdminReportsPage() {
     }
   };
 
-  const loadPreview = async (endpoint: string) => {
+  const loadPreview = async (endpoint: string, section: string) => {
     try {
       setLoading(true);
+      const filters = sectionFilters[section] || { startDate: "", endDate: "" };
       let url = `${endpoint}?format=json`;
       
-      if (startDate) url += `&start_date=${startDate}`;
-      if (endDate) url += `&end_date=${endDate}`;
-      if (selectedPlan && selectedPlan !== "all") url += `&plan_id=${selectedPlan}`;
-      if (selectedStatus && selectedStatus !== "all") url += `&status=${selectedStatus}`;
+      if (filters.startDate) url += `&start_date=${filters.startDate}`;
+      if (filters.endDate) url += `&end_date=${filters.endDate}`;
+      if (filters.planFilter && filters.planFilter !== "all") url += `&plan_id=${filters.planFilter}`;
+      if (filters.statusFilter && filters.statusFilter !== "all") url += `&status=${filters.statusFilter}`;
 
       const response = await axiosInstance.get(url);
       if (response.data.success) {
         setReportData(response.data.data || []);
+        // Auto scroll to preview section
+        setTimeout(() => {
+          previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
       }
     } catch (error) {
       console.error("Preview error:", error);
@@ -82,6 +113,7 @@ export default function AdminReportsPage() {
     description, 
     endpoint, 
     icon: Icon,
+    sectionKey,
     showPlanFilter = false,
     showStatusFilter = false
   }: { 
@@ -89,9 +121,13 @@ export default function AdminReportsPage() {
     description: string; 
     endpoint: string; 
     icon: any;
+    sectionKey: string;
     showPlanFilter?: boolean;
     showStatusFilter?: boolean;
-  }) => (
+  }) => {
+    const filters = sectionFilters[sectionKey] || { startDate: "", endDate: "" };
+    
+    return (
     <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
       <div className="flex items-start gap-4 mb-6">
         <div className="p-3 bg-primary-50 rounded-lg">
@@ -108,8 +144,8 @@ export default function AdminReportsPage() {
           <Label className="text-sm mb-2 block">Start Date</Label>
           <Input 
             type="date" 
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            value={filters.startDate}
+            onChange={(e) => updateSectionFilter(sectionKey, "startDate", e.target.value)}
             className="border-border"
           />
         </div>
@@ -117,8 +153,8 @@ export default function AdminReportsPage() {
           <Label className="text-sm mb-2 block">End Date</Label>
           <Input 
             type="date" 
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            value={filters.endDate}
+            onChange={(e) => updateSectionFilter(sectionKey, "endDate", e.target.value)}
             className="border-border"
           />
         </div>
@@ -126,7 +162,7 @@ export default function AdminReportsPage() {
         {showPlanFilter && (
           <div>
             <Label className="text-sm mb-2 block">Plan Filter</Label>
-            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+            <Select value={filters.planFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "planFilter", val)}>
               <SelectTrigger className="border-border">
                 <SelectValue placeholder="Select plan" />
               </SelectTrigger>
@@ -143,7 +179,7 @@ export default function AdminReportsPage() {
         {showStatusFilter && (
           <div>
             <Label className="text-sm mb-2 block">Status Filter</Label>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <Select value={filters.statusFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "statusFilter", val)}>
               <SelectTrigger className="border-border">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -160,7 +196,7 @@ export default function AdminReportsPage() {
 
       <div className="flex flex-wrap gap-3">
         <Button
-          onClick={() => loadPreview(endpoint)}
+          onClick={() => loadPreview(endpoint, sectionKey)}
           disabled={loading}
           className="gap-2"
           variant="outline"
@@ -169,7 +205,7 @@ export default function AdminReportsPage() {
           {loading ? "Loading..." : "Preview"}
         </Button>
         <Button
-          onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'))}
+          onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
           disabled={loading}
           className="gap-2 bg-green-600 hover:bg-green-700 text-white"
         >
@@ -177,7 +213,7 @@ export default function AdminReportsPage() {
           Download Excel
         </Button>
         <Button
-          onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'))}
+          onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
           disabled={loading}
           className="gap-2 bg-red-600 hover:bg-red-700 text-white"
         >
@@ -187,6 +223,7 @@ export default function AdminReportsPage() {
       </div>
     </div>
   );
+  };
 
   const renderPreviewTable = () => {
     if (reportData.length === 0) {
@@ -241,12 +278,15 @@ export default function AdminReportsPage() {
         action={
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
-            {startDate && endDate ? `${startDate} to ${endDate}` : "Select date range"}
+            Select date range in each section
           </div>
         }
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => {
+        setActiveTab(value);
+        setReportData([]); // Clear report data when switching tabs
+      }} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8 bg-muted">
           <TabsTrigger value="users">
             <Users className="w-4 h-4 mr-2" />
@@ -273,6 +313,7 @@ export default function AdminReportsPage() {
             description="Complete list of all members with their details, plans, and wallet balance"
             endpoint="/api/admin/reports/users/all"
             icon={Users}
+            sectionKey="users"
           />
           
           <ReportSection
@@ -280,6 +321,7 @@ export default function AdminReportsPage() {
             description="Breakdown of active and inactive users in the system"
             endpoint="/api/admin/reports/users/active-inactive"
             icon={Users}
+            sectionKey="users"
           />
           
           <ReportSection
@@ -287,10 +329,11 @@ export default function AdminReportsPage() {
             description="Get users filtered by their subscription plan"
             endpoint="/api/admin/reports/users/by-plan"
             icon={Users}
+            sectionKey="plans"
             showPlanFilter={true}
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
 
         {/* FINANCIAL REPORTS TAB */}
@@ -300,6 +343,7 @@ export default function AdminReportsPage() {
             description="Complete earnings breakdown with transaction details"
             endpoint="/api/admin/reports/financial/earnings"
             icon={DollarSign}
+            sectionKey="earnings"
           />
           
           <ReportSection
@@ -307,6 +351,7 @@ export default function AdminReportsPage() {
             description="Analysis of different income types (Referral, Matching, Level)"
             endpoint="/api/admin/reports/financial/income-breakdown"
             icon={TrendingUp}
+            sectionKey="earnings"
           />
           
           <ReportSection
@@ -314,6 +359,7 @@ export default function AdminReportsPage() {
             description="Complete withdrawal/payout history with status tracking"
             endpoint="/api/admin/reports/financial/withdrawals"
             icon={DollarSign}
+            sectionKey="payouts"
             showStatusFilter={true}
           />
 
@@ -322,6 +368,7 @@ export default function AdminReportsPage() {
             description="History of all wallet topups and recharges"
             endpoint="/api/admin/reports/financial/topups"
             icon={DollarSign}
+            sectionKey="transactions"
           />
 
           <ReportSection
@@ -329,9 +376,10 @@ export default function AdminReportsPage() {
             description="Daily breakdown of registrations, topups, payouts and net business"
             endpoint="/api/admin/reports/financial/business"
             icon={BarChart3}
+            sectionKey="earnings"
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
 
         {/* TEAM/NETWORK REPORTS TAB */}
@@ -341,6 +389,7 @@ export default function AdminReportsPage() {
             description="Complete team hierarchy with sponsor relationships"
             endpoint="/api/admin/reports/team/structure"
             icon={Network}
+            sectionKey="network"
           />
           
           <ReportSection
@@ -348,6 +397,7 @@ export default function AdminReportsPage() {
             description="Direct and total downline count for all users"
             endpoint="/api/admin/reports/team/downline"
             icon={Network}
+            sectionKey="network"
           />
           
           <ReportSection
@@ -355,9 +405,10 @@ export default function AdminReportsPage() {
             description="Export complete binary tree data with positions and counts"
             endpoint="/api/admin/reports/team/binary-tree"
             icon={Network}
+            sectionKey="network"
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
 
         {/* ANALYTICS REPORTS TAB */}
@@ -367,6 +418,7 @@ export default function AdminReportsPage() {
             description="Track daily new user registrations over time"
             endpoint="/api/admin/reports/analytics/registrations"
             icon={TrendingUp}
+            sectionKey="users"
           />
           
           <ReportSection
@@ -374,6 +426,7 @@ export default function AdminReportsPage() {
             description="Analyze user distribution across different plans with revenue"
             endpoint="/api/admin/reports/analytics/plan-distribution"
             icon={BarChart3}
+            sectionKey="plans"
           />
           
           <ReportSection
@@ -381,9 +434,10 @@ export default function AdminReportsPage() {
             description="Monthly growth trends for users and revenue"
             endpoint="/api/admin/reports/analytics/growth"
             icon={TrendingUp}
+            sectionKey="earnings"
           />
 
-          {renderPreviewTable()}
+          <div ref={previewRef}>{renderPreviewTable()}</div>
         </TabsContent>
       </Tabs>
     </PageContainer>

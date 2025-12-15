@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,12 +7,13 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { axiosInstance } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,8 +23,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     referralId: "",
     referralName: "",
-    placement: "",  // No default - user must select
-    planId: "",  // Plan selection - mandatory
+    placement: "", // No default - user must select
+    planId: "", // Plan selection - mandatory
     name: "",
     mobile: "",
     email: "",
@@ -31,7 +32,19 @@ export default function RegisterPage() {
     password: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Auto-populate referral ID from URL parameter
+  useEffect(() => {
+    const refParam = searchParams.get("ref");
+    if (refParam && refParam.trim() !== "") {
+      setFormData((prev) => ({ ...prev, referralId: refParam }));
+      // Auto-verify the referral ID from URL
+      verifyReferralId(refParam);
+    }
+  }, [searchParams]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
     setError("");
   };
@@ -62,18 +75,20 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const response = await axiosInstance.get(`/api/user/referral/${referralId}`);
-      
+      const response = await axiosInstance.get(
+        `/api/user/referral/${referralId}`
+      );
+
       if (response.data.success) {
         const { name } = response.data.data;
-        
+
         // Set referral name only - user can choose any placement
-        setFormData(prev => ({ ...prev, referralName: name }));
+        setFormData((prev) => ({ ...prev, referralName: name }));
       }
     } catch (err: unknown) {
       const error = err as any;
       setError(error?.response?.data?.message || "Invalid referral ID");
-      setFormData(prev => ({ ...prev, referralName: "" }));
+      setFormData((prev) => ({ ...prev, referralName: "" }));
     } finally {
       setVerifyingReferral(false);
     }
@@ -106,34 +121,34 @@ export default function RegisterPage() {
         setError("Referral ID is required");
         return;
       }
-      
+
       if (!formData.placement) {
         setError("Please select placement (Left or Right)");
         return;
       }
-      
+
       // Plan selection is required
       if (!formData.planId) {
         setError("Please select a plan to join");
         return;
       }
-      
+
       payload.referralId = formData.referralId;
-      payload.referralName = formData.referralName || '';
+      payload.referralName = formData.referralName || "";
       payload.placement = formData.placement;
       payload.planId = formData.planId;
 
       // Use custom register endpoint (best method - handles all MLM logic)
-      const response = await axiosInstance.post('/api/auth/register', payload);
+      const response = await axiosInstance.post("/api/auth/register", payload);
 
       // Check success response
       if (response.data.success && response.data.user && response.data.token) {
         const userData = response.data.user;
         const token = response.data.token;
-        
+
         // Save token and user to context
         login(userData, token);
-        
+
         // Redirect to dashboard
         router.push("/dashboard");
       } else {
@@ -141,7 +156,9 @@ export default function RegisterPage() {
       }
     } catch (err: unknown) {
       const error = err as any;
-      setError(error?.response?.data?.message || "An error occurred. Please try again.");
+      setError(
+        error?.response?.data?.message || "An error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -159,13 +176,16 @@ export default function RegisterPage() {
       {/* Left Side - Image/Branding */}
       <div className="hidden md:flex md:w-1/2 relative overflow-hidden">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=2070')" }}
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=2070')",
+          }}
         />
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-400/90 via-primary-600/80 to-black/70" />
-        
+
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 w-full">
           {/* Logo */}
@@ -176,15 +196,17 @@ export default function RegisterPage() {
           >
             <Link href="/" className="flex items-center gap-3">
               <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white shadow-lg flex items-center justify-center p-2">
-                <Image 
-                  src="/assets/images/logo/vsv-unite.png" 
-                  alt="VSV Unite Logo" 
-                  width={80} 
+                <Image
+                  src="/assets/images/logo/vsv-unite.png"
+                  alt="VSV Unite Logo"
+                  width={80}
                   height={80}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-xl lg:text-2xl font-bold text-white">VSV Unite</span>
+              <span className="text-xl lg:text-2xl font-bold text-white">
+                VSV Unite
+              </span>
             </Link>
           </motion.div>
 
@@ -199,9 +221,10 @@ export default function RegisterPage() {
               Start Your Journey to Financial Freedom
             </h1>
             <p className="text-white/80 text-base lg:text-lg mb-6 lg:mb-8">
-              Join thousands of successful investors who trust VSV for their financial growth.
+              Join thousands of successful investors who trust VSV for their
+              financial growth.
             </p>
-            
+
             {/* Features */}
             <div className="space-y-3 lg:space-y-4">
               {features.map((feature, index) => (
@@ -215,12 +238,14 @@ export default function RegisterPage() {
                   <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                     <Check className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
                   </div>
-                  <span className="text-white/90 text-sm lg:text-base">{feature}</span>
+                  <span className="text-white/90 text-sm lg:text-base">
+                    {feature}
+                  </span>
                 </motion.div>
               ))}
             </div>
           </motion.div>
-          
+
           {/* Testimonial */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -229,15 +254,20 @@ export default function RegisterPage() {
             className="bg-white/10 backdrop-blur-sm rounded-xl lg:rounded-2xl p-4 lg:p-6"
           >
             <p className="text-white/90 italic text-sm lg:text-base mb-3 lg:mb-4">
-              &quot;VSV has transformed my financial future. The platform is easy to use and the returns are amazing!&quot;
+              &quot;VSV has transformed my financial future. The platform is
+              easy to use and the returns are amazing!&quot;
             </p>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary-400 flex items-center justify-center text-primary-foreground font-bold text-sm lg:text-base shadow-lg shadow-primary-400/30">
                 R
               </div>
               <div>
-                <div className="text-white font-medium text-sm lg:text-base">Rahul Sharma</div>
-                <div className="text-white/60 text-xs lg:text-sm">Member since 2023</div>
+                <div className="text-white font-medium text-sm lg:text-base">
+                  Rahul Sharma
+                </div>
+                <div className="text-white/60 text-xs lg:text-sm">
+                  Member since 2023
+                </div>
               </div>
             </div>
           </motion.div>
@@ -256,24 +286,33 @@ export default function RegisterPage() {
           <div className="md:hidden flex justify-center mb-4">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center p-2 border-2 border-primary-100">
-                <Image 
-                  src="/assets/images/logo/vsv-unite.png" 
-                  alt="VSV Unite Logo" 
-                  width={64} 
+                <Image
+                  src="/assets/images/logo/vsv-unite.png"
+                  alt="VSV Unite Logo"
+                  width={64}
                   height={64}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-2xl font-bold text-gray-900">VSV Unite</span>
+              <span className="text-2xl font-bold text-gray-900">
+                VSV Unite
+              </span>
             </Link>
           </div>
 
           {/* Header */}
           <div className="mb-4 lg:mb-6">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 lg:mb-2">Create Account</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 lg:mb-2">
+              Create Account
+            </h2>
             <p className="text-gray-500 text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary-500 hover:text-primary-600 font-medium">Sign in</Link>
+              <Link
+                href="/login"
+                className="text-primary-500 hover:text-primary-600 font-medium"
+              >
+                Sign in
+              </Link>
             </p>
           </div>
 
@@ -288,18 +327,21 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-3 lg:space-y-4">
             {/* Referral ID */}
             <div className="space-y-1">
-              <Label htmlFor="referralId" className="text-gray-700 text-sm font-medium">
+              <Label
+                htmlFor="referralId"
+                className="text-gray-700 text-sm font-medium"
+              >
                 Referral ID <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
-                <Input 
-                  id="referralId" 
-                  type="text" 
-                  placeholder="Enter Sponsor ID (Required)" 
-                  value={formData.referralId} 
+                <Input
+                  id="referralId"
+                  type="text"
+                  placeholder="Enter Sponsor ID (Required)"
+                  value={formData.referralId}
                   onChange={handleChange}
                   onBlur={handleReferralIdBlur}
-                  className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm" 
+                  className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm"
                   disabled={loading || verifyingReferral}
                   required
                 />
@@ -314,13 +356,18 @@ export default function RegisterPage() {
             {/* Referral Name - Auto-filled */}
             {formData.referralName && (
               <div className="space-y-1">
-                <Label htmlFor="referralName" className="text-gray-700 text-sm font-medium">Referral Name</Label>
-                <Input 
-                  id="referralName" 
-                  type="text" 
-                  value={formData.referralName} 
-                  className="h-10 lg:h-11 bg-gray-100 border-gray-200 text-gray-900 rounded-xl text-sm" 
-                  disabled 
+                <Label
+                  htmlFor="referralName"
+                  className="text-gray-700 text-sm font-medium"
+                >
+                  Referral Name
+                </Label>
+                <Input
+                  id="referralName"
+                  type="text"
+                  value={formData.referralName}
+                  className="h-10 lg:h-11 bg-gray-100 border-gray-200 text-gray-900 rounded-xl text-sm"
+                  disabled
                   readOnly
                 />
               </div>
@@ -329,16 +376,19 @@ export default function RegisterPage() {
             {/* Placement - Show if referral ID is provided */}
             {formData.referralId && (
               <div className="space-y-1">
-                <Label htmlFor="placement" className="text-gray-700 text-sm font-medium">
+                <Label
+                  htmlFor="placement"
+                  className="text-gray-700 text-sm font-medium"
+                >
                   Placement <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
-                  <select 
-                    id="placement" 
-                    value={formData.placement} 
-                    onChange={handleChange} 
-                    className="h-10 lg:h-11 w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 pr-10 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:outline-none appearance-none text-sm" 
-                    disabled={loading} 
+                  <select
+                    id="placement"
+                    value={formData.placement}
+                    onChange={handleChange}
+                    className="h-10 lg:h-11 w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 pr-10 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:outline-none appearance-none text-sm"
+                    disabled={loading}
                     required
                   >
                     <option value="">Select Placement</option>
@@ -352,16 +402,19 @@ export default function RegisterPage() {
 
             {/* Plan Selection - Always visible */}
             <div className="space-y-1">
-              <Label htmlFor="planId" className="text-gray-700 text-sm font-medium">
+              <Label
+                htmlFor="planId"
+                className="text-gray-700 text-sm font-medium"
+              >
                 Select Plan <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
-                <select 
-                  id="planId" 
-                  value={formData.planId} 
-                  onChange={handleChange} 
-                  className="h-10 lg:h-11 w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 pr-10 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:outline-none appearance-none text-sm" 
-                  disabled={loading} 
+                <select
+                  id="planId"
+                  value={formData.planId}
+                  onChange={handleChange}
+                  className="h-10 lg:h-11 w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 pr-10 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:outline-none appearance-none text-sm"
+                  disabled={loading}
                   required
                 >
                   <option value="">Choose your plan</option>
@@ -380,64 +433,169 @@ export default function RegisterPage() {
 
             {/* Name */}
             <div className="space-y-1">
-              <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
-              <Input id="name" type="text" placeholder="Enter name" value={formData.name} onChange={handleChange} className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm" required disabled={loading} />
+              <Label
+                htmlFor="name"
+                className="text-gray-700 text-sm font-medium"
+              >
+                Name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter name"
+                value={formData.name}
+                onChange={handleChange}
+                className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm"
+                required
+                disabled={loading}
+              />
             </div>
 
             {/* Username */}
             <div className="space-y-1">
-              <Label htmlFor="username" className="text-gray-700 text-sm font-medium">Username</Label>
-              <Input id="username" type="text" placeholder="Choose username" value={formData.username} onChange={handleChange} className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm" required disabled={loading} />
+              <Label
+                htmlFor="username"
+                className="text-gray-700 text-sm font-medium"
+              >
+                Username
+              </Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Choose username"
+                value={formData.username}
+                onChange={handleChange}
+                className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm"
+                required
+                disabled={loading}
+              />
             </div>
 
             {/* Mobile No */}
             <div className="space-y-1">
-              <Label htmlFor="mobile" className="text-gray-700 text-sm font-medium">Mobile No</Label>
-              <Input id="mobile" type="tel" placeholder="Mobile No" value={formData.mobile} onChange={handleChange} className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm" required disabled={loading} />
+              <Label
+                htmlFor="mobile"
+                className="text-gray-700 text-sm font-medium"
+              >
+                Mobile No
+              </Label>
+              <Input
+                id="mobile"
+                type="tel"
+                placeholder="Mobile No"
+                value={formData.mobile}
+                onChange={handleChange}
+                className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm"
+                required
+                disabled={loading}
+              />
             </div>
 
             {/* Email ID - Optional */}
             <div className="space-y-1">
-              <Label htmlFor="email" className="text-gray-700 text-sm font-medium">
-                Email ID <span className="text-gray-400 font-normal">(Optional)</span>
+              <Label
+                htmlFor="email"
+                className="text-gray-700 text-sm font-medium"
+              >
+                Email ID{" "}
+                <span className="text-gray-400 font-normal">(Optional)</span>
               </Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="Enter Email ID (Optional)" 
-                value={formData.email} 
-                onChange={handleChange} 
-                className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm" 
-                disabled={loading} 
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter Email ID (Optional)"
+                value={formData.email}
+                onChange={handleChange}
+                className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 text-sm"
+                disabled={loading}
               />
             </div>
 
             {/* Password */}
             <div className="space-y-1">
-              <Label htmlFor="password" className="text-gray-700 text-sm font-medium">Password</Label>
+              <Label
+                htmlFor="password"
+                className="text-gray-700 text-sm font-medium"
+              >
+                Password
+              </Label>
               <div className="relative">
-                <Input id="password" type={showPassword ? "text" : "password"} placeholder="Enter Password" value={formData.password} onChange={handleChange} className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 pr-11 text-sm" required disabled={loading} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="h-10 lg:h-11 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-xl focus:border-primary-400 focus:ring-primary-400/20 pr-11 text-sm"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             {/* Terms */}
             <div className="flex items-start gap-2 pt-1">
-              <input type="checkbox" id="terms" className="mt-0.5 w-4 h-4 text-primary-400 border-gray-300 rounded focus:ring-primary-400" required />
-              <label htmlFor="terms" className="text-xs lg:text-sm text-gray-500">
-                I agree to the <Link href="/terms" className="text-primary-500 hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-primary-500 hover:underline">Privacy Policy</Link>
+              <input
+                type="checkbox"
+                id="terms"
+                className="mt-0.5 w-4 h-4 text-primary-400 border-gray-300 rounded focus:ring-primary-400"
+                required
+              />
+              <label
+                htmlFor="terms"
+                className="text-xs lg:text-sm text-gray-500"
+              >
+                I agree to the{" "}
+                <Link
+                  href="/terms"
+                  className="text-primary-500 hover:underline"
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  className="text-primary-500 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
               </label>
             </div>
 
             {/* Register Button */}
-            <Button type="submit" disabled={loading} className="w-full h-10 lg:h-12 bg-primary-400 hover:bg-primary-500 text-primary-foreground font-semibold text-sm lg:text-base rounded-xl transition-all duration-300 shadow-lg shadow-primary-400/30 hover:shadow-primary-500/50 hover:scale-[1.02] active:scale-[0.98] mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-10 lg:h-12 bg-primary-400 hover:bg-primary-500 text-primary-foreground font-semibold text-sm lg:text-base rounded-xl transition-all duration-300 shadow-lg shadow-primary-400/30 hover:shadow-primary-500/50 hover:scale-[1.02] active:scale-[0.98] mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

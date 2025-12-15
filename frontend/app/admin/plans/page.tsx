@@ -32,7 +32,6 @@ interface Plan {
   name: string;
   amount: number;
   pv: number;
-  referralIncome: number;
   dailyCapping: number;
   matchingIncome: number;
   description: string;
@@ -58,7 +57,6 @@ export default function AdminPlansPage() {
     name: "",
     amount: "",
     pv: "",
-    referralIncome: "",
     dailyCapping: "",
     matchingIncome: "",
     description: "",
@@ -91,7 +89,6 @@ export default function AdminPlansPage() {
       name: "",
       amount: "",
       pv: "",
-      referralIncome: "",
       dailyCapping: "",
       matchingIncome: "",
       description: "",
@@ -118,7 +115,7 @@ export default function AdminPlansPage() {
         name: planForm.name,
         amount: Number(planForm.amount),
         pv: Number(planForm.pv),
-        referralIncome: Number(planForm.referralIncome),
+        referralIncome: 0, // Referral income system removed
         dailyCapping: Number(planForm.dailyCapping),
         matchingIncome: Number(planForm.matchingIncome),
         description: planForm.description,
@@ -145,7 +142,6 @@ export default function AdminPlansPage() {
       name: plan.name,
       amount: String(plan.amount),
       pv: String(plan.pv),
-      referralIncome: String(plan.referralIncome),
       dailyCapping: String(plan.dailyCapping),
       matchingIncome: String(plan.matchingIncome),
       description: plan.description,
@@ -164,7 +160,7 @@ export default function AdminPlansPage() {
         name: planForm.name,
         amount: Number(planForm.amount),
         pv: Number(planForm.pv),
-        referralIncome: Number(planForm.referralIncome),
+        referralIncome: 0, // Referral income system removed
         dailyCapping: Number(planForm.dailyCapping),
         matchingIncome: Number(planForm.matchingIncome),
         description: planForm.description,
@@ -259,10 +255,6 @@ export default function AdminPlansPage() {
                 <span className="font-semibold text-foreground">{plan.pv}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Referral Income:</span>
-                <span className="font-semibold text-foreground">₹{plan.referralIncome}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Daily Capping:</span>
                 <span className="font-semibold text-foreground">₹{plan.dailyCapping}</span>
               </div>
@@ -326,15 +318,6 @@ export default function AdminPlansPage() {
                   value={planForm.pv}
                   onChange={(e) => setPlanForm({...planForm, pv: e.target.value})}
                   placeholder="e.g., 1000"
-                />
-              </div>
-              <div>
-                <Label>Referral Income (₹)</Label>
-                <Input
-                  type="number"
-                  value={planForm.referralIncome}
-                  onChange={(e) => setPlanForm({...planForm, referralIncome: e.target.value})}
-                  placeholder="e.g., 200"
                 />
               </div>
               <div>
@@ -432,14 +415,6 @@ export default function AdminPlansPage() {
                   type="number"
                   value={planForm.pv}
                   onChange={(e) => setPlanForm({...planForm, pv: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label>Referral Income (₹)</Label>
-                <Input
-                  type="number"
-                  value={planForm.referralIncome}
-                  onChange={(e) => setPlanForm({...planForm, referralIncome: e.target.value})}
                 />
               </div>
               <div>

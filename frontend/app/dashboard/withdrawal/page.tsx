@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DollarSign, ArrowLeft } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export default function WithdrawalRequestPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [minimumLimit, setMinimumLimit] = useState(1000);
   const [formData, setFormData] = useState({
     amount: "",
     accountNumber: "",
@@ -23,6 +24,21 @@ export default function WithdrawalRequestPage() {
     bankName: "",
     branch: ""
   });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axiosInstance.get('/api/settings/public');
+        if (response.data.success && response.data.data) {
+          const limit = parseInt(response.data.data.minimumWithdrawLimit || "1000");
+          setMinimumLimit(limit);
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +88,10 @@ export default function WithdrawalRequestPage() {
                 value={formData.amount}
                 onChange={(e) => setFormData({...formData, amount: e.target.value})}
                 required
-                min="100"
+                min={minimumLimit}
                 step="0.01"
               />
-              <p className="text-xs text-muted-foreground mt-1">Minimum withdrawal: ₹100</p>
+              <p className="text-xs text-muted-foreground mt-1">Minimum withdrawal: ₹{minimumLimit}</p>
             </div>
 
             <div className="border-t border-border pt-6">

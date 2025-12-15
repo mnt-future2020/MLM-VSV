@@ -18,6 +18,8 @@ import {
   Network,
   List,
   GitBranch,
+  TrendingUp,
+  FileCheck,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -51,11 +53,17 @@ export default function AdminLayout({
       isActive: pathname === "/admin/members",
     },
     {
-      label: "User Management",
-      href: "/admin/users",
-      icon: <Users className="w-5 h-5" />,
-      isActive: pathname === "/admin/users",
+      label: "KYC Management",
+      href: "/admin/kyc",
+      icon: <FileCheck className="w-5 h-5" />,
+      isActive: pathname?.startsWith("/admin/kyc"),
     },
+    // {
+    //   label: "User Management",
+    //   href: "/admin/users",
+    //   icon: <Users className="w-5 h-5" />,
+    //   isActive: pathname === "/admin/users",
+    // },
     {
       label: "My Team",
       href: "/admin/team/list",
@@ -94,6 +102,12 @@ export default function AdminLayout({
       href: "/admin/plans",
       icon: <Package className="w-5 h-5" />,
       isActive: pathname === "/admin/plans",
+    },
+    {
+      label: "My Earnings",
+      href: "/admin/earnings",
+      icon: <TrendingUp className="w-5 h-5" />,
+      isActive: pathname === "/admin/earnings",
     },
     {
       label: "Reports",

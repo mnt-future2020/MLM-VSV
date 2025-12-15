@@ -16,6 +16,7 @@ import {
   FileText,
   ChevronDown,
   Lock,
+  FileCheck,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -34,6 +35,21 @@ export default function DashboardLayout({
       href: "/dashboard",
       icon: <LayoutDashboard className="w-5 h-5" />,
       isActive: pathname === "/dashboard",
+    },
+    {
+      label: "KYC",
+      href: "/dashboard/kyc",
+      icon: <FileCheck className="w-5 h-5" />,
+      isActive: pathname?.startsWith("/dashboard/kyc"),
+      hasDropdown: true,
+      subLinks: [
+        {
+          label: "My KYC",
+          href: "/dashboard/kyc",
+          icon: <FileCheck className="w-4 h-4" />,
+          isActive: pathname === "/dashboard/kyc",
+        }
+      ],
     },
     {
       label: "New Member",
@@ -65,12 +81,6 @@ export default function DashboardLayout({
           href: "/dashboard/profile/edit",
           icon: <User className="w-4 h-4" />,
           isActive: pathname === "/dashboard/profile/edit",
-        },
-        {
-          label: "Change Password",
-          href: "/change-password",
-          icon: <Lock className="w-4 h-4" />,
-          isActive: pathname === "/change-password",
         },
       ],
     },
@@ -108,8 +118,8 @@ export default function DashboardLayout({
       isActive: pathname === "/dashboard/earnings",
     },
     {
-      label: "Payout Reports",
-      href: "/dashboard/payout-reports",
+      label: "Payout Request",
+      href: "/dashboard/payout-request",
       icon: <FileText className="w-5 h-5" />,
       isActive: pathname === "/dashboard/payout-reports",
     },

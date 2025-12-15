@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PageContainer, PageHeader } from "@/components/ui/page-components";
-import { Save, Building2, Search, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Settings as SettingsIcon, Loader2, Mail, Send, Award } from "lucide-react";
+import { Save, Building2, Search, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Settings as SettingsIcon, Loader2, Mail, Send, Award, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getSettings, updateGeneralSettings, updateSeoSettings, updateHeroSettings } from "@/lib/settings-api";
 import { getEmailConfiguration, updateEmailConfiguration, testEmailConfiguration } from "@/lib/email-config-api";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { RanksTab } from "@/components/settings/RanksTab";
+import { axiosInstance } from "@/lib/api";
 
 type TabType = "general" | "seo" | "hero" | "email" | "ranks";
 
@@ -19,6 +20,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentSystemTime, setCurrentSystemTime] = useState("");
 
   // General Settings State
   const [generalSettings, setGeneralSettings] = useState({
@@ -27,7 +29,9 @@ export default function SettingsPage() {
     companyPhone: "+91 1234567890",
     companyAddress: "123 Business Street, City, State, PIN",
     companyDescription: "A transparent, automated MLM system built on Binary + PV earning model",
-    pvIncomeRate: "25", // PV to Income conversion rate (PV × rate = income)
+    minimumWithdrawLimit: "1000", // Minimum withdrawal amount
+    systemTimeOffset: "0", // Time offset in minutes (+/- from actual time)
+    eodTime: "23:59", // End of Day time for calculations
   });
 
   // SEO Settings State
@@ -86,6 +90,20 @@ export default function SettingsPage() {
   // Fetch settings on mount
   useEffect(() => {
     fetchSettings();
+    // Fetch system time periodically
+    const fetchSystemTime = async () => {
+      try {
+        const response = await axiosInstance.get('/api/system/time');
+        if (response.data.success) {
+          setCurrentSystemTime(response.data.data.currentTimeFormatted);
+        }
+      } catch (error) {
+        console.error("Error fetching system time:", error);
+      }
+    };
+    fetchSystemTime();
+    const interval = setInterval(fetchSystemTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchSettings = async () => {
@@ -102,7 +120,9 @@ export default function SettingsPage() {
           companyPhone: data.companyPhone || "+91 1234567890",
           companyAddress: data.companyAddress || "123 Business Street, City, State, PIN",
           companyDescription: data.companyDescription || "A transparent, automated MLM system built on Binary + PV earning model",
-          pvIncomeRate: data.pvIncomeRate || "25",
+          minimumWithdrawLimit: data.minimumWithdrawLimit || "1000",
+          systemTimeOffset: data.systemTimeOffset || "0",
+          eodTime: data.eodTime || "23:59",
         });
 
         // Update SEO settings
@@ -326,22 +346,22 @@ export default function SettingsPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="pvIncomeRate">PV Income Rate (₹)</Label>
+                      <Label htmlFor="minimumWithdrawLimit">Minimum Withdraw Limit (₹)</Label>
                       <Input
-                        id="pvIncomeRate"
+                        id="minimumWithdrawLimit"
                         type="number"
-                        value={generalSettings.pvIncomeRate}
+                        value={generalSettings.minimumWithdrawLimit}
                         onChange={(e) =>
                           setGeneralSettings({
                             ...generalSettings,
-                            pvIncomeRate: e.target.value,
+                            minimumWithdrawLimit: e.target.value,
                           })
                         }
                         className="mt-2"
-                        placeholder="25"
+                        placeholder="1000"
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Income per PV (e.g., 25 means PV 1 = ₹25, PV 2 = ₹50)
+                        Minimum amount users can withdraw (default: ₹1000)
                       </p>
                     </div>
 
@@ -364,6 +384,99 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+
+              {/* System Time Settings */}
+              <div className="mt-8 pt-6 border-t border-border">
+                <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary-500" />
+                  System Time Settings
+                </h2>
+                <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-primary-700 font-medium">Current System Time (IST)</p>
+                      <p className="text-2xl font-bold text-primary-900">{currentSystemTime || "Loading..."}</p>
+                    </div>
+                    <div className="w-14 h-14 rounded-full bg-primary-500 flex items-center justify-center">
+                      <Clock className="w-7 h-7 text-white" />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="systemTimeOffset">Time Offset (Minutes)</Label>
+                    <Input
+                      id="systemTimeOffset"
+                      type="number"
+                      value={generalSettings.systemTimeOffset}
+                      onChange={(e) =>
+                        setGeneralSettings({
+                          ...generalSettings,
+                          systemTimeOffset: e.target.value,
+                        })
+                      }
+                      className="mt-2"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Adjust system time (+/- minutes). Example: +30 means 30 mins ahead
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="eodTime">End of Day (EOD) Time</Label>
+                    <Input
+                      id="eodTime"
+                      type="time"
+                      value={generalSettings.eodTime}
+                      onChange={(e) =>
+                        setGeneralSettings({
+                          ...generalSettings,
+                          eodTime: e.target.value,
+                        })
+                      }
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Time when PV matching, carry forward calculations run (default: 23:59)
+                    </p>
+                  </div>
+                </div>
+
+                {/* EOD Processing Button */}
+                <div className="mt-6 pt-6 border-t border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">Manual EOD Processing</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Run the daily PV matching calculation manually. This will process all users with active plans and calculate their matching income.
+                  </p>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Are you sure you want to run EOD matching calculation? This will process all users.")) {
+                        return;
+                      }
+                      try {
+                        setSaving(true);
+                        const response = await axiosInstance.post('/api/admin/calculate-daily-matching');
+                        if (response.data.success) {
+                          toast.success(`EOD Processing Complete! ${response.data.summary.totalUsersProcessed} users processed, ₹${response.data.summary.totalIncomePaid} income distributed.`);
+                        } else {
+                          toast.error("EOD processing failed");
+                        }
+                      } catch (error) {
+                        console.error("EOD processing error:", error);
+                        toast.error("Failed to run EOD processing");
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                    disabled={saving}
+                    className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    {saving ? "Processing..." : "Run EOD Matching Now"}
+                  </Button>
+                </div>
+              </div>
               </div>
             )}
 

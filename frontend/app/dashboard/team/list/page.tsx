@@ -97,12 +97,6 @@ export default function TeamListPage() {
         icon={<Users className="w-6 h-6 text-white" />}
         title="Team Members"
         subtitle="Manage and view your direct referrals"
-        action={
-          <Button className="bg-primary-600 hover:bg-primary-700">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Member
-          </Button>
-        }
       />
 
       {/* Stats */}
@@ -216,7 +210,7 @@ export default function TeamListPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-foreground">
-                        {new Date(member.joinedAt).toLocaleDateString()}
+                        {new Date(member.joinedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })}
                       </p>
                     </td>
                     <td className="px-6 py-4">

@@ -49,7 +49,7 @@ export default function NewMemberPage() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await axiosInstance.get('/api/plans');
+        const response = await axiosInstance.get("/api/plans");
         if (response.data.success) {
           setPlans(response.data.data.filter((p: Plan) => p.isActive));
         }
@@ -62,7 +62,7 @@ export default function NewMemberPage() {
 
   const handleSearchSponsor = async (sponsorIdToSearch?: string) => {
     const idToSearch = sponsorIdToSearch || formData.sponsorId;
-    
+
     if (!idToSearch) {
       toast.error("Please enter sponsor ID");
       return;
@@ -70,10 +70,10 @@ export default function NewMemberPage() {
 
     setSearchingSponsor(true);
     try {
-      const response = await axiosInstance.post('/api/auth/lookup-referral', {
-        referralId: idToSearch
+      const response = await axiosInstance.post("/api/auth/lookup-referral", {
+        referralId: idToSearch,
       });
-      
+
       if (response.data.success) {
         const sponsor = response.data.data;
         setFormData({ ...formData, sponsorName: sponsor.name });
@@ -81,7 +81,10 @@ export default function NewMemberPage() {
           toast.success("Sponsor found!");
         }
       } else {
-        toast.error(response.data.message || "Sponsor not found");
+        const errorMessage = response.data.message || "Sponsor not found";
+        toast.error(
+          typeof errorMessage === "string" ? errorMessage : "Sponsor not found"
+        );
         setFormData({ ...formData, sponsorName: "" });
       }
     } catch (error) {
@@ -107,7 +110,7 @@ export default function NewMemberPage() {
       toast.error("Sponsor ID is required");
       return;
     }
-    if (!formData.fullName || !formData.username || !formData.mobile || !formData.email) {
+    if (!formData.fullName || !formData.username || !formData.mobile) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -129,7 +132,7 @@ export default function NewMemberPage() {
         password: formData.password,
         mobile: formData.mobile,
         referralId: formData.sponsorId,
-        placement: formData.placement
+        placement: formData.placement,
       };
 
       // Add plan if selected
@@ -137,21 +140,32 @@ export default function NewMemberPage() {
         registerData.planId = formData.planId;
       }
 
-      const response = await axiosInstance.post('/api/auth/register', registerData);
+      const response = await axiosInstance.post(
+        "/api/auth/register",
+        registerData
+      );
 
       if (response.data.success) {
         toast.success("Member registered successfully!");
-        toast.success(`Referral ID: ${response.data.user.referralId}`, { duration: 10000 });
-        
+        toast.success(`Referral ID: ${response.data.user.referralId}`, {
+          duration: 10000,
+        });
+
         // If plan was selected, show additional message
         if (formData.planId && formData.planId !== "no-plan") {
           toast.success("Plan assigned successfully!", { duration: 5000 });
         }
-        
+
         handleReset();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || error.response?.data?.detail || "Registration failed");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        "Registration failed";
+      toast.error(
+        typeof errorMessage === "string" ? errorMessage : "Registration failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -182,10 +196,15 @@ export default function NewMemberPage() {
       />
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm space-y-8">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-sm space-y-8"
+      >
         {/* Sponsor Information */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Sponsor Information</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">
+            Sponsor Information
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <Label required>Sponsor ID</Label>
@@ -193,7 +212,9 @@ export default function NewMemberPage() {
                 <Input
                   placeholder="Enter sponsor ID"
                   value={formData.sponsorId}
-                  onChange={(e) => setFormData({...formData, sponsorId: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sponsorId: e.target.value })
+                  }
                   onBlur={handleSponsorIdBlur}
                 />
                 <button
@@ -202,7 +223,11 @@ export default function NewMemberPage() {
                   disabled={searchingSponsor}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary-600 transition-colors disabled:opacity-50"
                 >
-                  {searchingSponsor ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  {searchingSponsor ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -219,7 +244,9 @@ export default function NewMemberPage() {
               <Label required>Placement</Label>
               <Select
                 value={formData.placement}
-                onValueChange={(value) => setFormData({...formData, placement: value})}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, placement: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select placement" />
@@ -235,13 +262,17 @@ export default function NewMemberPage() {
 
         {/* Plan Selection */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Plan Selection (Optional)</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">
+            Plan Selection (Optional)
+          </h2>
           <div className="grid grid-cols-1 gap-6">
             <div>
               <Label>Select Plan</Label>
               <Select
                 value={formData.planId}
-                onValueChange={(value) => setFormData({...formData, planId: value})}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, planId: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="No plan (can be assigned later)" />
@@ -256,7 +287,8 @@ export default function NewMemberPage() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                You can assign a plan during registration or activate it later through topup.
+                You can assign a plan during registration or activate it later
+                through topup.
               </p>
             </div>
           </div>
@@ -264,14 +296,18 @@ export default function NewMemberPage() {
 
         {/* Personal Information */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Personal Information</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">
+            Personal Information
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label required>Full Name</Label>
               <Input
                 placeholder="Enter full name"
                 value={formData.fullName}
-                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, fullName: e.target.value })
+                }
                 required
               />
             </div>
@@ -280,7 +316,9 @@ export default function NewMemberPage() {
               <Input
                 placeholder="Enter username (unique)"
                 value={formData.username}
-                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
                 required
               />
             </div>
@@ -290,18 +328,20 @@ export default function NewMemberPage() {
                 type="tel"
                 placeholder="Enter mobile number"
                 value={formData.mobile}
-                onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, mobile: e.target.value })
+                }
                 required
               />
             </div>
             <div>
-              <Label required>Email ID</Label>
+              <Label>Email ID</Label>
               <Input
-                type="email"
-                placeholder="Enter email address"
+                placeholder="Enter email address (optional)"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                required
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
             </div>
             <div>
@@ -310,7 +350,9 @@ export default function NewMemberPage() {
                 type="password"
                 placeholder="Create a password (min 6 characters)"
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 required
               />
             </div>
@@ -320,13 +362,14 @@ export default function NewMemberPage() {
                 type="password"
                 placeholder="Confirm password"
                 value={formData.confirmPassword}
-                onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
                 required
               />
             </div>
           </div>
         </div>
-
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4">

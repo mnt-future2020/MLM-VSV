@@ -1,0 +1,22 @@
+[
+  {
+    "content": "Phase 3: Add user photo upload in KYC form",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Data edit restriction - Users cannot edit after KYC approval, only admin",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Update binary tree to show user photos",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Add weak member report popup on tree node click",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: End to End Testing",
+    "status": "completed"
+  }
+]

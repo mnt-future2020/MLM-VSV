@@ -20,12 +20,20 @@ type TeamMember = {
   id: string;
   name: string;
   email: string;
-  contact: string;
+  mobile: string;
+  referralId: string;
   placement: "LEFT" | "RIGHT";
-  joinDate: string;
-  package: string;
-  rank: string;
-  status: "Active" | "Inactive";
+  joinedAt: string;
+  currentPlan: string;
+  rank?: {
+    name: string;
+    icon: string;
+    color: string;
+    minPV: number;
+  };
+  isActive: boolean;
+  sponsorName: string;
+  sponsorId: string;
 };
 
 export default function AdminTeamListPage() {
@@ -76,7 +84,7 @@ export default function AdminTeamListPage() {
     const matchesPlacement =
       placementFilter === "All Placement" || member.placement === placementFilter;
 
-    const matchesRank = rankFilter === "All Ranks" || member.rank === rankFilter;
+    const matchesRank = rankFilter === "All Ranks" || member.rank?.name === rankFilter;
 
     return matchesSearch && matchesPlacement && matchesRank;
   });
@@ -106,12 +114,6 @@ export default function AdminTeamListPage() {
         icon={<Users className="w-6 h-6 text-white" />}
         title="My Team"
         subtitle="View and manage members under your ID"
-        action={
-          <Button className="gap-2 bg-primary-500 hover:bg-primary-600 text-white shadow-md">
-            <UserPlus className="w-4 h-4" />
-            Add New Member
-          </Button>
-        }
       />
 
       {/* Stats Cards */}
@@ -225,7 +227,7 @@ export default function AdminTeamListPage() {
                       <p className="text-xs text-muted-foreground">{member.email}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{member.contact}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{member.mobile}</td>
                   <td className="px-6 py-4">
                     <span
                       className={cn(
@@ -237,24 +239,43 @@ export default function AdminTeamListPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-muted-foreground">
-                    {new Date(member.joinDate).toLocaleDateString()}
+                    <span className="text-xs text-muted-foreground">
+  {new Date(member.joinedAt).toLocaleDateString("en-IN", {
+    timeZone: 'Asia/Kolkata',
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })}
+</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-foreground">{member.package}</td>
+                  <td className="px-6 py-4 text-sm text-foreground">{member.currentPlan}</td>
                   <td className="px-6 py-4">
-                    <span className={cn("px-2.5 py-0.5 rounded-md text-xs font-medium border", getRankColor(member.rank))}>
-                      {member.rank}
-                    </span>
+                    {member.rank ? (
+                      <span 
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium border"
+                        style={{ 
+                          backgroundColor: `${member.rank.color}15`, 
+                          borderColor: member.rank.color,
+                          color: member.rank.color
+                        }}
+                      >
+                        <span>{member.rank.icon}</span>
+                        <span>{member.rank.name}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={cn(
                         "px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                        member.status === "Active"
+                        member.isActive ==true
                           ? "bg-green-50 text-green-700 border-green-200"
                           : "bg-red-50 text-red-700 border-red-200"
                       )}
                     >
-                      {member.status}
+                      {member.isActive}
                     </span>
                   </td>
                 </tr>
