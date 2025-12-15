@@ -15,7 +15,7 @@ import base64
 from datetime import datetime
 
 class Phase3BackendTester:
-    def __init__(self, base_url="https://demobackend.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:3000"):
         self.base_url = base_url
         self.admin_token = None
         self.user_token = None
