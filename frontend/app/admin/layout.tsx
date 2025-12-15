@@ -19,6 +19,7 @@ import {
   List,
   GitBranch,
   TrendingUp,
+  FileCheck,
 } from "lucide-react";
 
 export default function AdminLayout({
