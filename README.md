@@ -345,7 +345,7 @@ Proprietary - VSV Unite
 
 ## 👨‍💻 Developer
 
-Built by E1 AI Agent for VSV Unite Platform
+Built by MnT
 
 ---
 
