@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, CheckCircle, XCircle, Clock, DollarSign, Search, FileText } from "lucide-react";
+import {
+  CreditCard,
+  CheckCircle,
+  XCircle,
+  Clock,
+  DollarSign,
+  Search,
+  FileText,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,7 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
+import {
+  PageContainer,
+  PageHeader,
+  StatsCard,
+} from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/api";
@@ -26,7 +38,7 @@ type TopupRequest = {
   planId: string;
   planName?: string;
   amount: number;
-  paymentMode: string;
+  paymentMethod: string;
   transactionId: string;
   paymentProof?: string;
   requestedAt: string;
@@ -41,17 +53,30 @@ export default function ManageTopupsPage() {
   const [topups, setTopups] = useState<TopupRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("PENDING");
-  const [selectedRequest, setSelectedRequest] = useState<TopupRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<TopupRequest | null>(
+    null
+  );
 
   const fetchTopups = async () => {
     try {
-      const response = await axiosInstance.get('/api/admin/topups', {
-        params: { status: statusFilter !== "ALL" ? statusFilter : undefined }
+      const response = await axiosInstance.get("/api/admin/topups", {
+        params: { status: statusFilter !== "ALL" ? statusFilter : undefined },
       });
       if (response.data.success) {
         setTopups(response.data.data);
+        // Only set selected request if there's no current selection or if current selection is not in the new list
         if (response.data.data.length > 0) {
-          setSelectedRequest(response.data.data[0]);
+          const currentSelectedExists =
+            selectedRequest &&
+            response.data.data.find(
+              (t: TopupRequest) => t.id === selectedRequest.id
+            );
+          if (!selectedRequest || !currentSelectedExists) {
+            setSelectedRequest(response.data.data[0]);
+          }
+        } else {
+          // No data, clear selection
+          setSelectedRequest(null);
         }
       }
     } catch (error) {
@@ -63,17 +88,23 @@ export default function ManageTopupsPage() {
   };
 
   useEffect(() => {
-    if (user && user.role === 'admin') {
+    if (user && user.role === "admin") {
       fetchTopups();
     }
   }, [user, statusFilter]);
 
   const handleApprove = async (topupId: string) => {
     try {
-      const response = await axiosInstance.post(`/api/admin/topups/${topupId}/approve`);
+      const response = await axiosInstance.post(
+        `/api/admin/topups/${topupId}/approve`
+      );
       if (response.data.success) {
         toast.success("Topup approved successfully");
-        fetchTopups();
+        // Clear selected request if it was the one we just approved
+        if (selectedRequest?.id === topupId) {
+          setSelectedRequest(null);
+        }
+        await fetchTopups();
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to approve topup");
@@ -82,21 +113,28 @@ export default function ManageTopupsPage() {
 
   const handleReject = async (topupId: string) => {
     try {
-      const response = await axiosInstance.post(`/api/admin/topups/${topupId}/reject`, {
-        reason: "Rejected by admin"
-      });
+      const response = await axiosInstance.post(
+        `/api/admin/topups/${topupId}/reject`,
+        {
+          reason: "Rejected by admin",
+        }
+      );
       if (response.data.success) {
         toast.success("Topup rejected");
-        fetchTopups();
+        // Clear selected request if it was the one we just rejected
+        if (selectedRequest?.id === topupId) {
+          setSelectedRequest(null);
+        }
+        await fetchTopups();
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to reject topup");
     }
   };
 
-  const pendingTopups = topups.filter(t => t.status === "PENDING");
-  const approvedTopups = topups.filter(t => t.status === "APPROVED");
-  const rejectedTopups = topups.filter(t => t.status === "REJECTED");
+  const pendingTopups = topups.filter((t) => t.status === "PENDING");
+  const approvedTopups = topups.filter((t) => t.status === "APPROVED");
+  const rejectedTopups = topups.filter((t) => t.status === "REJECTED");
 
   if (loading) {
     return (
@@ -132,7 +170,9 @@ export default function ManageTopupsPage() {
         />
         <StatsCard
           label="Pending Amount"
-          value={`₹${pendingTopups.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}`}
+          value={`₹${pendingTopups
+            .reduce((sum, t) => sum + t.amount, 0)
+            .toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-blue-600" />}
           gradient="bg-blue-500"
         />
@@ -144,7 +184,9 @@ export default function ManageTopupsPage() {
         />
         <StatsCard
           label="Total Approved"
-          value={`₹${approvedTopups.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}`}
+          value={`₹${approvedTopups
+            .reduce((sum, t) => sum + t.amount, 0)
+            .toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6 text-purple-600" />}
           gradient="bg-purple-500"
         />
@@ -171,7 +213,14 @@ export default function ManageTopupsPage() {
         {/* Topup Requests List */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
-            {statusFilter === "PENDING" ? "Pending" : statusFilter === "APPROVED" ? "Approved" : statusFilter === "REJECTED" ? "Rejected" : "All"} Top-up Requests ({topups.length})
+            {statusFilter === "PENDING"
+              ? "Pending"
+              : statusFilter === "APPROVED"
+              ? "Approved"
+              : statusFilter === "REJECTED"
+              ? "Rejected"
+              : "All"}{" "}
+            Top-up Requests ({topups.length})
           </h3>
           {topups.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-8 text-center">
@@ -191,32 +240,43 @@ export default function ManageTopupsPage() {
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="font-semibold text-foreground">{req.userName || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">{req.referralId || req.userId}</p>
+                    <p className="font-semibold text-foreground">
+                      {req.userName || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {req.referralId || req.userId}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-primary-600">₹{req.amount.toLocaleString()}</p>
+                    <p className="font-bold text-primary-600">
+                      ₹{req.amount.toLocaleString()}
+                    </p>
                     <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-                      {req.planName || 'Plan'}
+                      {req.planName || "Plan"}
                     </span>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground mb-3 space-y-1">
-                  <p>Payment: {req.paymentMode}</p>
-                  <p>TXN ID: {req.transactionId}</p>
                   <p>Requested: {new Date(req.requestedAt).toLocaleString()}</p>
-                  <p>Status: <span className={cn(
-                    "font-medium",
-                    req.status === "PENDING" && "text-yellow-600",
-                    req.status === "APPROVED" && "text-green-600",
-                    req.status === "REJECTED" && "text-red-600"
-                  )}>{req.status}</span></p>
+                  <p>
+                    Status:{" "}
+                    <span
+                      className={cn(
+                        "font-medium",
+                        req.status === "PENDING" && "text-yellow-600",
+                        req.status === "APPROVED" && "text-green-600",
+                        req.status === "REJECTED" && "text-red-600"
+                      )}
+                    >
+                      {req.status}
+                    </span>
+                  </p>
                 </div>
-                
+
                 {req.status === "PENDING" && (
                   <div className="flex gap-2 mt-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleApprove(req.id);
@@ -225,8 +285,8 @@ export default function ManageTopupsPage() {
                     >
                       <CheckCircle className="w-3 h-3 mr-1" /> Approve
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -245,69 +305,89 @@ export default function ManageTopupsPage() {
 
         {/* Request Details Panel */}
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm h-fit sticky top-6">
-          <h3 className="text-lg font-semibold text-foreground mb-6">Top-up Details</h3>
-          
+          <h3 className="text-lg font-semibold text-foreground mb-6">
+            Top-up Details
+          </h3>
+
           {selectedRequest ? (
             <div className="space-y-6">
               {/* Member Info */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground mb-1">User Name:</p>
-                  <p className="font-medium text-foreground">{selectedRequest.userName || 'N/A'}</p>
+                  <p className="font-medium text-foreground">
+                    {selectedRequest.userName || "N/A"}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground mb-1">Referral ID:</p>
-                  <p className="font-medium text-foreground">{selectedRequest.referralId || 'N/A'}</p>
+                  <p className="font-medium text-foreground">
+                    {selectedRequest.referralId || "N/A"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground mb-1">Request ID:</p>
-                  <p className="font-medium text-foreground">{selectedRequest.id}</p>
+                  <p className="font-medium text-foreground">
+                    {selectedRequest.id}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground mb-1">Request Date:</p>
-                  <p className="font-medium text-foreground">{new Date(selectedRequest.requestedAt).toLocaleDateString()}</p>
+                  <p className="font-medium text-foreground">
+                    {new Date(selectedRequest.requestedAt).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
 
               {/* Package Info Card */}
               <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white text-center shadow-lg">
                 <p className="text-white/80 text-sm mb-1">Selected Plan</p>
-                <h2 className="text-2xl font-bold mb-1">{selectedRequest.planName || 'Plan'}</h2>
-                <p className="text-3xl font-extrabold">₹{selectedRequest.amount.toLocaleString()}</p>
+                <h2 className="text-2xl font-bold mb-1">
+                  {selectedRequest.planName || "Plan"}
+                </h2>
+                <p className="text-3xl font-extrabold">
+                  ₹{selectedRequest.amount.toLocaleString()}
+                </p>
               </div>
 
               {/* Payment Details */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Payment Mode:</span>
-                  <span className="font-medium text-foreground">{selectedRequest.paymentMode}</span>
+                  <span className="font-medium text-foreground">
+                    {selectedRequest.paymentMethod}
+                  </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Transaction ID:</span>
-                  <span className="font-mono text-foreground">{selectedRequest.transactionId}</span>
-                </div>
+
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Status:</span>
-                  <span className={cn(
-                    "font-medium px-2 py-1 rounded text-xs",
-                    selectedRequest.status === "PENDING" && "bg-yellow-100 text-yellow-700",
-                    selectedRequest.status === "APPROVED" && "bg-green-100 text-green-700",
-                    selectedRequest.status === "REJECTED" && "bg-red-100 text-red-700"
-                  )}>{selectedRequest.status}</span>
+                  <span
+                    className={cn(
+                      "font-medium px-2 py-1 rounded text-xs",
+                      selectedRequest.status === "PENDING" &&
+                        "bg-yellow-100 text-yellow-700",
+                      selectedRequest.status === "APPROVED" &&
+                        "bg-green-100 text-green-700",
+                      selectedRequest.status === "REJECTED" &&
+                        "bg-red-100 text-red-700"
+                    )}
+                  >
+                    {selectedRequest.status}
+                  </span>
                 </div>
               </div>
 
               {/* Actions */}
               {selectedRequest.status === "PENDING" && (
                 <div className="grid grid-cols-2 gap-4 pt-2">
-                  <Button 
+                  <Button
                     onClick={() => handleApprove(selectedRequest.id)}
                     className="bg-green-600 hover:bg-green-700 text-white shadow-md"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" /> Approve Topup
                   </Button>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     onClick={() => handleReject(selectedRequest.id)}
                     className="bg-red-600 hover:bg-red-700 text-white shadow-md"
                   >
@@ -327,25 +407,44 @@ export default function ManageTopupsPage() {
       {/* Recently Approved Table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-border bg-muted/30">
-          <h3 className="font-semibold text-foreground">Recently Approved Top-ups</h3>
+          <h3 className="font-semibold text-foreground">
+            Recently Approved Top-ups
+          </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Request ID</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Member ID</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Member Name</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Package</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Amount</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Approved Date</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">Status</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Request ID
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Member ID
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Member Name
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Package
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Amount
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Approved Date
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody>
               {approvedTopups.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-8 text-center text-muted-foreground"
+                  >
                     No approved topups yet
                   </td>
                 </tr>
@@ -358,12 +457,26 @@ export default function ManageTopupsPage() {
                       index === approvedTopups.length - 1 && "border-0"
                     )}
                   >
-                    <td className="px-6 py-3 text-sm font-medium text-foreground">{topup.id}</td>
-                    <td className="px-6 py-3 text-sm text-muted-foreground">{topup.userId}</td>
-                    <td className="px-6 py-3 text-sm text-foreground">{topup.userName || 'N/A'}</td>
-                    <td className="px-6 py-3 text-sm text-muted-foreground">{topup.planName || 'N/A'}</td>
-                    <td className="px-6 py-3 text-sm font-semibold text-foreground">₹{topup.amount.toLocaleString()}</td>
-                    <td className="px-6 py-3 text-sm text-muted-foreground">{topup.approvedAt ? new Date(topup.approvedAt).toLocaleDateString() : 'N/A'}</td>
+                    <td className="px-6 py-3 text-sm font-medium text-foreground">
+                      {topup.id}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">
+                      {topup.userId}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-foreground">
+                      {topup.userName || "N/A"}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">
+                      {topup.planName || "N/A"}
+                    </td>
+                    <td className="px-6 py-3 text-sm font-semibold text-foreground">
+                      ₹{topup.amount.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-muted-foreground">
+                      {topup.approvedAt
+                        ? new Date(topup.approvedAt).toLocaleDateString()
+                        : "N/A"}
+                    </td>
                     <td className="px-6 py-3">
                       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                         Approved

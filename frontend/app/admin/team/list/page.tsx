@@ -397,7 +397,7 @@ export default function AdminTeamListPage() {
                         index === teamMembers.length - 1 && "border-0"
                       )}
                     >
-                      <td className="px-6 py-4 text-sm font-medium text-foreground">{member.id}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-foreground">{member.referralId}</td>
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-medium text-foreground">{member.name}</p>

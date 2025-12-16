@@ -51,7 +51,7 @@ type Member = {
   referralId: string;
   currentPlan: string | null;
   isActive: boolean;
-  joinedAt: string;
+  createdAt: string;
   sponsorId?: string;
   username?: string;
   placement?: string | null;
@@ -523,7 +523,7 @@ export default function ManageMembersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(member.joinedAt).toLocaleDateString("en-IN", {
+                        {new Date(member.createdAt).toLocaleDateString("en-IN", {
                           timeZone: 'Asia/Kolkata',
                           day: "2-digit",
                           month: "short",
