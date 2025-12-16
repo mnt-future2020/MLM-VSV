@@ -20,6 +20,7 @@ import {
   GitBranch,
   TrendingUp,
   FileCheck,
+  PlaySquare,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -120,6 +121,12 @@ export default function AdminLayout({
       href: "/admin/settings",
       icon: <Settings className="w-5 h-5" />,
       isActive: pathname === "/admin/settings",
+    },
+    {
+      label: "Tutorials",
+      href: "/admin/tutorials",
+      icon: <PlaySquare className="w-5 h-5" />,
+      isActive: pathname === "/admin/tutorials",
     },
     {
       label: "Logout",

@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Lock,
   FileCheck,
+  PlaySquare,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -107,6 +108,12 @@ export default function DashboardLayout({
       href: "/dashboard/payout-request",
       icon: <FileText className="w-5 h-5" />,
       isActive: pathname === "/dashboard/payout-reports",
+    },
+    {
+      label: "Tutorials",
+      href: "/dashboard/tutorials",
+      icon: <PlaySquare className="w-5 h-5" />,
+      isActive: pathname === "/dashboard/tutorials",
     },
     {
       label: "Logout",

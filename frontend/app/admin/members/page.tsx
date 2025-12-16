@@ -79,6 +79,16 @@ export default function ManageMembersPage() {
     email: "",
     mobile: "",
     currentPlan: "",
+    dob: "",
+    address: "",
+    nomineeName: "",
+    idNumber: "",
+    bank: {
+      accountName: "",
+      accountNumber: "",
+      ifsc: "",
+      bankName: ""
+    }
   });
 
   // Password reset state
@@ -162,15 +172,56 @@ export default function ManageMembersPage() {
   };
 
   // Edit member
-  const handleEdit = (member: Member) => {
+  const handleEdit = async (member: Member) => {
     setSelectedMember(member);
+    // Initialize with known data
     setEditForm({
       name: member.name,
       email: member.email,
       mobile: member.mobile || "",
       currentPlan: member.currentPlan || "",
+      dob: "",
+      address: "",
+      nomineeName: "",
+      idNumber: "",
+      bank: {
+        accountName: "",
+        accountNumber: "",
+        ifsc: "",
+        bankName: ""
+      }
     });
     setEditDialog(true);
+
+    // Fetch full details to get KYC info
+    try {
+      const response = await axiosInstance.get(`/api/user/details/${member.referralId}`);
+      if (response.data.success) {
+        const details = response.data.data;
+        const kyc = details.kycData || {};
+
+        setEditForm(prev => ({
+          ...prev,
+          name: details.name || prev.name,
+          email: details.email || prev.email,
+          mobile: details.mobile || prev.mobile,
+          currentPlan: details.currentPlan?.name || prev.currentPlan,
+          dob: kyc.dob || "",
+          address: kyc.address || "",
+          nomineeName: kyc.nomineeName || "",
+          idNumber: kyc.idNumber || "",
+          bank: kyc.bank || {
+            accountName: "",
+            accountNumber: "",
+            ifsc: "",
+            bankName: ""
+          }
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching full details for edit:", error);
+      toast.error("Could not load full member details");
+    }
   };
 
   const handleEditSubmit = async () => {
@@ -865,7 +916,7 @@ export default function ManageMembersPage() {
 
       {/* Edit Member Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Member</DialogTitle>
             <DialogDescription>Update member information</DialogDescription>
@@ -924,6 +975,109 @@ export default function ManageMembersPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Date of Birth</Label>
+                <Input
+                  type="date"
+                  value={editForm.dob}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, dob: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Nominee Name</Label>
+                <Input
+                  value={editForm.nomineeName}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, nomineeName: e.target.value })
+                  }
+                  placeholder="Nominee Name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Address</Label>
+              <Input
+                value={editForm.address}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, address: e.target.value })
+                }
+                placeholder="Full Address"
+              />
+            </div>
+
+            <div>
+              <Label>ID Number (PAN/Aadhaar)</Label>
+              <Input
+                value={editForm.idNumber}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, idNumber: e.target.value })
+                }
+                placeholder="ID Number"
+              />
+            </div>
+
+            <div className="space-y-4 border-t pt-4">
+              <h4 className="font-medium text-sm text-muted-foreground">Bank Details</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Account Name</Label>
+                  <Input
+                    value={editForm.bank.accountName}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        bank: { ...editForm.bank, accountName: e.target.value }
+                      })
+                    }
+                    placeholder="Account Holder"
+                  />
+                </div>
+                <div>
+                  <Label>Account Number</Label>
+                  <Input
+                    value={editForm.bank.accountNumber}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        bank: { ...editForm.bank, accountNumber: e.target.value }
+                      })
+                    }
+                    placeholder="Account Number"
+                  />
+                </div>
+                <div>
+                  <Label>IFSC Code</Label>
+                  <Input
+                    value={editForm.bank.ifsc}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        bank: { ...editForm.bank, ifsc: e.target.value }
+                      })
+                    }
+                    placeholder="IFSC Code"
+                  />
+                </div>
+                <div>
+                  <Label>Bank Name</Label>
+                  <Input
+                    value={editForm.bank.bankName}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        bank: { ...editForm.bank, bankName: e.target.value }
+                      })
+                    }
+                    placeholder="Bank Name"
+                  />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
