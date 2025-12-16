@@ -312,7 +312,7 @@ export default function KYCPage() {
                 <p className="text-sm text-red-600 text-center">{profilePhotoError}</p>
               )}
               <p className="text-xs text-gray-500 text-center">Click to upload profile photo (JPEG, max 500KB)</p>
-              <p className="text-xs text-amber-600 text-center">This photo will be displayed in your binary tree</p>
+              <p className="text-xs text-amber-600 text-center">This photo will be displayed in your Tree View</p>
             </div>
 
             {/* Personal Information */}

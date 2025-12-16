@@ -26,7 +26,7 @@ export default function AdminReportsPage() {
   const [reportData, setReportData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
-  
+
   // Separate filters for each section
   const [sectionFilters, setSectionFilters] = useState<Record<string, SectionFilters>>({
     users: { startDate: "", endDate: "" },
@@ -52,7 +52,7 @@ export default function AdminReportsPage() {
       setLoading(true);
       const filters = sectionFilters[section] || { startDate: "", endDate: "" };
       let url = `${endpoint}?format=${format}`;
-      
+
       if (filters.startDate) url += `&start_date=${filters.startDate}`;
       if (filters.endDate) url += `&end_date=${filters.endDate}`;
       if (filters.planFilter && filters.planFilter !== "all") url += `&plan_id=${filters.planFilter}`;
@@ -63,7 +63,7 @@ export default function AdminReportsPage() {
       });
 
       const blob = new Blob([response.data], {
-        type: format === "excel" 
+        type: format === "excel"
           ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           : "application/pdf"
       });
@@ -86,7 +86,7 @@ export default function AdminReportsPage() {
       setLoading(true);
       const filters = sectionFilters[section] || { startDate: "", endDate: "" };
       let url = `${endpoint}?format=json`;
-      
+
       if (filters.startDate) url += `&start_date=${filters.startDate}`;
       if (filters.endDate) url += `&end_date=${filters.endDate}`;
       if (filters.planFilter && filters.planFilter !== "all") url += `&plan_id=${filters.planFilter}`;
@@ -108,121 +108,121 @@ export default function AdminReportsPage() {
     }
   };
 
-  const ReportSection = ({ 
-    title, 
-    description, 
-    endpoint, 
+  const ReportSection = ({
+    title,
+    description,
+    endpoint,
     icon: Icon,
     sectionKey,
     showPlanFilter = false,
     showStatusFilter = false
-  }: { 
-    title: string; 
-    description: string; 
-    endpoint: string; 
+  }: {
+    title: string;
+    description: string;
+    endpoint: string;
     icon: any;
     sectionKey: string;
     showPlanFilter?: boolean;
     showStatusFilter?: boolean;
   }) => {
     const filters = sectionFilters[sectionKey] || { startDate: "", endDate: "" };
-    
+
     return (
-    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-      <div className="flex items-start gap-4 mb-6">
-        <div className="p-3 bg-primary-50 rounded-lg">
-          <Icon className="w-6 h-6 text-primary-600" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-lg text-foreground mb-1">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <Label className="text-sm mb-2 block">Start Date</Label>
-          <Input 
-            type="date" 
-            value={filters.startDate}
-            onChange={(e) => updateSectionFilter(sectionKey, "startDate", e.target.value)}
-            className="border-border"
-          />
-        </div>
-        <div>
-          <Label className="text-sm mb-2 block">End Date</Label>
-          <Input 
-            type="date" 
-            value={filters.endDate}
-            onChange={(e) => updateSectionFilter(sectionKey, "endDate", e.target.value)}
-            className="border-border"
-          />
-        </div>
-        
-        {showPlanFilter && (
-          <div>
-            <Label className="text-sm mb-2 block">Plan Filter</Label>
-            <Select value={filters.planFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "planFilter", val)}>
-              <SelectTrigger className="border-border">
-                <SelectValue placeholder="Select plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Plans</SelectItem>
-                <SelectItem value="basic">Basic</SelectItem>
-                <SelectItem value="standard">Standard</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="p-3 bg-primary-50 rounded-lg">
+            <Icon className="w-6 h-6 text-primary-600" />
           </div>
-        )}
-
-        {showStatusFilter && (
-          <div>
-            <Label className="text-sm mb-2 block">Status Filter</Label>
-            <Select value={filters.statusFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "statusFilter", val)}>
-              <SelectTrigger className="border-border">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg text-foreground mb-1">{title}</h3>
+            <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-        )}
-      </div>
+        </div>
 
-      <div className="flex flex-wrap gap-3">
-        <Button
-          onClick={() => loadPreview(endpoint, sectionKey)}
-          disabled={loading}
-          className="gap-2"
-          variant="outline"
-        >
-          <FileText className="w-4 h-4" />
-          {loading ? "Loading..." : "Preview"}
-        </Button>
-        <Button
-          onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
-          disabled={loading}
-          className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Download className="w-4 h-4" />
-          Download Excel
-        </Button>
-        <Button
-          onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
-          disabled={loading}
-          className="gap-2 bg-red-600 hover:bg-red-700 text-white"
-        >
-          <Download className="w-4 h-4" />
-          Download PDF
-        </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <Label className="text-sm mb-2 block">Start Date</Label>
+            <Input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) => updateSectionFilter(sectionKey, "startDate", e.target.value)}
+              className="border-border"
+            />
+          </div>
+          <div>
+            <Label className="text-sm mb-2 block">End Date</Label>
+            <Input
+              type="date"
+              value={filters.endDate}
+              onChange={(e) => updateSectionFilter(sectionKey, "endDate", e.target.value)}
+              className="border-border"
+            />
+          </div>
+
+          {showPlanFilter && (
+            <div>
+              <Label className="text-sm mb-2 block">Plan Filter</Label>
+              <Select value={filters.planFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "planFilter", val)}>
+                <SelectTrigger className="border-border">
+                  <SelectValue placeholder="Select plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Plans</SelectItem>
+                  <SelectItem value="basic">Basic</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {showStatusFilter && (
+            <div>
+              <Label className="text-sm mb-2 block">Status Filter</Label>
+              <Select value={filters.statusFilter || "all"} onValueChange={(val) => updateSectionFilter(sectionKey, "statusFilter", val)}>
+                <SelectTrigger className="border-border">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="APPROVED">Approved</SelectItem>
+                  <SelectItem value="REJECTED">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={() => loadPreview(endpoint, sectionKey)}
+            disabled={loading}
+            className="gap-2"
+            variant="outline"
+          >
+            <FileText className="w-4 h-4" />
+            {loading ? "Loading..." : "Preview"}
+          </Button>
+          <Button
+            onClick={() => downloadReport(endpoint, "excel", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
+            disabled={loading}
+            className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Download className="w-4 h-4" />
+            Download Excel
+          </Button>
+          <Button
+            onClick={() => downloadReport(endpoint, "pdf", title.toLowerCase().replace(/\s+/g, '_'), sectionKey)}
+            disabled={loading}
+            className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+          >
+            <Download className="w-4 h-4" />
+            Download PDF
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
   };
 
   const renderPreviewTable = () => {
@@ -315,7 +315,7 @@ export default function AdminReportsPage() {
             icon={Users}
             sectionKey="users"
           />
-          
+
           <ReportSection
             title="Active/Inactive Users"
             description="Breakdown of active and inactive users in the system"
@@ -323,7 +323,7 @@ export default function AdminReportsPage() {
             icon={Users}
             sectionKey="users"
           />
-          
+
           <ReportSection
             title="Users by Plan"
             description="Get users filtered by their subscription plan"
@@ -345,7 +345,7 @@ export default function AdminReportsPage() {
             icon={DollarSign}
             sectionKey="earnings"
           />
-          
+
           <ReportSection
             title="Income Breakdown by Type"
             description="Analysis of different income types (Referral, Matching, Level)"
@@ -353,7 +353,7 @@ export default function AdminReportsPage() {
             icon={TrendingUp}
             sectionKey="earnings"
           />
-          
+
           <ReportSection
             title="Withdrawals Report"
             description="Complete withdrawal/payout history with status tracking"
@@ -391,7 +391,7 @@ export default function AdminReportsPage() {
             icon={Network}
             sectionKey="network"
           />
-          
+
           <ReportSection
             title="Downline Summary"
             description="Direct and total downline count for all users"
@@ -399,9 +399,9 @@ export default function AdminReportsPage() {
             icon={Network}
             sectionKey="network"
           />
-          
+
           <ReportSection
-            title="Binary Tree Export"
+            title="Tree View Export"
             description="Export complete binary tree data with positions and counts"
             endpoint="/api/admin/reports/team/binary-tree"
             icon={Network}
@@ -420,7 +420,7 @@ export default function AdminReportsPage() {
             icon={TrendingUp}
             sectionKey="users"
           />
-          
+
           <ReportSection
             title="Plan Distribution Analysis"
             description="Analyze user distribution across different plans with revenue"
@@ -428,7 +428,7 @@ export default function AdminReportsPage() {
             icon={BarChart3}
             sectionKey="plans"
           />
-          
+
           <ReportSection
             title="Growth Statistics"
             description="Monthly growth trends for users and revenue"

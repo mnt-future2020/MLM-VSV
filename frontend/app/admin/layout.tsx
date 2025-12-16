@@ -78,7 +78,7 @@ export default function AdminLayout({
           isActive: pathname === "/admin/team/list",
         },
         {
-          label: "Binary Tree",
+          label: "Tree View",
           href: "/admin/team/tree",
           icon: <GitBranch className="w-4 h-4" />,
           isActive: pathname === "/admin/team/tree",

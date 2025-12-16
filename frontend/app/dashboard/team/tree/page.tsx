@@ -130,124 +130,146 @@ function TreeNodeComponent({
       {/* Node Card */}
       <div
         className={cn(
-          "relative px-6 py-4 rounded-xl border-2 min-w-[160px] transition-all hover:scale-105 hover:shadow-lg bg-card z-10",
+          "relative z-10 flex flex-col items-center p-3 sm:p-4 rounded-xl border-2 shadow-sm transition-all hover:shadow-lg bg-card min-w-[140px] sm:min-w-[160px]",
           isRoot
             ? "border-primary-500 shadow-primary-100"
-            : isLeft
-              ? "border-blue-400 shadow-blue-100"
-              : "border-purple-400 shadow-purple-100"
+            : node.isActive
+              ? isLeft ? "border-blue-300 shadow-blue-50" : "border-purple-300 shadow-purple-50"
+              : "border-red-200 bg-red-50/10"
         )}
       >
-        {/* Left/Right Label */}
+        {/* Placement Badge */}
         {!isRoot && (
-          <>
-            {isLeft && (
-              <div className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-md">
-                <span className="text-xs font-bold text-white">L</span>
-              </div>
-            )}
-            {isRight && (
-              <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center shadow-md">
-                <span className="text-xs font-bold text-white">R</span>
-              </div>
-            )}
-          </>
+          <div className={cn(
+            "absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold text-white shadow-sm border-2 border-white",
+            isLeft ? "bg-blue-500" : "bg-purple-500"
+          )}>
+            {isLeft ? "LEFT" : "RIGHT"}
+          </div>
         )}
-        <div className="flex flex-col items-center gap-1">
-          {/* Profile Photo or Default Avatar */}
-          <div
-            onClick={() => onNodeClick(node.referralId)}
-            className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center mb-2 cursor-pointer overflow-hidden border-2",
-              isRoot
-                ? "border-primary-500 bg-primary-100"
-                : isLeft
-                  ? "border-blue-400 bg-blue-100"
-                  : "border-purple-400 bg-purple-100"
-            )}
-          >
+
+        <div className="flex flex-col items-center gap-1.5 w-full cursor-pointer" onClick={() => onNodeClick(node.referralId)}>
+          {/* Avatar */}
+          <div className={cn(
+            "w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border-2",
+            isRoot ? "border-primary-100 bg-primary-50" : "border-gray-100 bg-gray-50"
+          )}>
             {node.profilePhoto ? (
               <img src={node.profilePhoto} alt={node.name} className="w-full h-full object-cover" />
             ) : (
               <Users className={cn(
-                "w-7 h-7",
-                isRoot ? "text-primary-600" : isLeft ? "text-blue-600" : "text-purple-600"
+                "w-6 h-6",
+                isRoot ? "text-primary-600" : node.isActive ? "text-gray-600" : "text-red-400"
               )} />
             )}
           </div>
-          <p
-            onClick={() => onNodeClick(node.referralId)}
-            className="text-sm font-bold text-foreground text-center cursor-pointer hover:text-primary-600"
-          >
-            {node.name}
-          </p>
-          <p className="text-xs text-muted-foreground">{node.referralId}</p>
-          {node.currentPlan && (
-            <div className="mt-2 px-3 py-1 rounded-full bg-primary-50 border border-primary-200">
-              <p className="text-xs font-medium text-primary-700">{node.currentPlan}</p>
-            </div>
-          )}
-          {!node.isActive && (
-            <div className="mt-1 px-2 py-0.5 rounded-full bg-red-50 border border-red-200">
-              <p className="text-xs font-medium text-red-600">Inactive</p>
-            </div>
-          )}
-          {/* Weak Report Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onWeakReportClick(node.referralId);
-            }}
-            className="mt-2 px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1"
-            title="View Weak Members Report"
-          >
-            <AlertTriangle className="w-3 h-3 text-amber-600" />
-            <span className="text-xs font-medium text-amber-700">Weak Report</span>
-          </button>
+
+          {/* User Info */}
+          <div className="text-center w-full">
+            <p className="text-xs sm:text-sm font-bold text-foreground truncate max-w-[130px] mx-auto leading-tight">
+              {node.name}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-mono mt-0.5">
+              {node.referralId}
+            </p>
+          </div>
+
+          {/* Status & Plan */}
+          <div className="flex flex-wrap justify-center gap-1 mt-1">
+            {node.currentPlan && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-primary-50 text-primary-700 border border-primary-100">
+                {node.currentPlan}
+              </span>
+            )}
+            {!node.isActive && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-50 text-red-600 border border-red-100">
+                Inactive
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Hover Actions */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onWeakReportClick(node.referralId);
+          }}
+          className="absolute -right-3 -top-3 w-7 h-7 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-sm opacity-0 hover:scale-110 hover:shadow-md hover:bg-amber-100 transition-all group-hover:opacity-100"
+          style={{ opacity: 1 }} /* Always visible for better UX on mobile */
+          title="Weak Report"
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* Children */}
+      {/* Connection Lines */}
       {(node.left || node.right) && (
-        <>
-          {/* Vertical Line Down */}
-          <div className="w-0.5 h-8 bg-border my-2"></div>
+        <div className="flex flex-col items-center w-full">
+          {/* Vertical Line from Parent */}
+          <div className="w-px h-6 bg-border"></div>
 
-          {/* Horizontal Line */}
-          <div className="relative w-full">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-0.5 bg-border"></div>
-            <div className="flex justify-around gap-8 pt-2">
-              {/* Left Child */}
-              <div className="relative">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-border"></div>
-                <div className="pt-8">
-                  {node.left ? (
-                    <TreeNodeComponent node={node.left} onNodeClick={onNodeClick} onWeakReportClick={onWeakReportClick} />
-                  ) : (
-                    <div className="px-6 py-4 rounded-xl border-2 border-dashed border-border bg-muted/30 min-w-[160px] flex items-center justify-center">
-                      <p className="text-xs text-muted-foreground">Empty</p>
-                    </div>
-                  )}
-                </div>
+          {/* Branching Container */}
+          <div className="relative flex justify-center w-full">
+            {/* Horizontal Line Spanning Children Centers */}
+            <div className="absolute top-0 h-px bg-border" style={{
+              left: '25%',
+              right: '25%',
+              // Adjust these percentages dynamically if possible, or use calc
+              // For a balanced binary tree, 25% and 75% are the midpoints of the children containers
+            }}></div>
+
+            <div className="flex w-full justify-between gap-4 sm:gap-8 md:gap-16">
+              {/* Left Child Container */}
+              <div className="flex-1 flex flex-col items-center relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-6 bg-border"></div>
+                <div className="absolute top-0 left-1/2 w-[50%] h-px bg-border -translate-x-[0%] origin-left scale-x-[-1]"></div> {/* Hack for precise lines? No, use the absolute spanning line above */}
+                {/* Actually, let's just draw lines specifically for each child up to the center */}
+
+                {/* Line Stick Up */}
+                <div className="h-6"></div>
+
+                {node.left ? (
+                  <TreeNodeComponent node={node.left} onNodeClick={onNodeClick} onWeakReportClick={onWeakReportClick} />
+                ) : (
+                  <EmptyNode label="LEFT" />
+                )}
               </div>
 
-              {/* Right Child */}
-              <div className="relative">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-border"></div>
-                <div className="pt-8">
-                  {node.right ? (
-                    <TreeNodeComponent node={node.right} onNodeClick={onNodeClick} onWeakReportClick={onWeakReportClick} />
-                  ) : (
-                    <div className="px-6 py-4 rounded-xl border-2 border-dashed border-border bg-muted/30 min-w-[160px] flex items-center justify-center">
-                      <p className="text-xs text-muted-foreground">Empty</p>
-                    </div>
-                  )}
-                </div>
+              {/* Right Child Container */}
+              <div className="flex-1 flex flex-col items-center relative">
+                {/* Line Stick Up */}
+                <div className="h-6"></div>
+
+                {node.right ? (
+                  <TreeNodeComponent node={node.right} onNodeClick={onNodeClick} onWeakReportClick={onWeakReportClick} />
+                ) : (
+                  <EmptyNode label="RIGHT" />
+                )}
               </div>
             </div>
+
+            {/* Redrawing the branching lines to be 100% accurate */}
+            {/* Left Connector */}
+            <div className="absolute top-0 left-[25%] right-[50%] h-px bg-border"></div>
+            {/* Right Connector */}
+            <div className="absolute top-0 left-[50%] right-[25%] h-px bg-border"></div>
           </div>
-        </>
+        </div>
       )}
+    </div>
+  );
+}
+
+function EmptyNode({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-[140px] px-4 py-6 rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2">
+        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+          <span className="text-xs font-bold text-muted-foreground">{label.charAt(0)}</span>
+        </div>
+        <span className="text-xs font-medium text-muted-foreground">Empty</span>
+      </div>
     </div>
   );
 }
@@ -744,7 +766,7 @@ export default function BinaryTreePage() {
       <PageContainer maxWidth="full">
         <PageHeader
           icon={<Network className="w-6 h-6 text-white" />}
-          title="Binary Tree View"
+          title="Tree View View"
           subtitle="Visualize your network structure"
         />
         <div className="bg-card border border-border rounded-xl p-12 text-center">
@@ -759,7 +781,7 @@ export default function BinaryTreePage() {
     <PageContainer maxWidth="full">
       <PageHeader
         icon={<Network className="w-6 h-6 text-white" />}
-        title="Binary Tree View"
+        title="Tree View View"
         subtitle="Click on any user to view details, or click 'Weak Report' to see weak members"
         action={
           <div className="flex gap-2">
