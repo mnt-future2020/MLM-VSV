@@ -206,8 +206,7 @@ export default function ManageMembersPage() {
       );
       if (response.data.success) {
         toast.success(
-          `Member ${
-            !member.isActive ? "activated" : "deactivated"
+          `Member ${!member.isActive ? "activated" : "deactivated"
           } successfully`
         );
         fetchMembers();

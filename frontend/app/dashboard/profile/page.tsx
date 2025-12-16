@@ -57,14 +57,6 @@ export default function ProfilePage() {
         icon={<User className="w-6 h-6 text-white" />}
         title="My Profile"
         subtitle="View and manage your account information"
-        action={
-          <Link href="/dashboard/profile/edit">
-            <Button className="bg-primary-600 hover:bg-primary-700">
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Profile
-            </Button>
-          </Link>
-        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

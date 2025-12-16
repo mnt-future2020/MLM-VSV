@@ -54,28 +54,28 @@ const formatDateIST = (dateString: string) => {
 
 export default function AdminEarningsPage() {
   const [loading, setLoading] = useState(true);
-  
+
   // Platform Stats
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [netProfit, setNetProfit] = useState(0);
   const [totalActivations, setTotalActivations] = useState(0);
   const [incomeByPlan, setIncomeByPlan] = useState<Record<string, number>>({});
-  
+
   // Payouts
   const [totalPayouts, setTotalPayouts] = useState(0);
   const [matchingIncomePaid, setMatchingIncomePaid] = useState(0);
   const [referralIncomePaid, setReferralIncomePaid] = useState(0);
   const [levelIncomePaid, setLevelIncomePaid] = useState(0);
-  
+
   // Today/Month
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [thisMonthRevenue, setThisMonthRevenue] = useState(0);
-  
+
   // Admin Personal
   const [adminPV, setAdminPV] = useState<AdminPV>({ leftPV: 0, rightPV: 0, totalPV: 0, matchablePV: 0 });
   const [adminWallet, setAdminWallet] = useState<AdminWallet>({ balance: 0, totalEarnings: 0, totalWithdrawals: 0 });
   const [adminEarnings, setAdminEarnings] = useState<AdminEarnings>({ MATCHING_INCOME: 0, REFERRAL_INCOME: 0, LEVEL_INCOME: 0, TOTAL: 0 });
-  
+
   // Transactions
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
 
@@ -85,28 +85,28 @@ export default function AdminEarningsPage() {
         const response = await axiosInstance.get('/api/admin/earnings');
         if (response.data.success) {
           const data = response.data.data;
-          
+
           // Platform stats
           setTotalRevenue(data.totalRevenue || 0);
           setNetProfit(data.netProfit || 0);
           setTotalActivations(data.totalActivations || 0);
           setIncomeByPlan(data.incomeByPlan || {});
-          
+
           // Payouts
           setTotalPayouts(data.totalPayouts || 0);
           setMatchingIncomePaid(data.totalMatchingPaid || 0);
           setReferralIncomePaid(data.totalReferralPaid || 0);
           setLevelIncomePaid(data.totalLevelPaid || 0);
-          
+
           // Today/Month
           setTodayRevenue(data.todayRevenue || 0);
           setThisMonthRevenue(data.monthRevenue || 0);
-          
+
           // Admin personal
           setAdminPV(data.adminPV || { leftPV: 0, rightPV: 0, totalPV: 0, matchablePV: 0 });
           setAdminWallet(data.adminWallet || { balance: 0, totalEarnings: 0, totalWithdrawals: 0 });
           setAdminEarnings(data.adminEarnings || { MATCHING_INCOME: 0, REFERRAL_INCOME: 0, LEVEL_INCOME: 0, TOTAL: 0 });
-          
+
           // Transactions
           setRecentTransactions(data.recentTransactions || []);
         }
@@ -199,11 +199,11 @@ export default function AdminEarningsPage() {
             <p className="text-2xl font-bold text-purple-900">₹{matchingIncomePaid.toLocaleString()}</p>
             <p className="text-xs text-purple-600 mt-1">Binary PV matching</p>
           </div>
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
+          {/* <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
             <p className="text-sm text-blue-700 font-medium mb-2">Referral Income Paid</p>
             <p className="text-2xl font-bold text-blue-900">₹{referralIncomePaid.toLocaleString()}</p>
             <p className="text-xs text-blue-600 mt-1">Direct referral bonus</p>
-          </div>
+          </div> */}
           <div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-xl p-5">
             <p className="text-sm text-teal-700 font-medium mb-2">Level Income Paid</p>
             <p className="text-2xl font-bold text-teal-900">₹{levelIncomePaid.toLocaleString()}</p>
@@ -231,10 +231,10 @@ export default function AdminEarningsPage() {
             <p className="text-white/70 text-sm mb-1">Matching Income</p>
             <p className="text-2xl font-bold">₹{adminEarnings.MATCHING_INCOME.toLocaleString()}</p>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
+          {/* <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
             <p className="text-white/70 text-sm mb-1">Referral Income</p>
             <p className="text-2xl font-bold">₹{adminEarnings.REFERRAL_INCOME.toLocaleString()}</p>
-          </div>
+          </div> */}
           <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
             <p className="text-white/70 text-sm mb-1">Level Income</p>
             <p className="text-2xl font-bold">₹{adminEarnings.LEVEL_INCOME.toLocaleString()}</p>
@@ -327,7 +327,7 @@ export default function AdminEarningsPage() {
           {recentTransactions.length > 0 ? (
             recentTransactions.map((transaction) => {
               const getTypeIcon = () => {
-                switch(transaction.type) {
+                switch (transaction.type) {
                   case 'MATCHING_INCOME': return '🤝';
                   case 'PLAN_ACTIVATION': return '💰';
                   case 'REFERRAL_INCOME': return '👥';
@@ -335,9 +335,9 @@ export default function AdminEarningsPage() {
                   default: return '💵';
                 }
               };
-              
+
               const getTypeColor = () => {
-                switch(transaction.type) {
+                switch (transaction.type) {
                   case 'MATCHING_INCOME': return 'bg-purple-100 text-purple-700';
                   case 'PLAN_ACTIVATION': return 'bg-green-100 text-green-700';
                   case 'REFERRAL_INCOME': return 'bg-blue-100 text-blue-700';
@@ -347,7 +347,7 @@ export default function AdminEarningsPage() {
               };
 
               const getTypeLabel = () => {
-                switch(transaction.type) {
+                switch (transaction.type) {
                   case 'MATCHING_INCOME': return 'Matching Income';
                   case 'PLAN_ACTIVATION': return 'Plan Activation';
                   case 'REFERRAL_INCOME': return 'Referral Income';
@@ -356,7 +356,8 @@ export default function AdminEarningsPage() {
                 }
               };
 
-              const isRevenue = transaction.type === 'PLAN_ACTIVATION';
+              const isRevenue = transaction.type === 'PLAN_ACTIVATION' ||
+                (transaction.isAdminTransaction && (transaction.type === 'MATCHING_INCOME' || transaction.type === 'MATCHING_BONUS'));
 
               return (
                 <div

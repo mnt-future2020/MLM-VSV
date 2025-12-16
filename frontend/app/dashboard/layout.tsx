@@ -67,22 +67,7 @@ export default function DashboardLayout({
       label: "Profile",
       href: "/dashboard/profile",
       icon: <User className="w-5 h-5" />,
-      isActive: pathname.startsWith("/dashboard/profile") || pathname === "/change-password",
-      hasDropdown: true,
-      subLinks: [
-        {
-          label: "My Profile",
-          href: "/dashboard/profile",
-          icon: <User className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/profile",
-        },
-        {
-          label: "Edit Profile",
-          href: "/dashboard/profile/edit",
-          icon: <User className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/profile/edit",
-        },
-      ],
+      isActive: pathname === "/dashboard/profile",
     },
     {
       label: "Transactions",
@@ -146,14 +131,14 @@ export default function DashboardLayout({
       <Toaster position="top-right" richColors />
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
-        <Sidebar 
-          links={sidebarLinks} 
+        <Sidebar
+          links={sidebarLinks}
           user={user ? {
             name: user.name,
             email: user.email,
             role: user.role
           } : undefined}
-          onLinkClick={handleLinkClick} 
+          onLinkClick={handleLinkClick}
         />
 
         {/* Main Content */}

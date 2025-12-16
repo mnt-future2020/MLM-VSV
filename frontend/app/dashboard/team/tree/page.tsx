@@ -91,6 +91,11 @@ type WeakMembersData = {
     name: string;
     referralId: string;
   };
+  targetUserWeakness?: {
+    type: string;
+    message: string;
+    severity: string;
+  } | null;
   summary: {
     totalWeakMembers: number;
     leftSideWeak: number;
@@ -104,13 +109,15 @@ type WeakMembersData = {
   rightSideWeak: WeakMember[];
 };
 
-function TreeNodeComponent({ 
-  node, 
+
+
+function TreeNodeComponent({
+  node,
   isRoot = false,
   onNodeClick,
-  onWeakReportClick
-}: { 
-  node: TreeNode; 
+  onWeakReportClick,
+}: {
+  node: TreeNode;
   isRoot?: boolean;
   onNodeClick: (nodeId: string) => void;
   onWeakReportClick: (nodeId: string) => void;
@@ -127,10 +134,25 @@ function TreeNodeComponent({
           isRoot
             ? "border-primary-500 shadow-primary-100"
             : isLeft
-            ? "border-blue-400 shadow-blue-100"
-            : "border-purple-400 shadow-purple-100"
+              ? "border-blue-400 shadow-blue-100"
+              : "border-purple-400 shadow-purple-100"
         )}
       >
+        {/* Left/Right Label */}
+        {!isRoot && (
+          <>
+            {isLeft && (
+              <div className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-md">
+                <span className="text-xs font-bold text-white">L</span>
+              </div>
+            )}
+            {isRight && (
+              <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center shadow-md">
+                <span className="text-xs font-bold text-white">R</span>
+              </div>
+            )}
+          </>
+        )}
         <div className="flex flex-col items-center gap-1">
           {/* Profile Photo or Default Avatar */}
           <div
@@ -140,8 +162,8 @@ function TreeNodeComponent({
               isRoot
                 ? "border-primary-500 bg-primary-100"
                 : isLeft
-                ? "border-blue-400 bg-blue-100"
-                : "border-purple-400 bg-purple-100"
+                  ? "border-blue-400 bg-blue-100"
+                  : "border-purple-400 bg-purple-100"
             )}
           >
             {node.profilePhoto ? (
@@ -153,7 +175,7 @@ function TreeNodeComponent({
               )} />
             )}
           </div>
-          <p 
+          <p
             onClick={() => onNodeClick(node.referralId)}
             className="text-sm font-bold text-foreground text-center cursor-pointer hover:text-primary-600"
           >
@@ -230,11 +252,11 @@ function TreeNodeComponent({
   );
 }
 
-function WeakMembersModal({ 
-  userId, 
-  onClose 
-}: { 
-  userId: string | null; 
+function WeakMembersModal({
+  userId,
+  onClose
+}: {
+  userId: string | null;
   onClose: () => void;
 }) {
   const [data, setData] = useState<WeakMembersData | null>(null);
@@ -263,46 +285,47 @@ function WeakMembersModal({
 
   if (!userId) return null;
 
-  const getSeverityColor = (severity: string) => {
+  const getActionTip = (reasons: { type: string; message: string; }[], userName: string) => {
+    const mainReason = reasons[0]?.type;
+    const name = userName.split(' ')[0];
+    switch (mainReason) {
+      case 'MISSING_BOTH': return `Help ${name} verify their first 2 direct referrals.`;
+      case 'MISSING_LEFT': return `Focus on adding a member to ${name}'s LEFT side.`;
+      case 'MISSING_RIGHT': return `Focus on adding a member to ${name}'s RIGHT side.`;
+      default: return `Check in with ${name} to see how you can help.`;
+    }
+  };
+
+  const getSeverityBadge = (severity: string) => {
     switch (severity) {
-      case 'CRITICAL': return 'bg-red-100 text-red-700 border-red-200';
-      case 'HIGH': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'MEDIUM': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'CRITICAL':
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">Action Needed</span>;
+      case 'HIGH':
+        return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Attention</span>;
+      default:
+        return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Monitor</span>;
     }
   };
 
-  const getWeaknessBadgeColor = (type: string) => {
-    switch (type) {
-      case 'INACTIVE': return 'bg-red-50 text-red-600';
-      case 'NO_PLAN': return 'bg-orange-50 text-orange-600';
-      case 'ZERO_PV': return 'bg-amber-50 text-amber-600';
-      case 'LOW_PV': return 'bg-yellow-50 text-yellow-600';
-      case 'NO_DOWNLINE': return 'bg-blue-50 text-blue-600';
-      case 'UNBALANCED_LEGS': return 'bg-purple-50 text-purple-600';
-      default: return 'bg-gray-50 text-gray-600';
-    }
-  };
-
-  const displayMembers = activeTab === 'all' 
-    ? data?.weakMembers 
-    : activeTab === 'left' 
-    ? data?.leftSideWeak 
-    : data?.rightSideWeak;
+  const displayMembers = activeTab === 'all'
+    ? data?.weakMembers
+    : activeTab === 'left'
+      ? data?.leftSideWeak
+      : data?.rightSideWeak;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-card border border-border rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
+      <div className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+        {/* Simple Header */}
+        <div className="bg-card border-b border-border p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Weak Members Report</h2>
-              <p className="text-sm text-muted-foreground">
-                {data?.targetUser?.name} ({data?.targetUser?.referralId})
+              <h2 className="text-lg font-bold text-foreground">Team Analysis</h2>
+              <p className="text-xs text-muted-foreground">
+                Helping {data?.targetUser?.name} grow
               </p>
             </div>
           </div>
@@ -313,132 +336,156 @@ function WeakMembersModal({
 
         {/* Content */}
         {loading ? (
-          <div className="p-8 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+          <div className="p-12 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
           </div>
         ) : data ? (
-          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
-            {/* Summary Cards */}
-            <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-amber-700">{data.summary.totalWeakMembers}</p>
-                <p className="text-xs text-amber-600">Total Weak</p>
-              </div>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-red-700">{data.summary.criticalCount}</p>
-                <p className="text-xs text-red-600">Critical</p>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-blue-700">{data.summary.leftSideWeak}</p>
-                <p className="text-xs text-blue-600">Left Side</p>
-              </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-purple-700">{data.summary.rightSideWeak}</p>
-                <p className="text-xs text-purple-600">Right Side</p>
-              </div>
-            </div>
+          <div className="flex-1 overflow-y-auto bg-muted/10">
 
-            {/* Tabs */}
-            <div className="px-6 flex gap-2">
-              {['all', 'left', 'right'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as 'all' | 'left' | 'right')}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    activeTab === tab
-                      ? "bg-primary-500 text-white"
-                      : "bg-muted hover:bg-muted/80 text-foreground"
-                  )}
-                >
-                  {tab === 'all' ? 'All Members' : tab === 'left' ? 'Left Side' : 'Right Side'}
-                </button>
-              ))}
-            </div>
+            {/* HERO ALERT: Target User Weakness */}
+            {data.targetUserWeakness && (
+              <div className="p-5 pb-0">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-5 flex flex-col items-center text-center shadow-sm">
+                  <AlertTriangle className="w-8 h-8 text-red-600 mb-2" />
+                  <h3 className="text-lg font-bold text-red-700 mb-1">
+                    ⚠️ {data.targetUserWeakness.message}
+                  </h3>
+                  <p className="text-sm text-red-600 mb-0 max-w-md">
+                    {data.targetUserWeakness.type === 'MISSING_BOTH'
+                      ? "This user has no active team. Help them verify their first 2 direct referrals to activate their binary income."
+                      : data.targetUserWeakness.type === 'MISSING_LEFT'
+                        ? "The Left Leg is empty. Focus on adding a member here."
+                        : "The Right Leg is empty. Focus on adding a member here."}
+                  </p>
+                </div>
+              </div>
+            )}
 
-            {/* Weak Members List */}
-            <div className="p-6 space-y-4">
-              {displayMembers && displayMembers.length > 0 ? (
-                displayMembers.map((member) => (
-                  <div 
-                    key={member.id} 
+            {/* If missing BOTH legs, HIDE the rest of the report */}
+            {data.targetUserWeakness?.type === 'MISSING_BOTH' ? (
+              <div className="p-12 text-center text-muted-foreground">
+                <p className="text-sm">Once they add team members, detailed reports will appear here.</p>
+              </div>
+            ) : (
+              <>
+                {/* Simplified Summary */}
+                <div className="p-5 grid grid-cols-2 gap-3">
+                  <div className="bg-white border rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm">
+                    <span className="text-3xl font-black text-red-600 mb-1">{data.summary.criticalCount}</span>
+                    <span className="text-sm font-medium text-muted-foreground">Need Help Now</span>
+                  </div>
+                  <div className="bg-white border rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm">
+                    <span className="text-3xl font-black text-amber-600 mb-1">
+                      {data.summary.highCount + data.summary.mediumCount}
+                    </span>
+                    <span className="text-sm font-medium text-muted-foreground">Keep Watching</span>
+                  </div>
+                </div>
+
+                {/* Simple Filters */}
+                <div className="px-5 pb-2 flex gap-2">
+                  <button
+                    onClick={() => setActiveTab('all')}
                     className={cn(
-                      "border rounded-xl p-4",
-                      getSeverityColor(member.overallSeverity)
+                      "px-4 py-2 rounded-full text-xs font-semibold transition-all border",
+                      activeTab === 'all'
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-white text-muted-foreground border-border hover:bg-muted"
                     )}
                   >
-                    <div className="flex items-start gap-4">
-                      {/* Avatar */}
-                      <div className="w-12 h-12 rounded-full bg-white border-2 border-current overflow-hidden flex-shrink-0">
-                        {member.profilePhoto ? (
-                          <img src={member.profilePhoto} alt={member.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <UserX className="w-6 h-6" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-semibold">{member.name}</h4>
-                          <span className="text-xs font-mono">{member.referralId}</span>
-                          <span className={cn(
-                            "px-2 py-0.5 rounded text-xs font-medium",
-                            member.side === 'LEFT' ? 'bg-blue-200 text-blue-800' : 'bg-purple-200 text-purple-800'
-                          )}>
-                            {member.side}
-                          </span>
-                          <span className={cn(
-                            "px-2 py-0.5 rounded text-xs font-bold",
-                            getSeverityColor(member.overallSeverity)
-                          )}>
-                            {member.overallSeverity}
-                          </span>
-                        </div>
-
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          <span>PV: {member.totalPV}</span>
-                          <span>•</span>
-                          <span>L: {member.leftPV} | R: {member.rightPV}</span>
-                          <span>•</span>
-                          <span>{member.currentPlan || 'No Plan'}</span>
-                          <span>•</span>
-                          <span>{member.isActive ? 'Active' : 'Inactive'}</span>
-                        </div>
-
-                        {/* Weakness Reasons */}
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {member.weaknessReasons.map((reason, idx) => (
-                            <div 
-                              key={idx}
-                              className={cn(
-                                "px-2 py-1 rounded text-xs",
-                                getWeaknessBadgeColor(reason.type)
-                              )}
-                              title={reason.message}
-                            >
-                              {reason.message}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <AlertTriangle className="w-12 h-12 mx-auto mb-2 text-green-500" />
-                  <p>No weak members found in this section!</p>
-                  <p className="text-sm">Your team is performing well.</p>
+                    All Issues
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('left')}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-xs font-semibold transition-all border",
+                      activeTab === 'left'
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-muted-foreground border-border hover:bg-muted"
+                    )}
+                  >
+                    Left Team
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('right')}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-xs font-semibold transition-all border",
+                      activeTab === 'right'
+                        ? "bg-purple-600 text-white border-purple-600"
+                        : "bg-white text-muted-foreground border-border hover:bg-muted"
+                    )}
+                  >
+                    Right Team
+                  </button>
                 </div>
-              )}
-            </div>
+
+                {/* Clean List */}
+                <div className="p-5 space-y-3">
+                  {displayMembers && displayMembers.length > 0 ? (
+                    displayMembers.map((member) => (
+                      <div
+                        key={member.id}
+                        className="bg-white border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Avatar */}
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border">
+                            {member.profilePhoto ? (
+                              <img src={member.profilePhoto} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-bold text-muted-foreground">
+                                {member.name.substring(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <h4 className="font-bold text-sm text-foreground truncate max-w-[150px]">
+                                {member.name}
+                              </h4>
+                              {getSeverityBadge(member.overallSeverity)}
+                            </div>
+
+                            <p className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
+                              <span className={cn(
+                                "w-2 h-2 rounded-full",
+                                member.isActive ? "bg-green-500" : "bg-red-500"
+                              )}></span>
+                              {member.isActive ? "Active Account" : "Inactive Account"}
+                              <span className="text-muted-foreground/50">•</span>
+                              {member.side === 'LEFT' ? 'Left Team' : 'Right Team'}
+                            </p>
+
+                            {/* Main Issue Box */}
+                            <div className="bg-muted/30 rounded-lg p-3">
+                              <p className="text-xs font-semibold text-foreground mb-1">
+                                ⚠️ {member.weaknessReasons[0]?.message}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                💡 <span className="font-medium text-amber-700">{getActionTip(member.weaknessReasons, member.name)}</span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <TrendingUp className="w-6 h-6 text-green-600" />
+                      </div>
+                      <h3 className="font-medium text-foreground">All Good Here!</h3>
+                      <p className="text-sm text-muted-foreground">No weak members found in this list.</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="p-8 text-center text-muted-foreground">
-            Failed to load weak members report
+            Unable to load report.
           </div>
         )}
       </div>
@@ -446,11 +493,11 @@ function WeakMembersModal({
   );
 }
 
-function UserDetailsModal({ 
-  userId, 
-  onClose 
-}: { 
-  userId: string | null; 
+function UserDetailsModal({
+  userId,
+  onClose
+}: {
+  userId: string | null;
   onClose: () => void;
 }) {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
@@ -732,15 +779,15 @@ export default function BinaryTreePage() {
       {/* Tree Container */}
       <div className="bg-muted/30 border border-border rounded-2xl p-8 sm:p-12 overflow-x-auto min-h-[600px] flex flex-col items-center justify-center relative">
         {/* Background Grid Pattern */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
         </div>
-        
+
         <div className="flex justify-center min-w-max z-10">
-          <TreeNodeComponent 
-            node={treeData} 
-            isRoot={true} 
-            onNodeClick={handleNodeClick} 
+          <TreeNodeComponent
+            node={treeData}
+            isRoot={true}
+            onNodeClick={handleNodeClick}
             onWeakReportClick={handleWeakReportClick}
           />
         </div>

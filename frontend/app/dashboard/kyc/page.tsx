@@ -30,13 +30,14 @@ export default function KYCPage() {
   const [kycData, setKycData] = useState<KYCData | null>(null);
   const idProofInputRef = useRef<HTMLInputElement>(null);
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
     dob: "",
+    nomineeName: "",
     idNumber: "",
     bank: {
       accountName: "",
@@ -47,7 +48,7 @@ export default function KYCPage() {
     idProofBase64: "",
     profilePhotoBase64: ""
   });
-  
+
   const [idProofPreview, setIdProofPreview] = useState<string | null>(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
   const [idProofError, setIdProofError] = useState<string | null>(null);
@@ -75,7 +76,7 @@ export default function KYCPage() {
       const response = await axiosInstance.get("/api/kyc/me");
       if (response.data?.success) {
         setKycData(response.data.data);
-        
+
         // Pre-fill form if there's a previous submission
         if (response.data.data?.submission?.form) {
           const form = response.data.data.submission.form;
@@ -85,6 +86,7 @@ export default function KYCPage() {
             phone: form.phone || "",
             address: form.address || "",
             dob: form.dob || "",
+            nomineeName: form.nomineeName || "",
             idNumber: form.idNumber || "",
             bank: form.bank || { accountName: "", accountNumber: "", ifsc: "", bankName: "" },
             idProofBase64: "",
@@ -100,7 +102,7 @@ export default function KYCPage() {
   };
 
   const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>, 
+    e: React.ChangeEvent<HTMLInputElement>,
     type: 'idProof' | 'profilePhoto'
   ) => {
     const file = e.target.files?.[0];
@@ -108,26 +110,26 @@ export default function KYCPage() {
     const setPreview = type === 'idProof' ? setIdProofPreview : setProfilePhotoPreview;
     const setSize = type === 'idProof' ? setIdProofSize : setProfilePhotoSize;
     const fieldName = type === 'idProof' ? 'idProofBase64' : 'profilePhotoBase64';
-    
+
     setError(null);
-    
+
     if (!file) return;
-    
+
     // Validate file type
     if (!file.type.includes('jpeg') && !file.type.includes('jpg')) {
       setError("Only JPEG images are allowed");
       return;
     }
-    
+
     // Validate file size (500KB = 512000 bytes)
     const sizeKB = file.size / 1024;
     setSize(sizeKB);
-    
+
     if (sizeKB > 500) {
       setError(`File size must be under 500KB. Current size: ${sizeKB.toFixed(1)}KB`);
       return;
     }
-    
+
     // Read file and convert to base64
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -140,12 +142,12 @@ export default function KYCPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.idProofBase64) {
       toast.error("Please upload your ID proof");
       return;
     }
-    
+
     setSubmitting(true);
     try {
       const response = await axiosInstance.post("/api/kyc/submit", formData);
@@ -328,13 +330,12 @@ export default function KYCPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    required
                     data-testid="kyc-email-input"
                   />
                 </div>
@@ -369,6 +370,17 @@ export default function KYCPage() {
                   required
                   rows={3}
                   data-testid="kyc-address-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="nomineeName">Nominee Name *</Label>
+                <Input
+                  id="nomineeName"
+                  value={formData.nomineeName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, nomineeName: e.target.value }))}
+                  placeholder="Enter nominee name"
+                  required
+                  data-testid="kyc-nominee-name-input"
                 />
               </div>
             </div>

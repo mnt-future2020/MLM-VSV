@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, TrendingUp, Wallet, Gift, ArrowRight, UserPlus, CreditCard } from "lucide-react";
+import { Users, TrendingUp, Wallet, Gift, ArrowRight, UserPlus, CreditCard, Network } from "lucide-react";
 import { PageContainer, PageHeader, StatsCard } from "@/components/ui/page-components";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,10 @@ interface DashboardData {
     balance: number;
     totalEarnings: number;
     totalWithdrawals: number;
+    todaysEarnings: number;
+    pendingWithdrawals: number;
+    referralIncome: number;
+    matchingIncome: number;
   };
   team: {
     total: number;
@@ -43,7 +47,7 @@ interface DashboardData {
 }
 
 export default function UserDashboard() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +56,17 @@ export default function UserDashboard() {
       try {
         const response = await axiosInstance.get('/api/user/dashboard');
         if (response.data.success) {
-          setDashboardData(response.data.data);
+          const data = response.data.data;
+          setDashboardData(data);
+
+          // Check if user status has changed (e.g. KYC approved)
+          if (user && (
+            data.kycStatus !== user.kycStatus ||
+            data.isActive !== user.isActive
+          )) {
+            console.log("User status changed, refreshing profile...");
+            refreshUser();
+          }
         }
       } catch (error) {
         console.error("Error fetching dashboard:", error);
@@ -64,7 +78,7 @@ export default function UserDashboard() {
     if (user) {
       fetchDashboard();
     }
-  }, [user]);
+  }, [user, refreshUser]);
 
   if (loading) {
     return (
@@ -97,24 +111,52 @@ export default function UserDashboard() {
           trend={{ value: "Lifetime earnings", isPositive: true }}
         />
         <StatsCard
+          label="Today's Earnings"
+          value={`₹${dashboardData?.wallet?.todaysEarnings || 0}`}
+          icon={<TrendingUp className="w-6 h-6 text-emerald-600" />}
+          gradient="bg-emerald-500"
+          trend={{ value: "Earned today", isPositive: true }}
+        />
+        <StatsCard
           label="Available Balance"
           value={`₹${dashboardData?.wallet?.balance || 0}`}
           icon={<Wallet className="w-6 h-6 text-primary-600" />}
           gradient="bg-primary-500"
           trend={{ value: "Ready to withdraw", isPositive: true }}
         />
+        {/* <StatsCard
+          label="Pending Withdrawals"
+          value={`₹${dashboardData?.wallet?.pendingWithdrawals || 0}`}
+          icon={<Clock className="w-6 h-6 text-orange-600" />}
+          gradient="bg-orange-500"
+          trend={{ value: "Processing", isPositive: true }}
+        /> */}
+        {/* <StatsCard
+          label="Referral Income"
+          value={`₹${dashboardData?.wallet?.referralIncome || 0}`}
+          icon={<Users className="w-6 h-6 text-purple-600" />}
+          gradient="bg-purple-500"
+          trend={{ value: "Direct Referrals", isPositive: true }}
+        /> */}
+        <StatsCard
+          label="Matching Income"
+          value={`₹${dashboardData?.wallet?.matchingIncome || 0}`}
+          icon={<Network className="w-6 h-6 text-blue-600" />}
+          gradient="bg-blue-500"
+          trend={{ value: "Binary Matching", isPositive: true }}
+        />
         <StatsCard
           label="Team Members"
           value={String(dashboardData?.team?.total || 0)}
-          icon={<Users className="w-6 h-6 text-blue-600" />}
-          gradient="bg-blue-500"
+          icon={<Users className="w-6 h-6 text-indigo-600" />}
+          gradient="bg-indigo-500"
           trend={{ value: `Left: ${dashboardData?.team?.left || 0}, Right: ${dashboardData?.team?.right || 0}`, isPositive: true }}
         />
         <StatsCard
           label="Current Plan"
           value={dashboardData?.currentPlan?.name || "No Plan"}
-          icon={<Gift className="w-6 h-6 text-purple-600" />}
-          gradient="bg-purple-500"
+          icon={<Gift className="w-6 h-6 text-pink-600" />}
+          gradient="bg-pink-500"
           trend={{ value: dashboardData?.currentPlan ? `${dashboardData.currentPlan.pv} PV` : "Activate a plan", isPositive: true }}
         />
         {dashboardData?.rank && (

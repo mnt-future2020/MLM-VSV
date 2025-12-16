@@ -144,14 +144,14 @@ export default function AdminLayout({
       <Toaster position="top-right" richColors />
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
-        <Sidebar 
-          links={sidebarLinks} 
+        <Sidebar
+          links={sidebarLinks}
           user={user ? {
             name: user.name,
             email: user.email,
             role: user.role
           } : undefined}
-          onLinkClick={handleLinkClick} 
+          onLinkClick={handleLinkClick}
         />
 
         {/* Main Content */}
