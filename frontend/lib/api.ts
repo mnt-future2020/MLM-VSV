@@ -30,19 +30,29 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+// Public endpoints that should not trigger auth redirects
+const PUBLIC_ENDPOINTS = ['/api/settings/public', '/api/auth/', '/api/system/'];
+
 // Response interceptor for error handling
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle 401 Unauthorized (token expired) - only on client-side
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      // Clear auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
-      // Redirect to login if not already there
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      const requestUrl = error.config?.url || '';
+      const isPublicEndpoint = PUBLIC_ENDPOINTS.some(ep => requestUrl.includes(ep));
+
+      // Only redirect to login for protected endpoints
+      if (!isPublicEndpoint) {
+        // Clear auth data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Redirect to login if not already there
+        if (!window.location.pathname.includes('/login') &&
+            !window.location.pathname.includes('/register')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

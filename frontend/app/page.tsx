@@ -9,18 +9,18 @@ import { ArrowRight, Users, TrendingUp, Shield, Wallet, Network, BarChart3, Chec
 
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import { axiosInstance } from "@/lib/api";
+import axios from "axios";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch public settings from backend
+  // Fetch public settings from backend (no auth token needed)
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axiosInstance.get("/api/settings/public");
+        const response = await axios.get("/api/settings/public");
         if (response.data.success) {
           setSettings(response.data.data);
         }
